@@ -102,6 +102,7 @@ func (e *SysRole) Insert(c *dto.SysRoleInsertReq, cb *casbin.SyncedEnforcer) err
 		e.Log.Errorf("db error:%s", err)
 		return err
 	}
+	c.RoleId = data.RoleId
 
 	mp := make(map[string]interface{}, 0)
 	polices := make([][]string, 0)
@@ -144,6 +145,20 @@ func (e *SysRole) Update(c *dto.SysRoleUpdateReq, cb *casbin.SyncedEnforcer) err
 	var model = models.SysRole{}
 	var mlist = make([]models.SysMenu, 0)
 	tx.Preload("SysMenu").First(&model, c.GetId())
+	oldRoleKey := model.RoleKey
+	if oldRoleKey != c.RoleKey {
+		var count int64
+		err = tx.Model(&model).Where("role_key = ? AND role_id <> ?", c.RoleKey, c.GetId()).Count(&count).Error
+		if err != nil {
+			e.Log.Errorf("db error:%s", err)
+			return err
+		}
+		if count > 0 {
+			err = errors.New("roleKey已存在，需更换在提交！")
+			e.Log.Errorf("db error:%s", err)
+			return err
+		}
+	}
 	tx.Preload("SysApi").Where("menu_id in ?", c.MenuIds).Find(&mlist)
 	err = tx.Model(&model).Association("SysMenu").Delete(model.SysMenu)
 	if err != nil {
@@ -164,7 +179,7 @@ func (e *SysRole) Update(c *dto.SysRoleUpdateReq, cb *casbin.SyncedEnforcer) err
 	}
 
 	// 清除 sys_casbin_rule 权限表里 当前角色的所有记录
-	_, err = cb.RemoveFilteredPolicy(0, model.RoleKey)
+	_, err = cb.RemoveFilteredPolicy(0, oldRoleKey)
 	if err != nil {
 		e.Log.Errorf("delete policy error:%s", err)
 		return err

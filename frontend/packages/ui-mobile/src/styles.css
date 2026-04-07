@@ -1,0 +1,98 @@
+.mobile-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.mobile-main {
+  flex: 1;
+  padding: 20px 18px 96px;
+}
+
+.mobile-card {
+  border: 1px solid rgba(18, 19, 26, 0.1);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 18px 48px rgba(18, 19, 26, 0.08);
+}
+
+.mobile-hero {
+  padding: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.24), transparent 30%),
+    linear-gradient(135deg, rgba(15, 118, 110, 0.18), rgba(255, 255, 255, 0.96));
+}
+
+.mobile-hero h1 {
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.mobile-hero p {
+  margin: 12px 0 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.mobile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mobile-tile {
+  padding: 18px;
+}
+
+.mobile-tile strong,
+.mobile-surface h3 {
+  display: block;
+  margin: 0;
+  font-size: 18px;
+}
+
+.mobile-tile span,
+.mobile-surface p {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.mobile-surface {
+  padding: 20px;
+}
+
+.mobile-tabs {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+  border-radius: 24px;
+  border: 1px solid rgba(18, 19, 26, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 48px rgba(18, 19, 26, 0.12);
+}
+
+.mobile-tab {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  min-height: 52px;
+  border-radius: 18px;
+  color: var(--color-muted);
+  font-size: 13px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.mobile-tab.active {
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--color-ink);
+}

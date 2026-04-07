@@ -38,7 +38,7 @@ func (m *SysConfigGetToSysAppReq) GetNeedSearch() interface{} {
 
 // SysConfigControl 增、改使用的结构体
 type SysConfigControl struct {
-	Id          int    `uri:"Id" comment:"编码"` // 编码
+	Id          int    `uri:"id" json:"id" comment:"编码"` // 编码
 	ConfigName  string `json:"configName" comment:""`
 	ConfigKey   string `uri:"configKey" json:"configKey" comment:""`
 	ConfigValue string `json:"configValue" comment:""`

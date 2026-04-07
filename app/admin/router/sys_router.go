@@ -15,6 +15,7 @@ import (
 
 	"go-admin/common/middleware"
 	"go-admin/common/middleware/handler"
+	"go-admin/common/routerx"
 	_ "go-admin/docs/admin"
 )
 
@@ -66,13 +67,31 @@ func sysCheckRoleRouterInit(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddle
 		wss.GET("/wslogout/:id/:channel", ws.WebsocketManager.UnWsClient)
 	}
 
-	v1 := r.Group("/api/v1")
-	{
-		v1.POST("/login", authMiddleware.LoginHandler)
-		// Refresh time can be longer than token timeout
-		v1.GET("/refresh_token", authMiddleware.RefreshHandler)
+	for _, prefix := range routerx.AdminPrefixes() {
+		v1 := r.Group(prefix)
+		{
+			v1.POST("/login", authMiddleware.LoginHandler)
+			v1.GET("/refresh_token", authMiddleware.RefreshHandler)
+		}
+		registerBaseRouter(v1, authMiddleware)
 	}
-	registerBaseRouter(v1, authMiddleware)
+
+	appAPI := apis.SysUser{}
+	captchaAPI := apis.System{}
+	appV1 := r.Group(routerx.AppPrefix())
+	{
+		appV1.GET("/captcha", captchaAPI.GenerateCaptchaHandler)
+		appV1.POST("/login", authMiddleware.LoginHandler)
+		appV1.GET("/refresh_token", authMiddleware.RefreshHandler)
+	}
+	appAuth := appV1.Group("").Use(authMiddleware.MiddlewareFunc())
+	{
+		appAuth.POST("/logout", handler.LogOut)
+		appAuth.GET("/getinfo", appAPI.GetInfo)
+		appAuth.GET("/home", appAPI.GetInfo)
+		appAuth.GET("/me", appAPI.GetProfile)
+		appAuth.GET("/user/profile", appAPI.GetProfile)
+	}
 }
 
 func registerBaseRouter(v1 *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) {

@@ -21,3 +21,8 @@ cmd/migrate/migration/version-local/*
 # go sum
 go.sum
 config/settings.deva.yml
+.ace-tool/
+node_modules/
+.pnpm-store/
+dist/
+frontend/**/dist/

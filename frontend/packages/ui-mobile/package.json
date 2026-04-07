@@ -1,0 +1,19 @@
+{
+  "name": "@suiyuan/ui-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./styles.css": "./src/styles.css"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-router-dom": "^7.9.4"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "typecheck": "tsc --project tsconfig.json"
+  }
+}

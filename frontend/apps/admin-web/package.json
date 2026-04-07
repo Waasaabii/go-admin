@@ -1,0 +1,26 @@
+{
+  "name": "@suiyuan/admin-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@suiyuan/api": "workspace:*",
+    "@suiyuan/auth": "workspace:*",
+    "@suiyuan/core": "workspace:*",
+    "@suiyuan/design-tokens": "workspace:*",
+    "@suiyuan/types": "workspace:*",
+    "@suiyuan/ui-admin": "workspace:*",
+    "@tanstack/react-query": "^5.90.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.65.0",
+    "react-router-dom": "^7.9.4",
+    "zod": "^4.1.12"
+  }
+}

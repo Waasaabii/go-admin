@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,7 @@ import (
 	"go-admin/app/admin/models"
 	"go-admin/app/admin/router"
 	"go-admin/app/jobs"
+	opsService "go-admin/app/ops/service"
 	"go-admin/common/database"
 	"go-admin/common/global"
 	common "go-admin/common/middleware"
@@ -80,6 +82,9 @@ func run() error {
 	if config.ApplicationConfig.Mode == pkg.ModeProd.String() {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	rootCtx, stopSignals := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopSignals()
+	opsService.GetTaskManager().SetRootContext(rootCtx)
 	initRouter()
 
 	for _, f := range AppRouters {
@@ -87,8 +92,8 @@ func run() error {
 	}
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", config.ApplicationConfig.Host, config.ApplicationConfig.Port),
-		Handler: sdk.Runtime.GetEngine(),
+		Addr:         fmt.Sprintf("%s:%d", config.ApplicationConfig.Host, config.ApplicationConfig.Port),
+		Handler:      sdk.Runtime.GetEngine(),
 		ReadTimeout:  time.Duration(config.ApplicationConfig.ReadTimeout) * time.Second,
 		WriteTimeout: time.Duration(config.ApplicationConfig.WriterTimeout) * time.Second,
 	}
@@ -137,17 +142,20 @@ func run() error {
 	fmt.Printf("-  Local:   http://localhost:%d/swagger/admin/index.html \r\n", config.ApplicationConfig.Port)
 	fmt.Printf("-  Network: %s://%s:%d/swagger/admin/index.html \r\n", "http", pkg.GetLocalHost(), config.ApplicationConfig.Port)
 	fmt.Printf("%s Enter Control + C Shutdown Server \r\n", pkg.GetCurrentTimeStr())
-	// 等待中断信号以优雅地关闭服务器（设置 5 秒的超时时间）
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	<-rootCtx.Done()
 	log.Info("Shutdown Server ... ")
 
+	taskManager := opsService.GetTaskManager()
+	taskManager.BeginShutdown()
+	taskManager.CancelAll()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server Shutdown:", err)
+	}
+	if ok := taskManager.Wait(10 * time.Second); !ok {
+		log.Warn("ops tasks did not exit within 10s")
 	}
 	log.Info("Server exiting")
 

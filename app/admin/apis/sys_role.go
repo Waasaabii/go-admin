@@ -168,6 +168,7 @@ func (e SysRole) Update(c *gin.Context) {
 	err = s.Update(&req, cb)
 	if err != nil {
 		e.Logger.Error(err)
+		e.Error(500, err, "更新失败,"+err.Error())
 		return
 	}
 

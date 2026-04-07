@@ -13,7 +13,11 @@ func DemoEvn() gin.HandlerFunc {
 			if method == "GET" ||
 				method == "OPTIONS" ||
 				c.Request.RequestURI == "/api/v1/login" ||
-				c.Request.RequestURI == "/api/v1/logout" {
+				c.Request.RequestURI == "/api/v1/logout" ||
+				c.Request.RequestURI == "/admin-api/v1/login" ||
+				c.Request.RequestURI == "/admin-api/v1/logout" ||
+				c.Request.RequestURI == "/app-api/v1/login" ||
+				c.Request.RequestURI == "/app-api/v1/logout" {
 				c.Next()
 			} else {
 				c.JSON(http.StatusOK, gin.H{

@@ -25,9 +25,12 @@ type JobCore struct {
 	InvokeTarget   string
 	Name           string
 	JobId          int
+	JobGroup       string
+	JobType        int
 	EntryId        int
 	CronExpression string
 	Args           string
+	DB             *gorm.DB
 }
 
 // HttpJob 任务类型 http
@@ -41,13 +44,21 @@ type ExecJob struct {
 
 func (e *ExecJob) Run() {
 	startTime := time.Now()
+	status := 2
+	message := "执行成功"
 	var obj = jobList[e.InvokeTarget]
 	if obj == nil {
+		status = 1
+		message = "任务执行器不存在"
 		log.Warn("[Job] ExecJob Run job nil")
+		endTime := time.Now()
+		writeJobLog(e.JobCore, status, message, startTime, endTime)
 		return
 	}
 	err := CallExec(obj.(JobExec), e.Args)
 	if err != nil {
+		status = 1
+		message = err.Error()
 		// 如果失败暂停一段时间重试
 		fmt.Println(time.Now().Format(timeFormat), " [ERROR] mission failed! ", err)
 	}
@@ -56,10 +67,12 @@ func (e *ExecJob) Run() {
 
 	// 执行时间
 	latencyTime := endTime.Sub(startTime)
-	//TODO: 待完善部分
-	//str := time.Now().Format(timeFormat) + " [INFO] JobCore " + string(e.EntryId) + "exec success , spend :" + latencyTime.String()
-	//ws.SendAll(str)
-	log.Infof("[Job] JobCore %s exec success , spend :%v", e.Name, latencyTime)
+	writeJobLog(e.JobCore, status, message, startTime, endTime)
+	if status == 2 {
+		log.Infof("[Job] JobCore %s exec success , spend :%v", e.Name, latencyTime)
+		return
+	}
+	log.Warnf("[Job] JobCore %s exec failed , spend :%v , err: %s", e.Name, latencyTime, message)
 	return
 }
 
@@ -70,6 +83,8 @@ func (h *HttpJob) Run() {
 	var count = 0
 	var err error
 	var str string
+	status := 2
+	message := "执行成功"
 	/* 循环 */
 LOOP:
 	if count < retryCount {
@@ -89,9 +104,16 @@ LOOP:
 
 	// 执行时间
 	latencyTime := endTime.Sub(startTime)
-	//TODO: 待完善部分
-
-	log.Infof("[Job] JobCore %s exec success , spend :%v", h.Name, latencyTime)
+	if err != nil {
+		status = 1
+		message = err.Error()
+	}
+	writeJobLog(h.JobCore, status, message, startTime, endTime)
+	if status == 2 {
+		log.Infof("[Job] JobCore %s exec success , spend :%v", h.Name, latencyTime)
+		return
+	}
+	log.Warnf("[Job] JobCore %s exec failed , spend :%v , err: %s", h.Name, latencyTime, message)
 	return
 }
 
@@ -130,6 +152,9 @@ func setup(key string, db *gorm.DB) {
 			j.CronExpression = jobList[i].CronExpression
 			j.JobId = jobList[i].JobId
 			j.Name = jobList[i].JobName
+			j.JobGroup = jobList[i].JobGroup
+			j.JobType = jobList[i].JobType
+			j.DB = db
 
 			sysJob.EntryId, err = AddJob(crontab, j)
 		} else if jobList[i].JobType == 2 {
@@ -138,7 +163,10 @@ func setup(key string, db *gorm.DB) {
 			j.CronExpression = jobList[i].CronExpression
 			j.JobId = jobList[i].JobId
 			j.Name = jobList[i].JobName
+			j.JobGroup = jobList[i].JobGroup
+			j.JobType = jobList[i].JobType
 			j.Args = jobList[i].Args
+			j.DB = db
 			sysJob.EntryId, err = AddJob(crontab, j)
 		}
 		err = sysJob.Update(db, jobList[i].JobId)

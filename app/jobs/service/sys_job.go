@@ -65,6 +65,9 @@ func (e *SysJob) StartJob(c *dto.GeneralGetDto) error {
 		j.CronExpression = data.CronExpression
 		j.JobId = data.JobId
 		j.Name = data.JobName
+		j.JobGroup = data.JobGroup
+		j.JobType = data.JobType
+		j.DB = e.Orm
 		data.EntryId, err = jobs.AddJob(e.Cron, j)
 		if err != nil {
 			e.Log.Errorf("jobs AddJob[HttpJob] error: %s", err)
@@ -75,7 +78,10 @@ func (e *SysJob) StartJob(c *dto.GeneralGetDto) error {
 		j.CronExpression = data.CronExpression
 		j.JobId = data.JobId
 		j.Name = data.JobName
+		j.JobGroup = data.JobGroup
+		j.JobType = data.JobType
 		j.Args = data.Args
+		j.DB = e.Orm
 		data.EntryId, err = jobs.AddJob(e.Cron, j)
 		if err != nil {
 			e.Log.Errorf("jobs AddJob[ExecJob] error: %s", err)
