@@ -1,5 +1,6 @@
 .idea
 .vscode
+.claude/settings.local.json
 */.DS_Store
 static/uploadfile
 main.exe
