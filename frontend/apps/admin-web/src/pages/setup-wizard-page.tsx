@@ -13,7 +13,6 @@ const dbSchema = z.object({
   user: z.string().min(1, "请输入用户名"),
   password: z.string(),
   dbname: z.string().min(1, "请输入数据库名"),
-  sslmode: z.string(),
 });
 
 const redisSchema = z.object({
@@ -195,7 +194,6 @@ function DatabaseStep({
       user: "postgres",
       password: "",
       dbname: "go_admin",
-      sslmode: "disable",
     },
     resolver: zodResolver(dbSchema),
   });
@@ -250,21 +248,11 @@ function DatabaseStep({
           <em>{form.formState.errors.password?.message}</em>
         </label>
       </div>
-      <div className="form-grid two-columns">
+      <div className="form-grid">
         <label className="form-field">
           <span>数据库名</span>
           <input {...form.register("dbname")} placeholder="go_admin" />
           <em>{form.formState.errors.dbname?.message}</em>
-        </label>
-        <label className="form-field">
-          <span>SSL 模式</span>
-          <select {...form.register("sslmode")}>
-            <option value="disable">disable</option>
-            <option value="require">require</option>
-            <option value="verify-ca">verify-ca</option>
-            <option value="verify-full">verify-full</option>
-          </select>
-          <em>{form.formState.errors.sslmode?.message}</em>
         </label>
       </div>
 

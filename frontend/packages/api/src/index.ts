@@ -573,7 +573,6 @@ type TestDBPayload = {
   user: string;
   password: string;
   dbname: string;
-  sslmode: string;
 };
 
 type TestRedisPayload = {
@@ -626,7 +625,6 @@ export function getFallbackSetupDefaults(): SetupDefaults {
       user: "postgres",
       password: "",
       dbname: "go_admin",
-      sslmode: "disable",
     },
     redis: {
       host: "127.0.0.1",

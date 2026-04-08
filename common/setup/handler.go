@@ -108,13 +108,6 @@ func validatePort(port int) bool {
 	return port > 0 && port <= 65535
 }
 
-func validateSSLMode(mode string) bool {
-	validModes := map[string]bool{
-		"disable": true, "require": true, "verify-ca": true, "verify-full": true,
-	}
-	return validModes[mode]
-}
-
 // ─── 请求结构体 ───
 
 type statusResponse struct {
@@ -129,7 +122,6 @@ type testDBRequest struct {
 	User     string `json:"user" binding:"required"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname" binding:"required"`
-	SSLMode  string `json:"sslmode"`
 }
 
 type testRedisRequest struct {
@@ -179,21 +171,13 @@ func testDatabase(c *gin.Context) {
 		setupError(c, http.StatusBadRequest, "数据库名称格式无效")
 		return
 	}
-	if req.SSLMode == "" {
-		req.SSLMode = "disable"
-	}
-	if !validateSSLMode(req.SSLMode) {
-		setupError(c, http.StatusBadRequest, "SSL 模式无效")
-		return
-	}
-
 	cfg := &DatabaseConfig{
 		Host:     req.Host,
 		Port:     req.Port,
 		User:     req.User,
 		Password: req.Password,
 		DBName:   req.DBName,
-		SSLMode:  req.SSLMode,
+		SSLMode:  "disable",
 	}
 
 	if err := TestPgConnection(cfg); err != nil {
@@ -275,13 +259,7 @@ func install(c *gin.Context) {
 		setupError(c, http.StatusBadRequest, "数据库名称无效")
 		return
 	}
-	if req.Database.SSLMode == "" {
-		req.Database.SSLMode = "disable"
-	}
-	if !validateSSLMode(req.Database.SSLMode) {
-		setupError(c, http.StatusBadRequest, "SSL 模式无效")
-		return
-	}
+	req.Database.SSLMode = "disable"
 
 	// Redis
 	req.Redis.Host = strings.TrimSpace(req.Redis.Host)
