@@ -1,7 +1,7 @@
-import { useEffect, useState, type HTMLAttributes, type PropsWithChildren, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type HTMLAttributes, type PropsWithChildren, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { useTheme, type ThemeMode } from "@suiyuan/design-tokens";
-import { ChevronDown, LogOut, MoonStar, PanelLeftClose, PanelLeftOpen, Sun, SunMoon, UserRound } from "lucide-react";
+import { ChevronDown, LogOut, MoonStar, PanelLeftClose, PanelLeftOpen, Search, Sun, SunMoon, UserRound } from "lucide-react";
 
 import type { AppMenuNode } from "@suiyuan/types";
 
@@ -29,6 +29,7 @@ import {
   EmptyLogState,
   EmptyState,
   FormActions,
+  Input,
   ReadonlyCodeBlock,
   Table,
   TableBody,
@@ -69,8 +70,57 @@ function readStoredArray(key: string) {
   }
 }
 
+export function AppFrameShell({
+  backgroundClassName,
+  children,
+  contentClassName,
+  contentInnerClassName,
+  desktopSidebar,
+  desktopSidebarClassName = "lg:flex lg:w-80",
+  header,
+  mobileBar,
+  mobileDrawerClassName,
+  mobileSidebar,
+  rootClassName,
+}: PropsWithChildren<{
+  backgroundClassName?: string;
+  contentClassName?: string;
+  contentInnerClassName?: string;
+  desktopSidebar: ReactNode;
+  desktopSidebarClassName?: string;
+  header?: ReactNode;
+  mobileBar?: (controls: { closeSidebar: () => void; openSidebar: () => void }) => ReactNode;
+  mobileDrawerClassName?: string;
+  mobileSidebar?: ReactNode | ((controls: { closeSidebar: () => void }) => ReactNode);
+  rootClassName?: string;
+}>) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const closeSidebar = () => setMobileOpen(false);
+  const resolvedMobileSidebar =
+    typeof mobileSidebar === "function" ? mobileSidebar({ closeSidebar }) : (mobileSidebar ?? desktopSidebar);
+
+  return (
+    <div className={cn("min-h-[100dvh] bg-background text-foreground", backgroundClassName)}>
+      <div className={cn("flex min-h-[100dvh]", rootClassName)}>
+        <div className={cn("hidden shrink-0", desktopSidebarClassName)}>{desktopSidebar}</div>
+        <Drawer className={mobileDrawerClassName} onOpenChange={setMobileOpen} open={mobileOpen}>
+          {resolvedMobileSidebar}
+        </Drawer>
+        <div className="flex min-w-0 flex-1 flex-col">
+          {mobileBar ? mobileBar({ closeSidebar, openSidebar: () => setMobileOpen(true) }) : null}
+          {header}
+          <main className={cn("min-w-0 flex-1", contentClassName)}>
+            <div className={cn("mx-auto w-full", contentInnerClassName)}>{children}</div>
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const nextTheme: ThemeMode = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
 
   function renderIcon(value: ThemeMode) {
     if (value === "light") {
@@ -83,18 +133,181 @@ export function ThemeToggle() {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="icon" type="button" variant="outline">
-          {renderIcon(theme)}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>浅色主题</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>深色主题</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>跟随系统</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button
+      aria-label={`切换主题，当前为${theme === "light" ? "浅色" : theme === "dark" ? "深色" : "跟随系统"}，点击后切换到${
+        nextTheme === "light" ? "浅色" : nextTheme === "dark" ? "深色" : "跟随系统"
+      }`}
+      onClick={() => setTheme(nextTheme)}
+      size="icon"
+      title={`当前主题：${theme === "light" ? "浅色" : theme === "dark" ? "深色" : "跟随系统"}`}
+      type="button"
+      variant="outline"
+    >
+      {renderIcon(theme)}
+    </Button>
+  );
+}
+
+export type GlobalSearchItem = {
+  description?: string;
+  href?: string;
+  icon?: ReactNode;
+  id: string;
+  keywords?: string[];
+  section?: string;
+  shortcut?: string;
+  title: string;
+};
+
+export function GlobalSearch({
+  className,
+  defaultOpen = false,
+  description = "用于快速定位页面、组件和后台入口。",
+  emptyLabel = "没有匹配结果",
+  items,
+  onOpenChange,
+  onSelect,
+  placeholder = "搜索组件、页面或命令",
+  title = "全局搜索",
+  triggerLabel = "全局搜索",
+}: {
+  className?: string;
+  defaultOpen?: boolean;
+  description?: string;
+  emptyLabel?: string;
+  items: GlobalSearchItem[];
+  onOpenChange?: (open: boolean) => void;
+  onSelect?: (item: GlobalSearchItem) => void;
+  placeholder?: string;
+  title?: string;
+  triggerLabel?: string;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const editable = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+
+      if (editable) {
+        return;
+      }
+
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const filteredItems = useMemo(() => {
+    const keyword = query.trim().toLowerCase();
+    if (!keyword) {
+      return items;
+    }
+
+    return items.filter((item) =>
+      [item.title, item.description ?? "", item.section ?? "", ...(item.keywords ?? [])].some((value) => value.toLowerCase().includes(keyword)),
+    );
+  }, [items, query]);
+
+  const groupedItems = useMemo(() => {
+    return filteredItems.reduce<Record<string, GlobalSearchItem[]>>((groups, item) => {
+      const key = item.section ?? "未分组";
+      groups[key] = groups[key] ?? [];
+      groups[key].push(item);
+      return groups;
+    }, {});
+  }, [filteredItems]);
+
+  function updateOpen(nextOpen: boolean) {
+    setOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+    if (!nextOpen) {
+      setQuery("");
+    }
+  }
+
+  function handleSelect(item: GlobalSearchItem) {
+    onSelect?.(item);
+    updateOpen(false);
+    if (item.href && typeof window !== "undefined") {
+      window.location.href = item.href;
+    }
+  }
+
+  return (
+    <>
+      <Button className={className} onClick={() => updateOpen(true)} type="button" variant="outline">
+        <Search className="h-4 w-4" />
+        <span>{triggerLabel}</span>
+        <span className="rounded-full border border-border/70 bg-secondary/40 px-2 py-0.5 text-[11px] text-muted-foreground">⌘K</span>
+      </Button>
+      <Dialog onOpenChange={updateOpen} open={open}>
+        <DialogContent aria-describedby="global-search-description" className="w-[min(94vw,42rem)] p-0">
+          <DialogTitle className="sr-only">{title}</DialogTitle>
+          <DialogDescription className="sr-only" id="global-search-description">
+            {description}
+          </DialogDescription>
+          <div className="grid gap-4 p-5">
+            <div className="grid gap-3 border-b border-border/70 pb-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">{title}</div>
+              <Input
+                autoFocus
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={placeholder}
+                prefix={<Search className="h-4 w-4" />}
+                value={query}
+              />
+            </div>
+            <div className="max-h-[26rem] overflow-y-auto">
+              {filteredItems.length ? (
+                <div className="grid gap-4">
+                  {Object.entries(groupedItems).map(([section, groupItems]) => (
+                    <div className="grid gap-2" key={section}>
+                      <div className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{section}</div>
+                      <div className="grid gap-2">
+                        {groupItems.map((item) => (
+                          <button
+                            className="grid gap-1 rounded-2xl border border-border/70 bg-card px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
+                            key={item.id}
+                            onClick={() => handleSelect(item)}
+                            type="button"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex min-w-0 items-center gap-3">
+                                {item.icon ? <span className="inline-flex shrink-0 text-primary">{item.icon}</span> : null}
+                                <div className="truncate text-sm font-semibold text-foreground">{item.title}</div>
+                              </div>
+                              {item.shortcut ? <span className="text-[11px] text-muted-foreground">{item.shortcut}</span> : null}
+                            </div>
+                            {item.description ? <div className="text-sm leading-6 text-muted-foreground">{item.description}</div> : null}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  description="换个关键词，或者直接从左侧分类导航进入。"
+                  scene="search"
+                  title={emptyLabel}
+                />
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -555,7 +768,6 @@ export function AdminAppShell({
   userRole: string;
 }>) {
   const [collapsed, setCollapsed] = useState(() => readStoredBoolean(SIDEBAR_KEY, false));
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     window.localStorage.setItem(SIDEBAR_KEY, String(collapsed));
@@ -568,47 +780,51 @@ export function AdminAppShell({
   const userCard = <IdentityCard avatar={avatar} name={userName} roleName={userRole} tenantCode={tenantCode} />;
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground">
-      <div className="flex min-h-[100dvh]">
+    <AppFrameShell
+      contentClassName="px-4 py-5 md:px-8 md:py-6"
+      contentInnerClassName="grid max-w-[1440px] gap-6"
+      desktopSidebar={
         <AdminSidebar
           collapsed={collapsed}
           currentPath={currentPath}
           menuTree={menuTree}
           onLogout={onLogout}
-          onNavigate={() => setMobileOpen(false)}
+          onNavigate={() => undefined}
           setCollapsed={setCollapsed}
           userCard={userCard}
         />
-        <Drawer onOpenChange={setMobileOpen} open={mobileOpen}>
-          <div className="flex h-full flex-col gap-4">
-            <BrandBlock />
-            {userCard}
-            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-              <TreeNav currentPath={currentPath} menuTree={menuTree} onNavigate={() => setMobileOpen(false)} />
-            </div>
-          </div>
-        </Drawer>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3 md:hidden">
-            <Button onClick={() => setMobileOpen(true)} size="icon" type="button" variant="outline">
-              <PanelLeftOpen className="h-4 w-4" />
-            </Button>
-            <p className="font-semibold text-foreground">{pageTitle}</p>
-            <ThemeToggle />
-          </div>
-          <AdminTopbar
-            breadcrumbs={breadcrumbs}
-            onLogout={onLogout}
-            pageTitle={pageTitle}
-            tenantCode={tenantCode}
-            userLabel={userName}
-          />
-          <main className="min-w-0 flex-1 px-4 py-5 md:px-8 md:py-6">
-            <div className="mx-auto grid max-w-[1440px] gap-6">{children}</div>
-          </main>
+      }
+      desktopSidebarClassName="md:flex"
+      header={
+        <AdminTopbar
+          breadcrumbs={breadcrumbs}
+          onLogout={onLogout}
+          pageTitle={pageTitle}
+          tenantCode={tenantCode}
+          userLabel={userName}
+        />
+      }
+      mobileBar={({ openSidebar }) => (
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 md:hidden">
+          <Button onClick={openSidebar} size="icon" type="button" variant="outline">
+            <PanelLeftOpen className="h-4 w-4" />
+          </Button>
+          <p className="font-semibold text-foreground">{pageTitle}</p>
+          <ThemeToggle />
         </div>
-      </div>
-    </div>
+      )}
+      mobileSidebar={({ closeSidebar }) => (
+        <div className="flex h-full flex-col gap-4">
+          <BrandBlock />
+          {userCard}
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+            <TreeNav currentPath={currentPath} menuTree={menuTree} onNavigate={closeSidebar} />
+          </div>
+        </div>
+      )}
+    >
+      {children}
+    </AppFrameShell>
   );
 }
 
@@ -1054,15 +1270,46 @@ export function WizardLayout({
 export function DocsShell({
   children,
   className,
+  contentClassName,
+  contentInnerClassName,
+  header,
+  mobileBar,
+  mobileDrawerClassName,
+  mobileSidebar,
+  rootClassName,
   sidebar,
-}: PropsWithChildren<{ className?: string; sidebar: ReactNode }>) {
+  sidebarClassName,
+}: PropsWithChildren<{
+  className?: string;
+  contentClassName?: string;
+  contentInnerClassName?: string;
+  header?: ReactNode;
+  mobileBar?: (controls: { closeSidebar: () => void; openSidebar: () => void }) => ReactNode;
+  mobileDrawerClassName?: string;
+  mobileSidebar?: ReactNode | ((controls: { closeSidebar: () => void }) => ReactNode);
+  rootClassName?: string;
+  sidebar: ReactNode;
+  sidebarClassName?: string;
+}>) {
   return (
-    <div className={cn("min-h-[100dvh] px-4 py-4 md:px-6 md:py-6", className)}>
-      <div className="mx-auto grid max-w-[1680px] gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="xl:sticky xl:top-6 xl:h-[calc(100dvh-3rem)]">{sidebar}</aside>
-        <main className="grid gap-8">{children}</main>
-      </div>
-    </div>
+    <AppFrameShell
+      backgroundClassName={className}
+      contentClassName={cn("px-4 py-5 md:px-6 md:py-6", contentClassName)}
+      contentInnerClassName={cn("grid max-w-[1680px] gap-8", contentInnerClassName)}
+      desktopSidebar={<div className="h-full">{sidebar}</div>}
+      desktopSidebarClassName={cn("xl:flex xl:w-[20rem] xl:shrink-0", sidebarClassName)}
+      header={header}
+      mobileBar={mobileBar}
+      mobileDrawerClassName={mobileDrawerClassName}
+      mobileSidebar={
+        typeof mobileSidebar === "function"
+          ? ({ closeSidebar }) => <div className="h-full">{mobileSidebar({ closeSidebar })}</div>
+          : <div className="h-full">{mobileSidebar ?? sidebar}</div>
+      }
+      rootClassName={rootClassName}
+    >
+      {children}
+    </AppFrameShell>
   );
 }
 
@@ -1105,6 +1352,91 @@ export function DocsSidebar({
           ))}
         </nav>
         {footer ? <div className="grid gap-3 rounded-surface border border-border/70 bg-secondary/30 p-4">{footer}</div> : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+export type AnchorItem = {
+  description?: ReactNode;
+  href: string;
+  title: ReactNode;
+};
+
+export function Anchor({
+  activeHref,
+  className,
+  items,
+  offset = 96,
+  onChange,
+  title = "页面导航",
+}: {
+  activeHref?: string;
+  className?: string;
+  items: AnchorItem[];
+  offset?: number;
+  onChange?: (href: string) => void;
+  title?: ReactNode;
+}) {
+  const [internalActiveHref, setInternalActiveHref] = useState(activeHref ?? items[0]?.href ?? "");
+  const resolvedActiveHref = activeHref ?? internalActiveHref;
+
+  useEffect(() => {
+    if (activeHref !== undefined) {
+      setInternalActiveHref(activeHref);
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncHash = () => setInternalActiveHref(window.location.hash || items[0]?.href || "");
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, [activeHref, items]);
+
+  function handleNavigate(href: string) {
+    if (typeof window !== "undefined") {
+      const target = href.startsWith("#") ? document.getElementById(href.slice(1)) : document.querySelector<HTMLElement>(href);
+      if (target) {
+        const top = target.getBoundingClientRect().top + window.scrollY - offset;
+        window.history.replaceState(null, "", href);
+        window.scrollTo({ behavior: "smooth", top });
+      }
+    }
+
+    if (activeHref === undefined) {
+      setInternalActiveHref(href);
+    }
+    onChange?.(href);
+  }
+
+  return (
+    <Card className={cn("sticky top-24", className)}>
+      <CardHeader>
+        <CardTitle className="text-sm">{title}</CardTitle>
+        <CardDescription>用于文档页、长详情页和设置页的同页定位导航。</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-2">
+        {items.map((item) => (
+          <a
+            className={cn(
+              "grid gap-1 rounded-xl border border-transparent px-3 py-2 transition-colors",
+              resolvedActiveHref === item.href ? "border-primary/20 bg-primary/8 text-foreground" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+            )}
+            href={item.href}
+            key={item.href}
+            onClick={(event) => {
+              event.preventDefault();
+              handleNavigate(item.href);
+            }}
+          >
+            <span className="text-sm font-medium">{item.title}</span>
+            {item.description ? <span className="text-xs leading-5 text-muted-foreground">{item.description}</span> : null}
+          </a>
+        ))}
       </CardContent>
     </Card>
   );

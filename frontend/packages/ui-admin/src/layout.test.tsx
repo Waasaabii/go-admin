@@ -28,18 +28,6 @@ function findButton(label: string) {
   return Array.from(document.querySelectorAll("button")).find((item) => item.textContent?.includes(label));
 }
 
-function findMenuItem(label: string) {
-  return Array.from(document.querySelectorAll("[role='menuitem']")).find((item) => item.textContent?.includes(label));
-}
-
-function dispatchPointerDown(target: Element | null | undefined) {
-  if (!target) {
-    return;
-  }
-  const EventCtor = globalThis.PointerEvent ?? MouseEvent;
-  target.dispatchEvent(new EventCtor("pointerdown", { bubbles: true, button: 0, ctrlKey: false }));
-}
-
 beforeEach(() => {
   // React 19 test environment hint
   (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -187,7 +175,7 @@ describe("ui-admin components", () => {
     expect(document.body.textContent).toContain("line-2");
   });
 
-  it("ThemeToggle 选择主题时调用 setTheme", async () => {
+  it("ThemeToggle 点击按钮时轮换主题", async () => {
     await act(async () => {
       root.render(<ThemeToggle />);
     });
@@ -196,14 +184,7 @@ describe("ui-admin components", () => {
     expect(trigger).toBeTruthy();
 
     await act(async () => {
-      dispatchPointerDown(trigger);
-    });
-
-    const menuItem = findMenuItem("深色主题");
-    expect(menuItem).toBeTruthy();
-
-    await act(async () => {
-      menuItem?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      trigger?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
     expect(setTheme).toHaveBeenCalledWith("dark");
