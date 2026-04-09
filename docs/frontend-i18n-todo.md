@@ -70,7 +70,7 @@
 ## 恢复工作前建议验证
 
 ```bash
-pnpm --filter @suiyuan/i18n typecheck
-pnpm --filter @suiyuan/ui-showcase typecheck
-pnpm --filter @suiyuan/admin-web typecheck
+pnpm --filter @go-admin/i18n typecheck
+pnpm --filter @go-admin/ui-showcase typecheck
+pnpm --filter @go-admin/admin-web typecheck
 ```

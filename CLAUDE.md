@@ -11,21 +11,20 @@ go-admin 是一个基于 **Go (Gin + GORM + Casbin)** 后端和 **React 19 + Typ
 ### 后端 (Go 1.24)
 
 ```bash
-# 构建
-go build -o ./devctl ./tools/devctl            # 构建 devctl 工具
-./devctl build backend                         # CGO_ENABLED=0，输出 ./go-admin
-go build -tags sqlite3 -o go-admin .            # 需要 SQLite 时使用
+# 构建与仓库控制
+pnpm repo:build:backend                        # 通过 repo CLI 构建后端，输出 ./go-admin
+go build -o go-admin .                          # 本地编译，MySQL / PostgreSQL / SQLite 可直接使用
 
 # 运行
 ./go-admin server -c config/settings.yml        # 启动 API 服务（默认端口 8000）
 ./go-admin server -c config/settings.yml -a true # 启动并自动同步 sys_api 记录
-./devctl migrate                                # 数据库迁移
+pnpm repo:migrate                               # 数据库迁移
 
 # 测试与工具
-./devctl test backend                           # 运行全部测试
-./devctl deps backend                           # 提交前同步依赖
+pnpm repo:verify:backend                        # 运行后端校验
+pnpm repo:deps:backend                          # 提交前同步依赖
 go generate                                     # 重新生成 Swagger 文档
-./devctl openapi                                # 生成 Swagger 并同步前端 client/types
+pnpm repo:openapi                               # 生成 Swagger 并同步前端 client/types
 gofmt -w .                                      # 提交前格式化
 ```
 
@@ -42,16 +41,16 @@ pnpm typecheck                  # 全工作区 TypeScript 类型检查
 
 运行单个包的测试：
 ```bash
-pnpm --filter @suiyuan/core test
+pnpm --filter @go-admin/core test
 ```
 
 ### Docker
 
 ```bash
-./devctl build docker           # docker build -t go-admin:latest
-./devctl docker-up              # docker compose up -d
-./devctl docker-down            # docker compose down
-./devctl deploy                 # 构建镜像并启动应用栈
+pnpm repo:build:docker          # docker build -t go-admin:latest
+pnpm repo:docker:up             # docker compose up -d
+pnpm repo:docker:down           # docker compose down
+pnpm run repo -- deploy         # 构建镜像并启动应用栈
 ```
 
 ## 架构
@@ -121,6 +120,9 @@ frontend/
 - 包从 `src/index.ts`（或 `.tsx`）导出，本地开发无需构建（Vite 直接解析 workspace 源码）。
 - 表单：react-hook-form + zod 校验。
 - 数据获取：TanStack React Query。
+- 局部滚动区域必须使用公共滚动组件，不允许在组件内部直接用 `overflow-y-auto`、`overflow-x-auto`、`overflow-auto` 充当默认实现。
+- 页面主内容区和浏览器窗口滚动保持原生行为；只有“组件内部独立滚动条”才纳入统一滚动组件规则。
+- 开发新页面时优先通过 `ui-admin` / `ui-mobile` 公共组件拼装，避免在页面层重复定义滚动容器、弹层正文和列表滚动区。
 
 ## 配置说明
 

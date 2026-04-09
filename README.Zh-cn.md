@@ -91,13 +91,14 @@ cd go-admin
 
 ### 推荐开发流
 
+由于 `pnpm` 自身保留了 `repo` 子命令，带参数的仓库 CLI 请使用 `pnpm repo:*` 脚本，或使用 `pnpm run repo -- <command>` 形式调用。
+
 ```bash
-go build -o ./devctl ./tools/devctl
-./devctl doctor
-./devctl deps all
-./devctl service start postgres redis
-./devctl service start backend
-./devctl service start admin
+pnpm repo:doctor
+pnpm repo:deps:all
+pnpm repo:service:infra
+pnpm repo:service:backend
+pnpm repo:service:admin
 ```
 
 这套流程默认使用以下端口：
@@ -111,7 +112,7 @@ go build -o ./devctl ./tools/devctl
 如果只想看当前实际配置，可以执行：
 
 ```bash
-./devctl env
+pnpm repo:env
 ```
 
 ### 容器前缀规则
@@ -122,32 +123,26 @@ go build -o ./devctl ./tools/devctl
 - 如需覆盖，可在命令前传入 `--project-prefix`
 
 ```bash
-./devctl --project-prefix my-local-env service start postgres redis
-./devctl --project-prefix my-local-env reinit --yes
+pnpm run repo -- --project-prefix my-local-env service start postgres redis
+pnpm run repo -- --project-prefix my-local-env reinit --yes
 ```
 
 ### 四个核心命令
 
 ```bash
-./devctl service start postgres redis
-./devctl service start backend
-./devctl service start admin
-./devctl reinit --yes
+pnpm repo:service:infra
+pnpm repo:service:backend
+pnpm repo:service:admin
+pnpm repo:reinit
 ```
 
-- `devctl service start postgres redis`：启动 PostgreSQL 和 Redis 开发容器
-- `devctl service start backend`：启动后端，默认读取 `config/settings.pg.yml`
-- `devctl service start admin`：启动管理端开发服务器
-- `devctl reinit --yes`：按当前前缀清理应用栈、开发容器、工作区数据目录、安装锁和本地产物
-- `devctl tui`：打开交互式控制台，支持空格勾选、多选、自动刷新与最近操作输出
-- `devctl tui` 运行时会把日志和状态文件写到项目内 `temp/devctl/`，便于直接排查：
-  - `temp/devctl/logs/<service>.log`
-  - `temp/devctl/state.json`
-- `devctl tui` 常用键位：
-  - `Space` 勾选服务
-  - `Enter` 执行右侧动作栏当前高亮动作
-  - `Tab` 在服务面板与动作面板间切换
-  - `s/x/r/l/d/u/q` 直接触发启动、停止、重启、日志、自检、刷新、退出
+- `repo service start postgres redis`：启动 PostgreSQL 和 Redis 开发容器
+- `repo service start backend`：启动后端，默认读取 `config/settings.pg.yml`
+- `repo service start admin`：启动管理端开发服务器
+- `repo reinit --yes`：按当前前缀清理应用栈、开发容器、工作区数据目录、安装锁和本地产物
+- 所有受管服务日志和状态文件都会写到项目内 `temp/repo-cli/`：
+  - `temp/repo-cli/logs/<service>.log`
+  - `temp/repo-cli/state.json`
 
 - Windows / macOS：`backend`、`admin`、`mobile` 默认在独立终端窗口启动
 - Linux：本地服务保持在当前终端体系内运行，不依赖额外图形窗口
@@ -155,16 +150,16 @@ go build -o ./devctl ./tools/devctl
 
 ### Setup Wizard 说明
 
-- 首次执行 `devctl service start backend` 时，如果 `config/.installed` 不存在，后端会进入 Setup Wizard 模式
+- 首次执行 `repo service start backend` 时，如果 `config/.installed` 不存在，后端会进入 Setup Wizard 模式
 - Setup 模式下只暴露 `/api/v1/setup/*` 接口，不会托管前端静态资源
-- 启动 `devctl service start admin` 后，前端会自动检测安装状态并引导初始化数据库、Redis 和管理员账号
+- 启动 `repo service start admin` 后，前端会自动检测安装状态并引导初始化数据库、Redis 和管理员账号
 - 安装完成后会写入 `config/settings.yml` 与 `config/.installed`
 - 容器部署时请持久化 `config/` 目录，否则重启后会重新进入安装流程
 
 ### OpenAPI 到前端类型
 
 ```bash
-./devctl openapi
+pnpm repo:openapi
 ```
 
 该命令会完成以下工作：
@@ -177,13 +172,15 @@ go build -o ./devctl ./tools/devctl
 ### 其他常用命令
 
 ```bash
-./devctl doctor
-./devctl setup-status
-./devctl build backend
-./devctl migrate
-./devctl service start mobile
-./devctl service stop all
-./devctl test backend
+pnpm repo:doctor
+pnpm repo:deps:all
+pnpm repo:setup-status
+pnpm repo:build:backend
+pnpm repo:migrate
+pnpm repo:service:mobile
+pnpm repo:service:stop:all
+pnpm repo:verify:backend
+pnpm repo:rename -- go-admin --dry-run
 ```
 
 ## 📨 互动

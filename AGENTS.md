@@ -5,17 +5,23 @@
 
 ## Build, Test, and Development Commands
 - `go mod tidy`：提交前同步并清理模块依赖。
-- `go build -o ./devctl ./tools/devctl`：构建开发与运维工具入口。
-- `./devctl build backend`：构建主程序，输出 `./go-admin`。
-- `go build -tags sqlite3 -o go-admin .`：需要 SQLite 时使用该命令本地编译。
-- `./devctl migrate`：初始化或迁移数据库资源。
+- `pnpm run repo -- <command>`：执行仓库级 `repo` CLI（源码直跑，无需单独构建）。
+- `pnpm repo:build:backend`：构建主程序，输出 `./go-admin`。
+- `go build -o go-admin .`：本地编译主程序，MySQL / PostgreSQL / SQLite 配置均可直接使用。
+- `pnpm repo:migrate`：初始化或迁移数据库资源。
 - `./go-admin server -c config/settings.yml`：本地启动 API 服务。
 - `./go-admin server -c config/settings.yml -a true`：启动时自动补齐缺失的 `sys_api` 记录。
-- `./devctl test backend`：运行全部 Go 测试。
+- `pnpm repo:verify:backend`：运行后端测试与校验。
 - `go generate`：重新生成 Swagger 等派生文件。
 
 ## Coding Style & Naming Conventions
 评审前统一执行 `gofmt`。包名保持小写，导出标识符使用 `PascalCase`，内部函数与变量使用 `camelCase`，文件名遵循 `sys_user.go` 这类下划线风格。按现有边界放置代码：接口处理放在 `app/*/apis`，路由放在 `app/*/router`，公共逻辑放在 `common/`。配置文件命名沿用现有模式，例如 `settings.yml`、`settings.sqlite.yml`。
+
+## Frontend Scroll Rules
+- 前端局部滚动区域必须复用统一滚动组件，禁止直接以 `overflow-y-auto`、`overflow-x-auto`、`overflow-auto` 作为组件内部滚动实现。
+- 页面主内容区、浏览器窗口滚动、锚点依赖的整页滚动不在此规则内，保持原生滚动行为。
+- 页面开发优先通过 `@go-admin/ui-admin` 或 `@go-admin/ui-mobile` 公共组件拼装，不在页面层临时发明新的局部滚动容器。
+- 若极少数场景必须保留裸写滚动，必须在代码中显式标注原因，并同步更新仓库滚动规则白名单。
 
 ## Testing Guidelines
 测试基于 Go 内置 `testing` 包。优先将测试写在目标包旁边的 `*_test.go` 文件中，现有示例包括 `common/file_store/*_test.go` 和 `test/gen_test.go`。新增存储、代码生成或工具类逻辑时，应补充针对性的单元测试。当前 CI 未强制覆盖率门槛，因此提交前至少本地执行一次 `go test ./...`，并在 PR 中说明未覆盖的路径或限制。
