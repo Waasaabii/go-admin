@@ -11,6 +11,11 @@
 
 首次部署无需手动编辑配置文件 —— 通过内置的 **Setup Wizard（安装向导）** 即可在浏览器中完成数据库、Redis 连接配置和管理员账号创建。
 
+## 在线演示
+
+- UI Showcase：<https://shusfun.github.io/go-admin/>
+- UI Showcase 深链接示例：<https://shusfun.github.io/go-admin/#/data/virtual-list>
+
 ## 功能特性
 
 - 遵循 RESTful API 设计规范
