@@ -3,9 +3,9 @@
 
 <img align="right" width="320" src="https://doc-image.zhangwj.com/img/go-admin.svg">
 
-[![Build Status](https://github.com/wenjianzhang/go-admin/workflows/build/badge.svg)](https://github.com/go-admin-team/go-admin)
-[![Release](https://img.shields.io/github/release/go-admin-team/go-admin.svg?style=flat-square)](https://github.com/go-admin-team/go-admin/releases)
-[![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/go-admin-team/go-admin)
+[![Build Status](https://github.com/shusfun/go-admin/workflows/build/badge.svg)](https://github.com/shusfun/go-admin)
+[![Release](https://img.shields.io/github/release/shusfun/go-admin.svg?style=flat-square)](https://github.com/shusfun/go-admin/releases)
+[![License](https://img.shields.io/github/license/shusfun/go-admin.svg?style=flat-square)](https://github.com/shusfun/go-admin)
 
 基于 **Go (Gin + GORM + Casbin)** 后端与 **React 19 + TypeScript** 前端的全栈 RBAC 权限管理系统。
 
@@ -82,7 +82,7 @@ go-admin/
 ### 1. 获取代码
 
 ```bash
-git clone https://github.com/go-admin-team/go-admin.git
+git clone https://github.com/shusfun/go-admin.git
 cd go-admin
 ```
 
@@ -315,6 +315,6 @@ GOOS=windows GOARCH=amd64 go build -o go-admin.exe .
 
 ## 许可证
 
-[MIT](https://github.com/go-admin-team/go-admin/blob/master/LICENSE.md)
+[MIT](https://github.com/shusfun/go-admin/blob/master/LICENSE.md)
 
 Copyright (c) 2022 wenjianzhang

@@ -77,6 +77,26 @@ pnpm repo:service:admin
 
 生产环境推荐按域名或子域部署，由前端自动识别租户编码。
 
+## UI Showcase 静态部署
+
+- `apps/ui-showcase` 的生产构建默认使用 `HashRouter`，适合 GitHub Pages 这类无服务端路由回退的静态托管。
+- 构建时会优先读取 `VITE_SHOWCASE_BASE`，未显式指定时若检测到 `GITHUB_REPOSITORY`，会自动推导仓库 Pages 的子路径 base。
+- 若你把展示站部署到 GitHub 用户页别名根路径，可设置 `VITE_SHOWCASE_BASE=/`。
+- 若部署目标支持 SPA rewrite，且你希望保留无 hash URL，可额外设置 `VITE_SHOWCASE_ROUTER_MODE=browser`。
+
+示例：
+
+```bash
+# 仓库 Pages，例如 https://shusfun.github.io/go-admin/
+pnpm --filter @go-admin/ui-showcase build
+
+# 用户页别名根路径，例如 https://shusfun.github.io/
+VITE_SHOWCASE_BASE=/ pnpm --filter @go-admin/ui-showcase build
+
+# 支持 rewrite 的站点，保留 BrowserRouter
+VITE_SHOWCASE_BASE=/docs/ VITE_SHOWCASE_ROUTER_MODE=browser pnpm --filter @go-admin/ui-showcase build
+```
+
 ## Setup Wizard
 
 - Setup Wizard 依赖独立部署的 `apps/admin-web`，后端在 setup 模式下只暴露 `/api/v1/setup/*` API。

@@ -3,11 +3,11 @@
   <img align="right" width="320" src="https://doc-image.zhangwj.com/img/go-admin.svg">
 
 
-[![Build Status](https://github.com/wenjianzhang/go-admin/workflows/build/badge.svg)](https://github.com/go-admin-team/go-admin)
-[![Release](https://img.shields.io/github/release/go-admin-team/go-admin.svg?style=flat-square)](https://github.com/go-admin-team/go-admin/releases)
-[![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/go-admin-team/go-admin)
+[![Build Status](https://github.com/shusfun/go-admin/workflows/build/badge.svg)](https://github.com/shusfun/go-admin)
+[![Release](https://img.shields.io/github/release/shusfun/go-admin.svg?style=flat-square)](https://github.com/shusfun/go-admin/releases)
+[![License](https://img.shields.io/github/license/shusfun/go-admin.svg?style=flat-square)](https://github.com/shusfun/go-admin)
 
-[English](https://github.com/go-admin-team/go-admin/blob/master/README.md) | 简体中文
+[English](https://github.com/shusfun/go-admin/blob/master/README.md) | 简体中文
 
 基于Gin + Vue + Element UI OR Arco Design OR Ant Design的前后端分离权限管理系统,系统初始化极度简单，只需要配置文件中，修改数据库连接，系统支持多指令操作，迁移指令可以让初始化数据库信息变得更简单，服务指令可以很简单的启动api服务
 
@@ -85,7 +85,7 @@ antd体验：[https://antd.go-admin.pro](https://antd.go-admin.pro/)
 ### 获取代码
 
 ```bash
-git clone https://github.com/go-admin-team/go-admin.git
+git clone https://github.com/shusfun/go-admin.git
 cd go-admin
 ```
 
@@ -283,6 +283,6 @@ pnpm repo:rename -- go-admin --dry-run
 
 ## 🔑 License
 
-[MIT](https://github.com/go-admin-team/go-admin/blob/master/LICENSE.md)
+[MIT](https://github.com/shusfun/go-admin/blob/master/LICENSE.md)
 
 Copyright (c) 2024 wenjianzhang
