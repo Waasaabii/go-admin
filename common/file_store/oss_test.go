@@ -5,10 +5,9 @@ import (
 )
 
 func TestOSSUpload(t *testing.T) {
-	// 打括号内填写自己的测试信息即可
-	e := OXS{}
-	var oxs = e.Setup(AliYunOSS)
-	err := oxs.UpLoad("test.png", "./test.png")
+	cfg := loadProviderConfig(t, "OSS")
+	oxs := cfg.oxs.Setup(AliYunOSS)
+	err := oxs.UpLoad("testdata/upload.txt", testUploadFixturePath())
 	if err != nil {
 		t.Error(err)
 	}

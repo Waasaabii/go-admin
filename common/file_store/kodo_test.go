@@ -5,9 +5,9 @@ import (
 )
 
 func TestKODOUpload(t *testing.T) {
-	e := OXS{"", "", "", ""}
-	var oxs = e.Setup(QiNiuKodo, map[string]interface{}{"Zone": "华东"})
-	err := oxs.UpLoad("test.png", "./test.png")
+	cfg := loadProviderConfig(t, "KODO")
+	oxs := cfg.oxs.Setup(QiNiuKodo, cfg.options...)
+	err := oxs.UpLoad("testdata/upload.txt", testUploadFixturePath())
 	if err != nil {
 		t.Error(err)
 	}
@@ -15,9 +15,15 @@ func TestKODOUpload(t *testing.T) {
 }
 
 func TestKODOGetTempToken(t *testing.T) {
-	e := OXS{"", "", "", ""}
-	var oxs = e.Setup(QiNiuKodo, map[string]interface{}{"Zone": "华东"})
-	token, _ := oxs.GetTempToken()
+	cfg := loadProviderConfig(t, "KODO")
+	oxs := cfg.oxs.Setup(QiNiuKodo, cfg.options...)
+	token, err := oxs.GetTempToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if token == "" {
+		t.Fatal("token 不能为空")
+	}
 	t.Log(token)
 	t.Log("ok")
 }
