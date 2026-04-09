@@ -14,13 +14,339 @@
   body {
     @apply bg-background text-foreground antialiased;
     background-image:
-      radial-gradient(circle at top left, hsl(var(--primary) / 0.12), transparent 28%),
-      radial-gradient(circle at top right, hsl(var(--accent) / 0.1), transparent 24%);
+      linear-gradient(180deg, hsl(var(--background)) 0%, color-mix(in srgb, hsl(var(--background)) 90%, white) 100%);
   }
 
   ::selection {
     background: hsl(var(--primary) / 0.18);
     color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  .showcase-shell {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, hsl(var(--background)) 94%, white) 0%, hsl(var(--background)) 100%);
+  }
+
+  .showcase-mobile-bar {
+    @apply sticky top-0 z-30 flex items-center justify-between border-b border-border/70 px-4 py-3 backdrop-blur;
+    background-color: color-mix(in srgb, hsl(var(--background)) 95%, transparent);
+  }
+
+  .showcase-mobile-bar__title {
+    @apply flex flex-col items-center;
+  }
+
+  .showcase-mobile-bar__title span {
+    @apply text-sm font-semibold text-foreground;
+  }
+
+  .showcase-mobile-bar__title small {
+    @apply text-[11px] uppercase tracking-[0.24em] text-muted-foreground;
+  }
+
+  .showcase-mobile-bar__actions {
+    @apply flex items-center gap-2;
+  }
+
+  .showcase-header {
+    @apply sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-border/70 px-8 py-3 backdrop-blur;
+    background-color: color-mix(in srgb, hsl(var(--background)) 92%, transparent);
+  }
+
+  .showcase-header__brand {
+    @apply flex items-center gap-3;
+  }
+
+  .showcase-header__section {
+    @apply text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground;
+  }
+
+  .showcase-header__eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground;
+  }
+
+  .showcase-header__crumb {
+    @apply flex min-w-0 items-center gap-2;
+  }
+
+  .showcase-header__current {
+    @apply truncate text-sm font-medium text-foreground;
+  }
+
+  .showcase-header__actions {
+    @apply flex shrink-0 items-center gap-3;
+  }
+
+  .showcase-search-trigger {
+    @apply min-w-[13rem] justify-between rounded-full border-border/70 bg-background/85 px-3 text-muted-foreground shadow-none;
+  }
+
+  .showcase-search-trigger:hover {
+    @apply border-primary/35 bg-primary/5 text-foreground;
+  }
+
+  .showcase-search-trigger--compact {
+    @apply min-w-0 rounded-control px-3;
+  }
+
+  .showcase-search-trigger__label {
+    @apply truncate text-xs font-medium;
+  }
+
+  .showcase-search-trigger__shortcut {
+    @apply rounded-full border border-border/70 bg-secondary/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  .showcase-locale-toggle {
+    @apply min-w-[3.5rem] rounded-full px-3 text-xs font-semibold uppercase tracking-[0.18em];
+  }
+
+  .showcase-sidebar {
+    @apply flex h-full min-h-0 flex-col bg-card;
+  }
+
+  .showcase-sidebar__brand {
+    @apply border-b border-border/70 px-5 py-5;
+  }
+
+  .showcase-sidebar__name {
+    @apply text-lg font-semibold tracking-tight text-foreground;
+  }
+
+  .showcase-sidebar__tagline {
+    @apply mt-2 text-sm leading-6 text-muted-foreground;
+  }
+
+  .showcase-sidebar__body {
+    @apply min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-5;
+  }
+
+  .showcase-sidebar__group {
+    @apply space-y-2;
+  }
+
+  .showcase-sidebar__group-head {
+    @apply flex items-center justify-between gap-3 px-2;
+  }
+
+  .showcase-sidebar__group-title {
+    @apply text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground;
+  }
+
+  .showcase-sidebar__group-count {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .showcase-sidebar__nav {
+    @apply grid gap-1;
+  }
+
+  .showcase-sidebar__link {
+    @apply grid gap-1 rounded-xl border-l-2 border-transparent px-3 py-2.5 transition-colors;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .showcase-sidebar__link:hover {
+    @apply bg-secondary/60;
+    color: hsl(var(--foreground));
+  }
+
+  .showcase-sidebar__link.is-active {
+    @apply border-primary;
+    background-color: hsl(var(--primary) / 0.08);
+    color: hsl(var(--foreground));
+  }
+
+  .showcase-sidebar__link-label {
+    @apply text-sm font-medium;
+  }
+
+  .showcase-sidebar__link-summary {
+    @apply text-xs leading-5 text-muted-foreground;
+  }
+
+  .showcase-doc-page {
+    @apply grid gap-8;
+  }
+
+  .showcase-doc-page__header {
+    @apply grid gap-4 border-b border-border/70 pb-6;
+  }
+
+  .showcase-doc-page__eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground;
+  }
+
+  .showcase-doc-page__title {
+    @apply text-3xl font-semibold tracking-tight text-foreground md:text-4xl;
+  }
+
+  .showcase-doc-page__description {
+    @apply max-w-3xl text-sm leading-7 text-muted-foreground md:text-base md:leading-8;
+  }
+
+  .showcase-doc-page__meta {
+    @apply flex flex-wrap gap-2 text-xs text-muted-foreground;
+  }
+
+  .showcase-doc-page__meta span {
+    @apply rounded-full border border-border/70 bg-secondary/35 px-3 py-1;
+  }
+
+  .showcase-doc-outline {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .showcase-doc-outline__link {
+    @apply inline-flex items-center gap-2 rounded-control border border-border/70 bg-card px-3 py-2 text-sm text-muted-foreground transition-colors;
+  }
+
+  .showcase-doc-outline__link:hover {
+    @apply border-primary/30 bg-primary/5 text-foreground;
+  }
+
+  .showcase-doc-outline__index {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-primary;
+  }
+
+  .showcase-doc-block {
+    @apply scroll-mt-24;
+  }
+
+  .showcase-doc-section {
+    @apply grid gap-2;
+  }
+
+  .showcase-doc-section__title {
+    @apply text-2xl font-semibold tracking-tight text-foreground;
+  }
+
+  .showcase-doc-section__description {
+    @apply max-w-3xl text-sm leading-7 text-muted-foreground;
+  }
+
+  .showcase-doc-notes {
+    @apply grid gap-3 rounded-2xl border border-border/70 bg-card px-5 py-4 md:px-6 md:py-5;
+  }
+
+  .showcase-doc-notes ul {
+    @apply grid gap-2 text-sm leading-7 text-muted-foreground;
+    list-style: none;
+  }
+
+  .showcase-doc-notes li {
+    @apply relative pl-4;
+  }
+
+  .showcase-doc-notes li::before {
+    content: "";
+    @apply absolute left-0 top-[0.8rem] h-1.5 w-1.5 rounded-full bg-primary/60;
+  }
+
+  .showcase-overview-page {
+    @apply gap-10;
+  }
+
+  .showcase-overview-hero {
+    @apply grid gap-5 rounded-[1.75rem] border border-border/70 bg-card px-5 py-5 shadow-sm md:px-6 md:py-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end;
+  }
+
+  .showcase-overview-hero__copy {
+    @apply grid gap-3;
+  }
+
+  .showcase-overview-hero__copy h2 {
+    @apply text-2xl font-semibold tracking-tight text-foreground md:text-3xl;
+  }
+
+  .showcase-overview-hero__copy p {
+    @apply max-w-2xl text-sm leading-7 text-muted-foreground;
+  }
+
+  .showcase-overview-hero__actions {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .showcase-overview-category-grid {
+    @apply grid gap-4 xl:grid-cols-2;
+  }
+
+  .showcase-overview-category-card {
+    @apply h-full;
+  }
+
+  .showcase-overview-category-card__head {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .showcase-overview-category-card__count {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  .showcase-overview-category-card__body {
+    @apply grid gap-4;
+  }
+
+  .showcase-overview-category-card__links {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .showcase-overview-link-pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-foreground transition-colors;
+  }
+
+  .showcase-overview-link-pill:hover {
+    @apply border-primary/35 bg-primary/5;
+  }
+
+  .showcase-overview-link-pill small {
+    @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+  }
+
+  .showcase-overview-featured-grid {
+    @apply grid gap-4 md:grid-cols-2 xl:grid-cols-3;
+  }
+
+  .showcase-overview-featured-card {
+    @apply grid gap-3 rounded-[1.5rem] border border-border/70 bg-card px-5 py-5 text-foreground shadow-sm transition-colors;
+  }
+
+  .showcase-overview-featured-card:hover {
+    @apply border-primary/35 bg-primary/5;
+  }
+
+  .showcase-overview-featured-card__section {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground;
+  }
+
+  .showcase-overview-featured-card p {
+    @apply text-sm leading-7 text-muted-foreground;
+  }
+
+  .showcase-overview-featured-card__meta {
+    @apply inline-flex items-center gap-2 text-sm font-medium text-primary;
+  }
+
+  .showcase-overview-guides {
+    @apply grid gap-4 md:grid-cols-2;
+  }
+
+  .showcase-overview-guide {
+    @apply flex gap-3 rounded-2xl border border-border/60 bg-background/75 px-4 py-4;
+  }
+
+  .showcase-overview-guide svg {
+    @apply mt-0.5 shrink-0 text-primary;
+  }
+
+  .showcase-overview-guide strong {
+    @apply block text-sm font-semibold text-foreground;
+  }
+
+  .showcase-overview-guide p {
+    @apply mt-1 text-sm leading-7 text-muted-foreground;
   }
 }
 

@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@suiyuan/design-tokens": "workspace:*",
+    "@suiyuan/i18n": "workspace:*",
     "@suiyuan/ui-admin": "workspace:*",
+    "lucide-react": "^0.542.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.14.0"
   }
 }
