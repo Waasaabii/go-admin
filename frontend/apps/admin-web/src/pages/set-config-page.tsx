@@ -38,9 +38,9 @@ export function SetConfigPage({ api }: { api: ReturnType<typeof createApiClient>
 
   return (
     <AdminPageStack>
-      <PageHeader description="这一页对应旧后台 `set-config`，用键值卡片直接编辑当前系统设置。" kicker="Admin Module" title="参数设置" />
+      <PageHeader description="管理系统运行时参数配置。" kicker="Admin Module" title="参数设置" />
       <AdminThreeColumn>
-        <SectionCard title="配置项" description="界面设置型参数先保留简洁编辑方式，不拆复杂表单。">
+        <SectionCard title="配置项" description="直接编辑各配置项的当前值。">
           <div className="grid gap-4">
             {Object.entries(draft).map(([key, value]) => (
               <FormField key={key} label={key}>
@@ -84,7 +84,7 @@ export function SetConfigPage({ api }: { api: ReturnType<typeof createApiClient>
           </FormActions>
           {feedback ? <p className="text-sm text-primary">{feedback}</p> : null}
         </SectionCard>
-        <SectionCard title="联调状态" description="这里用于确认 set-config 接口已真正形成前后端闭环。">
+        <SectionCard title="配置状态" description="当前配置加载与保存状态。">
           <DetailGrid
             items={[
               { label: "配置项总数", value: Object.keys(draft).length },
@@ -93,10 +93,6 @@ export function SetConfigPage({ api }: { api: ReturnType<typeof createApiClient>
               { label: "保存状态", value: saveMutation.isPending ? "保存中" : "空闲" },
             ]}
           />
-          <div className="mt-4 space-y-2 text-sm leading-7 text-muted-foreground">
-            <p>这一页聚合的是运行中的系统设置，不等同于参数管理列表页。</p>
-            <p>只有存在改动时才允许提交，避免空保存掩盖真实联调结果。</p>
-          </div>
         </SectionCard>
       </AdminThreeColumn>
     </AdminPageStack>

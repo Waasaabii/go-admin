@@ -11,16 +11,32 @@
 - `packages/ui-admin`：后台组件
 - `packages/ui-mobile`：移动组件
 
+## 主题接入
+
+- `@suiyuan/design-tokens/base.css`：基础 reset 与全局基础行为，不携带品牌视觉。
+- `@suiyuan/design-tokens/default-theme.css`：仓库当前默认主题，现有应用显式引入它。
+- `@suiyuan/design-tokens/host-theme-template.css`：宿主项目主题模板，按同名 token 提供值即可接管组件库样式。
+- `@suiyuan/design-tokens/theme.css`：兼容入口，等价于 `base.css + default-theme.css`。
+
+宿主项目推荐入口顺序：
+
+```css
+@import "@suiyuan/design-tokens/base.css";
+@import "./your-host-theme.css";
+```
+
+当前仓库内的 `apps/admin-web` 已按这个模式接入，主题定义位于 `apps/admin-web/src/admin-host-theme.css`。
+
 ## 常用命令
 
 在仓库根目录执行：
 
 ```bash
-make init
-make infra-up
-make dev-backend
-make dev-admin
-make dev-mobile
+go build -o ./devctl ./tools/devctl
+./devctl setup
+./devctl service start backend
+./devctl service start admin
+./devctl service start mobile
 pnpm typecheck
 pnpm test
 pnpm build
@@ -37,15 +53,16 @@ pnpm build
 本地开发推荐先执行：
 
 ```bash
-make infra-up
-make dev-backend
-make dev-admin
+go build -o ./devctl ./tools/devctl
+./devctl service start postgres redis
+./devctl service start backend
+./devctl service start admin
 ```
 
 - Docker 项目前缀默认取仓库根 `package.json.name`，当前仓库默认值为 `go-admin`
-- `make infra-up`、`make reinit` 等命令都会读取同一个前缀
-- 如需覆盖，可在执行命令前设置 `PROJECT_PREFIX=你的前缀`
-- 如需回到全新安装状态，再执行 `make reinit`
+- `./devctl service start postgres redis`、`./devctl reinit --yes` 等命令都会读取同一个前缀
+- 如需覆盖，可使用 `./devctl --project-prefix 你的前缀 ...`
+- 如需回到全新安装状态，再执行 `./devctl reinit --yes`
 
 生产环境推荐按域名或子域部署，由前端自动识别租户编码。
 

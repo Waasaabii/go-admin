@@ -1,12 +1,28 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { readDevPorts } from "../../../scripts/dev-ports";
+import { createAutoDataAttrsBabelPlugin } from "../../build/auto-data-attrs";
 
 const { DEV_ADMIN_PORT, DEV_BACKEND_PORT } = readDevPorts();
 const backendTarget = process.env.VITE_PROXY_TARGET || `http://127.0.0.1:${DEV_BACKEND_PORT}`;
+const workspaceRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ command }) => ({
+  plugins: [
+    react({
+      babel: {
+        plugins: [
+          [
+            createAutoDataAttrsBabelPlugin({
+              includeSource: command !== "build" || process.env.VITE_INCLUDE_DATA_SOURCE === "true",
+              workspaceRoot,
+            }),
+          ],
+        ],
+      },
+    }),
+  ],
   build: {
     rollupOptions: {
       output: {
@@ -59,4 +75,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

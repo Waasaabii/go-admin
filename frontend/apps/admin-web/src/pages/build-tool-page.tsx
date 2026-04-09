@@ -8,18 +8,15 @@ function resolveToolUrl(path: string) {
 export function BuildToolPage() {
   return (
     <ToolLinkPage
-      description="表单构建继续复用后端托管的旧工具页面，保证开发工具菜单完整可达。"
+      description="可视化表单构建工具。"
       links={[
         {
           label: "表单构建器",
           href: resolveToolUrl("/form-generator"),
-          note: "当前仍由后端静态资源提供，是后台菜单中的稳定桥接入口。",
+          note: "由后端提供的静态页面。",
         },
       ]}
-      notes={[
-        "本轮目标是后台业务页完整可用，开发工具页继续采用桥接策略。",
-        "如果后续决定把表单构建 React 化，应单独拆成字段编辑器、预览器和导出流程。",
-      ]}
+      notes={[]}
       title="表单构建"
     />
   );

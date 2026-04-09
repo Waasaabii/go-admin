@@ -8,23 +8,20 @@ function resolveToolUrl(path: string) {
 export function CodegenPage() {
   return (
     <ToolLinkPage
-      description="代码生成暂时桥接后端已有能力，避免在后台 React 重构阶段同时重写生成器。"
+      description="根据数据表结构自动生成 CRUD 业务代码。"
       links={[
         {
           label: "表单生成器",
           href: resolveToolUrl("/form-generator"),
-          note: "后端已托管静态资源，可直接打开旧生成器页面。",
+          note: "由后端提供的静态页面。",
         },
         {
-          label: "数据表接口",
+          label: "数据表列表",
           href: resolveToolUrl("/admin-api/v1/db/tables/page"),
-          note: "用于确认生成器依赖的数据表列表接口是否可达。",
+          note: "查看可用于生成代码的数据表。",
         },
       ]}
-      notes={[
-        "这类开发工具不属于高频业务操作，先桥接旧能力，比仓促重写更稳。",
-        "后续如果要完全 React 化，应单独拆成数据表选择、字段编辑、预览三个子页面。",
-      ]}
+      notes={[]}
       title="代码生成"
     />
   );

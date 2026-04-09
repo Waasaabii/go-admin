@@ -249,7 +249,7 @@ export function MenusPage({ api }: { api: ReturnType<typeof createApiClient> }) 
             新增菜单
           </Button>
         }
-        description="菜单页已经统一到树表模板、表单弹层和确认流，目录、菜单、按钮节点共享同一套后台编辑器。"
+        description="管理系统菜单、目录与按钮权限。"
         kicker="Admin Module"
         title="菜单管理"
       />
@@ -271,11 +271,10 @@ export function MenusPage({ api }: { api: ReturnType<typeof createApiClient> }) 
           </Toolbar>
         </FilterPanel>
 
-        <FilterPanel description="这页只处理树结构管理与权限绑定，不在本轮扩展图标库或路由设计器。" title="收口说明">
+        <FilterPanel description="菜单管理注意事项" title="操作说明">
           <div className="space-y-2 text-sm leading-7 text-muted-foreground">
             <p>目录、菜单、按钮三类节点共享一套表单，字段按后端 DTO 原样提交。</p>
             <p>编辑时先拉取详情再回填 API 关联，避免 `sys_menu_api_rule` 被意外清空。</p>
-            <p>树结构展示和新增子级都统一走当前页模板，不再保留页面级按钮 class 和 modal 结构。</p>
           </div>
         </FilterPanel>
       </AdminTwoColumn>
@@ -410,7 +409,7 @@ export function MenusPage({ api }: { api: ReturnType<typeof createApiClient> }) 
                 </FormSection>
 
                 {draft.menuType !== "M" ? (
-                  <FormSection description="接口权限绑定统一走复选列表，不再使用旧页面样式容器。" title="关联 API">
+                  <FormSection description="为该菜单绑定可访问的后端接口。" title="关联 API">
                     <div className="grid gap-3 md:grid-cols-2">
                       {(apiOptionsQuery.data?.list || []).map((item: SysApiRecord) => {
                         const checked = draft.apis.includes(item.id);

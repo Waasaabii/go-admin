@@ -4,6 +4,12 @@ import {
   AsyncActionButton,
   Badge,
   Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
   Checkbox,
   Combobox,
   ConfirmDialog,
@@ -89,10 +95,10 @@ const roleOptions = [
 ];
 
 const stats = [
-  { detail: "独立子项目，后续可以单独 build 和部署。", label: "项目定位", value: "独立站点" },
+  { detail: "可独立构建和部署的文档站。", label: "项目定位", value: "独立站点" },
   { detail: "直接消费 @suiyuan/ui-admin 和 design tokens。", label: "组件来源", value: "共享包" },
   { detail: "修改 TSX/CSS 后直接走 Vite 热更新。", label: "开发体验", value: "HMR" },
-  { detail: "第一版先覆盖常见组件和后台组合件。", label: "当前范围", value: "v1" },
+  { detail: "覆盖常用组件和后台复合组件。", label: "当前范围", value: "v1" },
 ];
 
 const tableRows = [
@@ -152,16 +158,16 @@ export function App() {
           <PageHeader
             actions={
               <RowActions>
-                <Button onClick={() => toast.success("可以继续补 API 表和搜索")} type="button">
+                <Button onClick={() => toast.success("操作成功")} type="button">
                   添加能力
                 </Button>
                 <ThemeToggle />
               </RowActions>
             }
             breadcrumbs={[{ label: "Frontend" }, { label: "UI Showcase" }]}
-            description="这不是后台页面，而是独立的组件文档站。当前版本先把常用组件和后台复合组件展示出来，后续可以继续加 API 文档、源码映射和搜索。"
+            description="组件文档站，展示 @suiyuan/ui-admin 中的所有可用组件。"
             kicker="Component Documentation"
-            title="像 Element Plus 那样维护自己的组件展示页"
+            title="Suiyuan UI 组件展示"
           />
 
           <section className="grid gap-4" id="overview">
@@ -170,8 +176,8 @@ export function App() {
                 <MetricCard detail={item.detail} key={item.label} label={item.label} value={item.value} />
               ))}
             </MetricGrid>
-            <InlineNotice title="当前策略">
-              先做文档站骨架和高频组件示例，保持轻量；复杂的 API 自动生成和源码抽取，放到下一轮。
+            <InlineNotice title="使用说明">
+              点击左侧导航跳转到对应组件区域，每个组件提供预览和代码示例。
             </InlineNotice>
           </section>
 
@@ -408,7 +414,6 @@ export function App() {
                   </DialogHeader>
                   <div className="space-y-3 text-sm leading-7 text-muted-foreground">
                     <p>如果某个业务页不适合直接用 FormDialog，可以退回基础 Dialog 自己拼。</p>
-                    <p>展示页同时放两种写法，后续更容易统一团队使用方式。</p>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -553,7 +558,7 @@ export function App() {
             />
           </DocsSection>
 
-          <DocsSection description="后台里更有价值的是这些复合组件，它们决定页面骨架和组织方式。" id="layout" title="后台布局">
+          <DocsSection description="复合组件，决定后台页面的骨架和组织方式。" id="layout" title="后台布局">
             <DocsDemoCard
               code={`<FilterPanel title="筛选与操作" description="组合搜索区和工具栏。">
   <div className="grid gap-4 lg:grid-cols-3">...</div>
@@ -587,20 +592,67 @@ export function App() {
             </DocsDemoCard>
 
             <DocsDemoCard
+              code={`<div className="grid gap-4 md:grid-cols-2">
+  <Card>
+    <CardHeader>
+      <CardTitle>默认态</CardTitle>
+    </CardHeader>
+    <CardContent>商务风格基础卡片</CardContent>
+  </Card>
+
+  <Card active={true}>
+    <CardHeader>
+      <CardTitle>激活选中态</CardTitle>
+    </CardHeader>
+    <CardContent>带有 SVG 边缘环绕动效</CardContent>
+  </Card>
+</div>`}
+              description="支持普通容器和高亮选中态的双轨卡片。"
+              title="展示组件 (Card 商务风重构)"
+            >
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>默认卡片</CardTitle>
+                    <CardDescription>商务内敛克制的常态卡片设计</CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-20 text-muted-foreground text-sm">
+                    边距非常紧凑，适合多面板平铺式分布的后台。
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" size="sm" type="button">管理资源</Button>
+                  </CardFooter>
+                </Card>
+
+                <Card active={true}>
+                  <CardHeader>
+                    <CardTitle className="text-primary">活跃卡片 (Active)</CardTitle>
+                    <CardDescription>用于业务突出展示，鼠标Hover也能看到SVG跑马</CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-20 text-muted-foreground text-sm">
+                    加上 active 属性后，会嵌入一层极低消耗的原生 SVG。
+                  </CardContent>
+                  <CardFooter>
+                    <Button size="sm" type="button">优先操作</Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </DocsDemoCard>
+
+            <DocsDemoCard
               code={`<>
-  <SectionCard title="迁移原则" description="用于承接说明性内容。">...</SectionCard>
+  <SectionCard title="操作说明" description="用于承接说明性内容。">...</SectionCard>
   <ProgressSteps items={[...]} />
   <Loading label="用于展示过程型状态" />
 </>`}
-              description="说明卡片、流程条和状态块可以直接拼出后台页面骨架。"
-              title="页面骨架拼装"
+              description="说明卡片、流程条和状态块可以直接拼出后台页面结构。"
+              title="页面结构拼装"
             >
               <div className="grid gap-5">
-                <SectionCard description="用于承接说明性内容、规则说明或页面介绍。" title="迁移原则">
+                <SectionCard description="用于承接说明性内容、规则说明或页面介绍。" title="操作说明">
                   <div className="space-y-2 text-sm leading-7 text-muted-foreground">
                     <p>优先复用共享组件，不在业务页重复封装同一类按钮、弹层和状态块。</p>
-                    <p>先把视觉语言和间距统一，再谈更复杂的自动化文档能力。</p>
-                    <p>展示站后续可以继续补 API 表、源码映射和组件搜索。</p>
+                    <p>保持视觉语言和间距统一。</p>
                   </div>
                 </SectionCard>
                 <ProgressSteps

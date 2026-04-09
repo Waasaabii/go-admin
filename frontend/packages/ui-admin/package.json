@@ -5,7 +5,8 @@
   "type": "module",
   "main": "src/index.tsx",
   "exports": {
-    ".": "./src/index.tsx"
+    ".": "./src/index.tsx",
+    "./styles.css": "./src/styles.css"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",

@@ -1,7 +1,8 @@
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import "@suiyuan/design-tokens/theme.css";
+import "@suiyuan/design-tokens/base.css";
+import "@suiyuan/design-tokens/default-theme.css";
 import "@suiyuan/ui-mobile/styles.css";
 
 import { App } from "./app";

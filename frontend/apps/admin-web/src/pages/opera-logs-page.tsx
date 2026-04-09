@@ -96,9 +96,9 @@ export function OperaLogsPage({ api }: { api: ReturnType<typeof createApiClient>
 
   return (
     <AdminPageStack>
-      <PageHeader description="操作日志页已经切换到统一筛选和详情弹层模板，请求参数与返回结果都改为标准只读代码块展示。" kicker="Admin Module" title="操作日志" />
+      <PageHeader description="查询系统操作日志记录。" kicker="Admin Module" title="操作日志" />
 
-      <FilterPanel description="时间范围直接映射 `beginTime / endTime` 查询参数，不再保留旧输入框式时间过滤。">
+      <FilterPanel description="支持按模块、操作类型和时间范围筛选。">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <FormField label="模块">
             <Input onChange={(event) => {

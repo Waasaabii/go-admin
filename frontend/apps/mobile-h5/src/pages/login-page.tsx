@@ -52,8 +52,8 @@ export function LoginPage({
     <div className="mobile-auth">
       <section className="mobile-auth-card">
         <small>Tenant {tenantCode}</small>
-        <h1>把用户端迁到新的移动应用</h1>
-        <p>第一阶段先共用现有登录体系，确保租户识别、认证恢复和移动端页面壳稳定运行。</p>
+        <h1>用户登录</h1>
+        <p>请输入账号和密码。</p>
         <form
           className="mobile-auth-form"
           onSubmit={form.handleSubmit(async (values) => {

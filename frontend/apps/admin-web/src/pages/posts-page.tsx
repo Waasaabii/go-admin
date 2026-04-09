@@ -21,7 +21,7 @@ export function PostsPage({ api }: { api: ReturnType<typeof createApiClient> }) 
       })}
       createItem={(payload) => api.admin.createPost(payload)}
       deleteItem={(payload) => api.admin.deletePosts(payload)}
-      description="岗位属于平面实体模块，优先完整对齐 CRUD。"
+      description="管理系统岗位信息。"
       fetcher={(params) => api.admin.listPosts(params)}
       formFields={[
         { key: "postName", label: "岗位名称" },

@@ -314,7 +314,7 @@ export function BrandBlock() {
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Suiyuan Admin</p>
       <div className="space-y-1">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">统一后台工作台</h1>
-        <p className="text-sm leading-6 text-muted-foreground">Tailwind + shadcn 风格重建后的后台交互骨架。</p>
+        <p className="text-sm leading-6 text-muted-foreground">后台管理系统</p>
       </div>
     </div>
   );
@@ -521,10 +521,10 @@ export function AdminSidebar({
         <TreeNav currentPath={currentPath} menuTree={menuTree} onNavigate={onNavigate} sidebarCollapsed={collapsed} />
       </div>
       <div className="mt-5 grid gap-2">
-        <NavLink className="rounded-2xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" onClick={onNavigate} to="/ops-service">
+        <NavLink className="rounded-control px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" onClick={onNavigate} to="/ops-service">
           {collapsed ? "运" : "运维服务"}
         </NavLink>
-        <NavLink className="rounded-2xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" onClick={onNavigate} to="/profile">
+        <NavLink className="rounded-control px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" onClick={onNavigate} to="/profile">
           {collapsed ? "我" : "个人中心"}
         </NavLink>
         <Button className="justify-start" onClick={onLogout} type="button" variant="ghost">
@@ -691,7 +691,7 @@ function TreeSelectorNode({
 
   return (
     <li className="grid gap-3">
-      <label className={cn("flex items-start gap-3 rounded-2xl border border-border/60 bg-background px-4 py-3", disabled && "opacity-60")}>
+      <label className={cn("flex items-start gap-3 rounded-surface border border-border/60 bg-background px-4 py-3", disabled && "opacity-60")}>
         <Checkbox
           checked={indeterminate ? "indeterminate" : checked}
           disabled={disabled}
@@ -832,7 +832,7 @@ export function ProgressSteps({
   return (
     <div className={cn("grid gap-3 md:grid-cols-2", className)}>
       {items.map((item, index) => (
-        <div className={cn("grid gap-2 rounded-2xl border px-4 py-3", stateClass[item.state])} key={`${String(item.label)}-${index}`}>
+        <div className={cn("grid gap-2 rounded-surface border px-4 py-3", stateClass[item.state])} key={`${String(item.label)}-${index}`}>
           <div className="flex items-start gap-3">
             <span className={cn("inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold", badgeClass[item.state])}>
               {index + 1}
@@ -934,7 +934,7 @@ export function CommitList({
         {commits.length ? (
           <div className="grid gap-3">
             {commits.map((commit) => (
-              <div className="grid gap-1 rounded-2xl border border-border/70 bg-secondary/30 px-4 py-3" key={`${commit.hash}-${commit.message}`}>
+              <div className="grid gap-1 rounded-surface border border-border/70 bg-secondary/30 px-4 py-3" key={`${commit.hash}-${commit.message}`}>
                 <div className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">{commit.hash.slice(0, 7)}</div>
                 <p className="text-sm leading-6 text-foreground">{commit.message}</p>
               </div>
@@ -1016,7 +1016,7 @@ export function WizardSteps({
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         {steps.map((step, index) => (
-          <div className={cn("rounded-2xl border px-4 py-3", index === currentStep ? "border-primary/30 bg-primary/10" : "border-border bg-secondary/20")} key={`${String(step.label)}-${index}`}>
+          <div className={cn("rounded-surface border px-4 py-3", index === currentStep ? "border-primary/30 bg-primary/10" : "border-border bg-secondary/20")} key={`${String(step.label)}-${index}`}>
             <p className="text-sm font-semibold text-foreground">
               {index + 1}. {step.label}
             </p>
@@ -1095,7 +1095,7 @@ export function DocsSidebar({
         <nav className="grid gap-2">
           {items.map((item) => (
             <a
-              className="rounded-2xl border border-transparent px-4 py-3 text-sm text-muted-foreground transition-colors hover:border-border hover:bg-secondary/60 hover:text-foreground"
+              className="rounded-control border border-transparent px-3 py-2 transition-colors hover:bg-secondary/80 hover:text-foreground"
               href={item.href}
               key={item.href}
             >
@@ -1104,7 +1104,7 @@ export function DocsSidebar({
             </a>
           ))}
         </nav>
-        {footer ? <div className="grid gap-3 rounded-[1.5rem] border border-border/70 bg-secondary/30 p-4">{footer}</div> : null}
+        {footer ? <div className="grid gap-3 rounded-surface border border-border/70 bg-secondary/30 p-4">{footer}</div> : null}
       </CardContent>
     </Card>
   );

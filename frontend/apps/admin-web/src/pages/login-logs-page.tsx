@@ -98,9 +98,9 @@ export function LoginLogsPage({ api }: { api: ReturnType<typeof createApiClient>
 
   return (
     <AdminPageStack>
-      <PageHeader description="登录日志页统一收敛到后台 CRUD 模板，详情查看与时间筛选都改为统一组件。" kicker="Admin Module" title="登录日志" />
+      <PageHeader description="查询系统登录日志记录。" kicker="Admin Module" title="登录日志" />
 
-      <FilterPanel description="时间范围直接映射 `beginTime / endTime` 查询参数，不再使用普通输入框模拟过滤。">
+      <FilterPanel description="支持按用户名、IP、状态和时间范围筛选。">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <FormField label="用户名">
             <Input onChange={(event) => {

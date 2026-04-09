@@ -123,7 +123,7 @@ export function SetupWizardPage({ initialStatus, setupApi, onComplete }: SetupWi
           </div>
         </div>
       }
-      description="首次使用需要配置数据库和 Redis 连接，并创建管理员账号。所有步骤都已切换到统一向导组件。"
+      description="首次使用需要配置数据库和 Redis 连接，并创建管理员账号。"
       kicker="Setup Wizard"
       title="系统初始化配置"
     >

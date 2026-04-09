@@ -257,7 +257,7 @@ export function DictsPage({ api }: { api: ReturnType<typeof createApiClient> }) 
             新增字典类型
           </Button>
         }
-        description="字典页已经切换到统一主从布局，左侧管理类型，右侧管理当前类型下的数据。"
+        description="管理系统字典类型与字典数据。"
         kicker="Admin Module"
         title="字典管理"
       />

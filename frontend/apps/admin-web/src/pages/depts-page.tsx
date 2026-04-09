@@ -181,13 +181,13 @@ export function DeptsPage({ api }: { api: ReturnType<typeof createApiClient> }) 
             新增部门
           </Button>
         }
-        description="部门树已经切换到统一树表与表单弹层，组织结构维护不再依赖旧页面样式和自定义 modal。"
+        description="管理组织架构与部门层级。"
         kicker="Admin Module"
         title="部门管理"
       />
 
       <AdminTwoColumn>
-        <FilterPanel description="当前继续保留树表形态，优先保证与用户、角色、岗位的组织关联稳定。">
+        <FilterPanel description="可按部门名称筛选。">
           <div className="grid gap-4 md:grid-cols-2">
             <FormField label="部门名称">
               <Input onChange={(event) => setDeptNameFilter(event.target.value)} placeholder="按部门名称过滤" value={deptNameFilter} />
@@ -203,11 +203,10 @@ export function DeptsPage({ api }: { api: ReturnType<typeof createApiClient> }) 
           </Toolbar>
         </FilterPanel>
 
-        <FilterPanel description="父部门选择会自动排除当前节点及其后代，避免形成循环树。" title="收口说明">
+        <FilterPanel description="部门树操作说明" title="操作说明">
           <div className="space-y-2 text-sm leading-7 text-muted-foreground">
-            <p>新增与编辑都会刷新整棵部门树，不在前端做局部拼接补丁。</p>
-            <p>页面仍沿用后端既有字段，不额外引入自定义部门属性。</p>
-            <p>树结构、新增子级、删除确认统一收敛到 `ui-admin` 组件，不再保留旧按钮类名。</p>
+            <p>新增与编辑都会刷新整棵部门树。</p>
+            <p>父部门选择会自动排除当前节点及其后代，避免形成循环引用。</p>
           </div>
         </FilterPanel>
       </AdminTwoColumn>

@@ -82,7 +82,7 @@ export function ScheduleJobsPage({ api }: { api: ReturnType<typeof createApiClie
         })}
         createItem={(payload) => api.jobs.createJob(payload)}
         deleteItem={(payload) => api.jobs.deleteJobs(payload)}
-        description="定时任务已切到新后台，可直接查询、增改删，并对调度服务执行启动或移除操作。"
+        description="管理定时任务及其调度状态。"
         fetcher={(params) => api.jobs.listJobs(params)}
         formFields={[
           { key: "jobName", label: "任务名称" },
@@ -98,11 +98,10 @@ export function ScheduleJobsPage({ api }: { api: ReturnType<typeof createApiClie
         getRowId={(item) => item.jobId}
         queryKey="schedule-jobs"
         renderAside={() => (
-        <SectionCard title="调度说明" description="这里区分任务记录状态与调度服务挂载状态。">
+        <SectionCard title="调度说明" description="任务调度状态说明">
           <div className="space-y-2 text-sm leading-7 text-muted-foreground">
             <p>`状态` 字段决定任务是否允许被启动，`EntryId` 大于 0 代表当前已挂到调度服务。</p>
-            <p>`启动调度服务` 和 `从调度服务移除` 不会替代任务编辑，它们只操作运行中的调度注册。</p>
-            <p>日志页 `/schedule/log` 已迁移到统一详情模板，不再使用旧弹层结构。</p>
+            <p>`启动调度服务` 和 `从调度服务移除` 只操作运行中的调度注册，不影响任务编辑。</p>
           </div>
         </SectionCard>
         )}

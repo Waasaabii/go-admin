@@ -5,7 +5,8 @@ import { ThemeProvider, initializeTheme } from "@suiyuan/design-tokens";
 import { ToastViewport } from "@suiyuan/ui-admin";
 
 import { App } from "./app";
-import "@suiyuan/design-tokens/theme.css";
+import "@suiyuan/design-tokens/base.css";
+import "./admin-host-theme.css";
 import "./styles.css";
 
 const queryClient = new QueryClient();

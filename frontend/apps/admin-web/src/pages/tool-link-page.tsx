@@ -40,13 +40,15 @@ export function ToolLinkPage({
         ))}
       </div>
 
-      <SectionCard title="当前阶段说明" description="这些工具页先作为可达入口保留，后续再决定是否完全 React 化。">
-        <div className="space-y-2 text-sm leading-7 text-muted-foreground">
-          {notes.map((note) => (
-            <p key={note}>{note}</p>
-          ))}
-        </div>
-      </SectionCard>
+      {notes.length > 0 ? (
+        <SectionCard title="说明" description="">
+          <div className="space-y-2 text-sm leading-7 text-muted-foreground">
+            {notes.map((note) => (
+              <p key={note}>{note}</p>
+            ))}
+          </div>
+        </SectionCard>
+      ) : null}
     </AdminPageStack>
   );
 }

@@ -262,7 +262,7 @@ export function RolesPage({ api }: { api: ReturnType<typeof createApiClient> }) 
             新增角色
           </Button>
         }
-        description="角色页已经完全切换到统一后台模板，菜单权限、部门权限和状态变更全部走 `ui-admin` 组件编排。"
+        description="管理角色及其菜单权限与数据权限。"
         kicker="Admin Module"
         title="角色管理"
       />
@@ -304,11 +304,11 @@ export function RolesPage({ api }: { api: ReturnType<typeof createApiClient> }) 
           </Toolbar>
         </FilterPanel>
 
-        <FilterPanel description="本页不做旧样式兼容，后续新增角色相关能力也必须继续沿用这套表单和树面板。" title="收口说明">
+        <FilterPanel description="角色权限管理注意事项" title="操作说明">
           <div className="space-y-2 text-sm leading-7 text-muted-foreground">
             <p>编辑角色时会同时拉取角色详情、菜单树和部门树，确保提交总是带完整权限集合。</p>
             <p>`admin` 角色的菜单权限保持锁定，只展示当前已绑定结果，避免误清空核心权限。</p>
-            <p>仅在“自定数据权限”下展示部门树选择，其他权限范围不再渲染多余结构。</p>
+            <p>仅在"自定数据权限"下展示部门树选择，其他权限范围不再渲染多余结构。</p>
           </div>
         </FilterPanel>
       </AdminTwoColumn>

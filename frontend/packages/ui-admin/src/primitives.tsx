@@ -26,6 +26,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { toast, Toaster } from "sonner";
 import {
   forwardRef,
+  useId,
   useMemo,
   useState,
   type ButtonHTMLAttributes,
@@ -43,7 +44,7 @@ export { toast };
 export type { DateRange };
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
+  "group relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-control text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
   {
     defaultVariants: {
       size: "default",
@@ -51,17 +52,17 @@ const buttonVariants = cva(
     },
     variants: {
       size: {
-        default: "h-10 px-4 py-2",
-        icon: "h-10 w-10",
-        lg: "h-11 px-5 py-2.5",
-        sm: "h-9 px-3",
+        default: "h-9 px-4 py-2",
+        icon: "h-9 w-9",
+        lg: "h-10 px-6",
+        sm: "h-8 px-3 text-xs",
       },
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        ghost: "hover:bg-secondary hover:text-secondary-foreground",
+        ghost: "hover:bg-secondary/40 hover:text-secondary-foreground",
         link: "h-auto rounded-none px-0 text-primary underline-offset-4 hover:underline",
-        outline: "border border-border bg-background hover:bg-secondary hover:text-secondary-foreground",
+        outline: "border border-border bg-background hover:bg-secondary/40 hover:text-secondary-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
       },
     },
@@ -73,9 +74,39 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, Va
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ asChild = false, className, size, variant, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ className, size, variant }))} ref={ref} {...props} />;
+  ({ asChild = false, className, size, variant = "default", children, ...props }, ref) => {
+    if (asChild) {
+      return (
+        <Slot className={cn(buttonVariants({ className, size, variant }))} ref={ref} {...props}>
+          {children}
+        </Slot>
+      );
+    }
+
+    const isSolidVariant = ["default", "destructive", "secondary"].includes(variant || "default");
+    const sweepId = useId() + "-sweep";
+
+    return (
+      <button className={cn(buttonVariants({ className, size, variant }))} ref={ref} {...props}>
+        {isSolidVariant && (
+          <span className="pointer-events-none absolute inset-0 z-0 overflow-hidden motion-reduce:hidden">
+            <span className="absolute inset-y-0 -left-1/2 w-1/2 z-0 block -skew-x-12 -translate-x-full opacity-0 transition-all duration-[800ms] ease-in-out group-hover:translate-x-[400%] group-hover:opacity-[0.35]">
+              <svg className="h-full w-full" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id={sweepId} x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0%" stopColor="currentColor" stopOpacity="0" />
+                    <stop offset="50%" stopColor="currentColor" stopOpacity="1" />
+                    <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <rect fill={`url(#${sweepId})`} height="100%" width="100%" />
+              </svg>
+            </span>
+          </span>
+        )}
+        <span className="relative z-10 flex items-center justify-center gap-2">{children}</span>
+      </button>
+    );
   },
 );
 Button.displayName = "Button";
@@ -162,33 +193,64 @@ export function FormField({
   );
 }
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  active?: boolean;
+}
+
+export function Card({ className, active, children, ...props }: CardProps) {
   return (
     <div
-      className={cn("rounded-3xl border border-border bg-card text-card-foreground shadow-[var(--shadow-card)]", className)}
+      data-active={active ? "true" : undefined}
+      className={cn(
+        "group relative overflow-hidden rounded-xl border border-border bg-card text-card-foreground transition-colors duration-200 hover:bg-secondary/20",
+        active && "border-primary/50 shadow-sm",
+        className,
+      )}
       {...props}
-    />
+    >
+      {active && (
+        <div className="pointer-events-none absolute inset-0">
+          <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
+            <rect
+              className="text-primary/60"
+              fill="none"
+              height="100%"
+              rx="12"
+              ry="12"
+              stroke="currentColor"
+              strokeDasharray="60 300"
+              strokeDashoffset="0"
+              strokeWidth="3"
+              width="100%"
+            >
+              <animate attributeName="stroke-dashoffset" dur="2.5s" from="360" repeatCount="indefinite" to="0" />
+            </rect>
+          </svg>
+        </div>
+      )}
+      {children}
+    </div>
   );
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex flex-col gap-2 border-b border-border/70 px-6 py-5", className)} {...props} />;
+  return <div className={cn("flex flex-col gap-1.5 border-b border-border/50 px-5 py-4", className)} {...props} />;
 }
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn("text-lg font-semibold tracking-tight text-foreground", className)} {...props} />;
+  return <h3 className={cn("text-base font-semibold tracking-tight text-foreground", className)} {...props} />;
 }
 
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-sm leading-6 text-muted-foreground", className)} {...props} />;
+  return <p className={cn("text-sm leading-relaxed text-muted-foreground", className)} {...props} />;
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("px-6 py-5", className)} {...props} />;
+  return <div className={cn("px-5 py-5", className)} {...props} />;
 }
 
 export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex items-center gap-3 border-t border-border/70 px-6 py-4", className)} {...props} />;
+  return <div className={cn("flex items-center gap-3 border-t border-border/50 px-5 py-4", className)} {...props} />;
 }
 
 export function Badge({
@@ -937,7 +999,7 @@ export function ToastViewport() {
 export function EmptyLogState({
   action,
   className,
-  description = "当前没有日志输出，可稍后重试或等待任务继续推进。",
+  description = "当前没有日志输出。",
   title = "暂无日志",
 }: {
   action?: ReactNode;

@@ -10,17 +10,17 @@
 }
 
 .mobile-card {
-  border: 1px solid rgba(18, 19, 26, 0.1);
+  border: 1px solid var(--color-line);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 18px 48px rgba(18, 19, 26, 0.08);
+  background: var(--color-panel);
+  box-shadow: var(--shadow-soft);
 }
 
 .mobile-hero {
   padding: 24px;
   background:
-    radial-gradient(circle at top right, rgba(255, 122, 24, 0.24), transparent 30%),
-    linear-gradient(135deg, rgba(15, 118, 110, 0.18), rgba(255, 255, 255, 0.96));
+    radial-gradient(circle at top right, var(--color-accent-soft), transparent 30%),
+    linear-gradient(135deg, var(--color-highlight-soft), var(--color-panel-strong));
 }
 
 .mobile-hero h1 {
@@ -75,10 +75,10 @@
   gap: 10px;
   padding: 12px;
   border-radius: 24px;
-  border: 1px solid rgba(18, 19, 26, 0.08);
-  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--color-overlay-soft);
+  background: var(--color-surface-soft);
   backdrop-filter: blur(14px);
-  box-shadow: 0 18px 48px rgba(18, 19, 26, 0.12);
+  box-shadow: var(--shadow-soft);
 }
 
 .mobile-tab {
@@ -93,6 +93,6 @@
 }
 
 .mobile-tab.active {
-  background: rgba(15, 118, 110, 0.12);
+  background: var(--color-highlight-soft);
   color: var(--color-ink);
 }

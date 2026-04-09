@@ -94,9 +94,9 @@ export function ScheduleLogsPage({ api }: { api: ReturnType<typeof createApiClie
 
   return (
     <AdminPageStack>
-      <PageHeader description="调度日志页统一切换到新模板，详情展示、时间筛选和日志查看都不再依赖旧弹层结构。" kicker="Admin Module" title="调度日志" />
+      <PageHeader description="查询定时任务执行日志。" kicker="Admin Module" title="调度日志" />
 
-      <FilterPanel description="后端当前未提供时间范围参数，因此时间筛选在当前页内对已拉取结果做本地收敛。">
+      <FilterPanel description="时间筛选在客户端对已加载数据过滤（后端暂不支持时间范围参数）。">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <FormField label="任务名称">
             <Input onChange={(event) => {

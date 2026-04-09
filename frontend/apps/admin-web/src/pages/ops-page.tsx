@@ -275,9 +275,9 @@ export function OpsPage({ api }: { api: ReturnType<typeof createApiClient> }) {
   return (
     <AdminPageStack>
       <PageHeader
-        description="运维页已经彻底切到统一组件体系，环境卡片、提交流、确认弹层、实时日志和任务状态都不再依赖旧 `ops-*` 样式。"
+        description="管理各环境的发布与重启任务，实时查看执行日志。"
         kicker="Ops Service"
-        title="一页完成发布、重启与实时观察"
+        title="运维服务"
       />
 
       <StatStrip
@@ -369,7 +369,7 @@ export function OpsPage({ api }: { api: ReturnType<typeof createApiClient> }) {
         })}
       </div>
 
-      <DataTableSection description="列表接口不返回实时日志，点击详情后再拉取任务详情与流式状态。" title="最近任务">
+      <DataTableSection description="最近 20 条任务记录" title="最近任务">
         <Table>
           <TableHeader>
             <TableRow>

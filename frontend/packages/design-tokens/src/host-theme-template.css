@@ -1,0 +1,89 @@
+/*
+ * 宿主项目主题模板。
+ * 用法：
+ * 1. 应用入口先引入 @suiyuan/design-tokens/base.css
+ * 2. 再引入宿主自己的主题文件，按下面这套 token 提供值
+ * 3. 如需深色模式，在 .dark 下覆盖对应 token
+ */
+
+:root {
+  --background: 210 33% 99%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 173 80% 32%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 217 91% 60%;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-border: 214 32% 91%;
+  --sidebar-accent: 210 40% 96%;
+
+  --radius: 1rem;
+  --radius-sm: 0.875rem;
+  --radius-md: 1.125rem;
+  --radius-lg: 1.75rem;
+
+  --shadow-soft: 0 18px 44px rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 12px 30px rgba(15, 23, 42, 0.05);
+  --shadow-float: var(--shadow-soft);
+
+  --font-sans: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-display: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+  /* 供非 Tailwind 样式直接消费的语义变量 */
+  --color-ink: hsl(var(--foreground));
+  --color-muted: hsl(var(--muted-foreground));
+  --color-line: hsl(var(--border));
+  --color-canvas: hsl(var(--background));
+  --color-panel: color-mix(in srgb, hsl(var(--card)) 88%, transparent);
+  --color-panel-strong: hsl(var(--card));
+  --color-accent: hsl(var(--primary));
+  --color-accent-soft: color-mix(in srgb, hsl(var(--primary)) 12%, transparent);
+  --color-highlight: hsl(var(--accent));
+  --color-highlight-soft: color-mix(in srgb, hsl(var(--accent)) 16%, transparent);
+  --color-surface-soft: color-mix(in srgb, hsl(var(--card)) 72%, transparent);
+  --color-overlay-soft: color-mix(in srgb, hsl(var(--foreground)) 8%, transparent);
+  --color-overlay-strong: color-mix(in srgb, hsl(var(--foreground)) 12%, transparent);
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 96%;
+  --card: 222 33% 10%;
+  --card-foreground: 210 40% 96%;
+  --popover: 222 33% 10%;
+  --popover-foreground: 210 40% 96%;
+  --primary: 217 91% 66%;
+  --primary-foreground: 222 47% 7%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 96%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 173 72% 38%;
+  --accent-foreground: 210 40% 96%;
+  --destructive: 0 72% 55%;
+  --destructive-foreground: 210 40% 96%;
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --ring: 217 91% 66%;
+  --sidebar: 222 33% 9%;
+  --sidebar-foreground: 210 40% 96%;
+  --sidebar-border: 217 33% 20%;
+  --sidebar-accent: 217 33% 17%;
+  --color-surface-soft: color-mix(in srgb, hsl(var(--card)) 78%, transparent);
+  --color-overlay-soft: color-mix(in srgb, hsl(var(--foreground)) 10%, transparent);
+  --color-overlay-strong: color-mix(in srgb, hsl(var(--foreground)) 14%, transparent);
+}

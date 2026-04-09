@@ -23,7 +23,7 @@ export function ConfigsPage({ api }: { api: ReturnType<typeof createApiClient> }
       })}
       createItem={(payload) => api.admin.createConfig(payload)}
       deleteItem={(payload) => api.admin.deleteConfigs(payload)}
-      description="参数管理先接入列表与编辑，系统设置页单独保留在 `/admin/sys-config/set`。"
+      description="管理系统公共参数配置。"
       fetcher={(params) => api.admin.listConfigs(params)}
       formFields={[
         { key: "configName", label: "参数名称" },

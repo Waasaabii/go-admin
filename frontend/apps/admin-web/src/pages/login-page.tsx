@@ -57,21 +57,12 @@ export function LoginPage({ tenantCode, onSubmit, getCaptcha }: LoginPageProps) 
 
   return (
     <AuthLayout
-      aside={
-        <div className="grid max-w-xl gap-4 rounded-[2rem] border border-border/70 bg-card/80 p-6 shadow-[var(--shadow-card)]">
-          <p className="text-sm font-semibold text-foreground">本次重构目标</p>
-          <div className="space-y-2 text-sm leading-7 text-muted-foreground">
-            <p>统一后台页面骨架、表格、弹层、筛选区和反馈语义。</p>
-            <p>支持 `light / dark / system` 三态主题切换。</p>
-            <p>不再维护旧 CSS 双轨样式体系。</p>
-          </div>
-        </div>
-      }
-      description="登录后将进入新的后台壳层、统一组件体系和主题系统，继续复用现有登录、权限和动态菜单链路。"
+      aside={null}
+      description="使用后台账号登录以继续。"
       kicker={`Tenant ${tenantCode}`}
-      title="统一后台工作台已经切到新的设计底座"
+      title="后台管理系统"
     >
-      <AuthPanel description="使用当前后台账号登录，系统会继续沿用现有验证码、权限和菜单接口。" kicker="Admin Access" title="进入后台">
+      <AuthPanel description="请输入账号和密码。" kicker="Admin Access" title="进入后台">
         <form
           className="grid gap-5"
           onSubmit={form.handleSubmit(async (values) => {

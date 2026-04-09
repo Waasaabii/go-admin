@@ -4,7 +4,7 @@ import type { InfoResponse, ProfileResponse } from "@suiyuan/types";
 export function ProfilePage({ info, profile }: { info: InfoResponse; profile: ProfileResponse }) {
   return (
     <div className="mobile-stack">
-      <SurfaceCard description="移动端个人资料直接复用现有后端接口。" title="账户信息">
+      <SurfaceCard description="基本账号信息" title="账户信息">
         <dl className="mobile-detail-grid">
           <dt>用户名</dt>
           <dd>{info.userName}</dd>
@@ -16,7 +16,7 @@ export function ProfilePage({ info, profile }: { info: InfoResponse; profile: Pr
           <dd>{profile.user.email || "未设置"}</dd>
         </dl>
       </SurfaceCard>
-      <SurfaceCard description="这部分数据后续可以直接延展到真实用户服务页。" title="角色与岗位">
+      <SurfaceCard description="角色与岗位信息" title="角色与岗位">
         <dl className="mobile-detail-grid">
           <dt>角色</dt>
           <dd>{info.roles.join(" / ")}</dd>

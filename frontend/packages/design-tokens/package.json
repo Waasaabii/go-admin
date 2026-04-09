@@ -6,6 +6,9 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./base.css": "./src/base.css",
+    "./default-theme.css": "./src/default-theme.css",
+    "./host-theme-template.css": "./src/host-theme-template.css",
     "./theme.css": "./src/theme.css",
     "./theme": "./src/theme.tsx"
   },

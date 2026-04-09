@@ -14,14 +14,14 @@ export function ServerMonitorPage({ api }: { api: ReturnType<typeof createApiCli
 
   return (
     <AdminPageStack>
-      <PageHeader description="这一页先保留关键指标与完整 JSON 观察视图，后续再升级成图形化监控面板。" kicker="Admin Module" title="服务监控" />
+      <PageHeader description="服务器资源实时概览，每 15 秒自动刷新。" kicker="Admin Module" title="服务监控" />
       <MetricGrid>
-        <MetricCard detail="当前监控接口返回的主机名。" label="主机名" value={String(metrics.hostName || "-")} />
-        <MetricCard detail="当前环境出口或内网地址。" label="IP" value={String(metrics.ip || "-")} />
-        <MetricCard detail="当前只做数值观察，不做趋势图。" label="CPU 使用率" value={String(metrics.cpuUsed || "-")} />
-        <MetricCard detail="来自现有服务监控接口。" label="内存使用率" value={String(metrics.memUsed || "-")} />
+        <MetricCard detail="服务器主机名" label="主机名" value={String(metrics.hostName || "-")} />
+        <MetricCard detail="服务器 IP 地址" label="IP" value={String(metrics.ip || "-")} />
+        <MetricCard detail="当前 CPU 占用率" label="CPU 使用率" value={String(metrics.cpuUsed || "-")} />
+        <MetricCard detail="当前内存占用率" label="内存使用率" value={String(metrics.memUsed || "-")} />
       </MetricGrid>
-      <SectionCard title="完整响应" description="便于确认接口字段，后续可按真实结构拆成单独卡片。">
+      <SectionCard title="完整数据" description="监控接口原始返回">
         <ReadonlyCodeBlock>{JSON.stringify(metrics, null, 2)}</ReadonlyCodeBlock>
       </SectionCard>
     </AdminPageStack>

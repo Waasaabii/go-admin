@@ -139,7 +139,7 @@ export function UsersPage({ api }: { api: ReturnType<typeof createApiClient> }) 
         })}
         createItem={(payload) => api.admin.createUser(payload)}
         deleteItem={(payload) => api.admin.deleteUsers(payload)}
-        description="用户管理已经进入第二阶段，补齐状态切换、密码重置和名称映射，优先打通真实操作链路。"
+        description="管理系统用户账号、角色与状态。"
         fetcher={(params) => api.admin.listUsers(params)}
         formFields={[
         { key: "username", label: "账号" },
@@ -174,11 +174,11 @@ export function UsersPage({ api }: { api: ReturnType<typeof createApiClient> }) 
         getRowId={(item) => Number(item.userId)}
         queryKey="users"
         renderAside={() => (
-        <SectionCard title="迁移说明" description="这一页对应官方 sys-user，沿用原后端字段，不在第一阶段重塑权限分配交互。">
+        <SectionCard title="操作说明" description="用户管理功能说明">
           <div className="space-y-2 text-sm leading-7 text-muted-foreground">
-            <p>角色、部门、岗位列已经使用后台选项映射为名称，不再只显示 ID。</p>
-            <p>状态切换和密码重置已接入真实接口，仍不做批量操作。</p>
-            <p>角色权限分配仍保持原后端规则，不在这一轮扩展成复杂授权器。</p>
+            <p>角色、部门、岗位列已映射为名称显示。</p>
+            <p>支持状态切换与密码重置。</p>
+            <p>角色权限分配遵循后端既有规则。</p>
           </div>
         </SectionCard>
         )}
