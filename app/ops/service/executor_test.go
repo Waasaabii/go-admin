@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -80,15 +81,10 @@ func TestSyncDirKeepsExistingFilesWhenStagingFails(t *testing.T) {
 
 	createFile(t, filepath.Join(dstDir, "index.html"), "old")
 	createFile(t, filepath.Join(srcDir, "index.html"), "new")
-	createFile(t, filepath.Join(srcDir, "blocked.txt"), "blocked")
-	if err := os.Chmod(filepath.Join(srcDir, "blocked.txt"), 0o000); err != nil {
-		t.Fatalf("chmod failed: %v", err)
-	}
-	t.Cleanup(func() {
-		_ = os.Chmod(filepath.Join(srcDir, "blocked.txt"), 0o644)
-	})
 
-	if err := syncDir(srcDir, dstDir); err == nil {
+	if err := syncDirWithCopy(srcDir, dstDir, func(string, string) error {
+		return errors.New("staging copy failed")
+	}); err == nil {
 		t.Fatalf("expected syncDir to fail when staging copy fails")
 	}
 

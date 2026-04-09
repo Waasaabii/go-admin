@@ -28,6 +28,10 @@ func setupSimpleDatabase(host string, c *toolsConfig.Database) {
 	if global.Driver == "" {
 		global.Driver = c.Driver
 	}
+	opener, ok := opens[c.Driver]
+	if !ok || opener == nil {
+		log.Fatal(pkg.Red("unsupported database driver :"), c.Driver)
+	}
 	log.Infof("%s => %s", host, pkg.Green(c.Source))
 	registers := make([]toolsDB.ResolverConfigure, len(c.Registers))
 	for i := range c.Registers {
@@ -50,7 +54,7 @@ func setupSimpleDatabase(host string, c *toolsConfig.Database) {
 					log.DefaultLogger.Options().Level.LevelForGorm()),
 			},
 		),
-	}, opens[c.Driver])
+	}, opener)
 
 	if err != nil {
 		log.Fatal(pkg.Red(c.Driver+" connect error :"), err)

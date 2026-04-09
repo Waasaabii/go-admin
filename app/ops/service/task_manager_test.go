@@ -5,10 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-
 	appModels "go-admin/app/ops/models"
+	commonModels "go-admin/common/models"
 )
 
 func TestTaskManagerBroadcastDropsSlowSubscriber(t *testing.T) {
@@ -60,47 +58,43 @@ func TestTaskManagerRootContextCancellationStopsTask(t *testing.T) {
 	}
 }
 
-func TestCancelQueuedTaskReleasesEnvLock(t *testing.T) {
-	originalManager := taskManager
-	taskManager = &TaskManager{
+func TestFinalizeQueuedTaskCancellationReleasesEnvLockAndBroadcastsError(t *testing.T) {
+	manager := &TaskManager{
 		envLocks:    make(map[string]int),
 		subs:        make(map[int]map[chan TaskEvent]struct{}),
 		taskCancels: make(map[int]context.CancelFunc),
 		rootCtx:     context.Background(),
 	}
-	defer func() {
-		taskManager = originalManager
-	}()
-
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	if err != nil {
-		t.Fatalf("open sqlite failed: %v", err)
-	}
-	if err = db.AutoMigrate(&appModels.OpsTask{}); err != nil {
-		t.Fatalf("migrate ops_task failed: %v", err)
-	}
-
 	task := &appModels.OpsTask{
+		Model:  commonModels.Model{Id: 7},
 		Env:    "dev",
 		Type:   appModels.TaskTypeDeployBackend,
-		Status: appModels.TaskStatusQueued,
+		Status: appModels.TaskStatusCancelled,
+		ErrMsg: "任务在排队阶段被取消",
 	}
-	if err = db.Create(task).Error; err != nil {
-		t.Fatalf("create task failed: %v", err)
-	}
-	taskManager.envLocks["dev"] = task.Id
+	manager.envLocks["dev"] = task.Id
+	ch := manager.Subscribe(task.Id)
 
-	service := &OpsTask{}
-	service.Orm = db
+	finalizeQueuedTaskCancellation(manager, task)
 
-	cancelledTask, err := service.Cancel(task.Id)
-	if err != nil {
-		t.Fatalf("cancel queued task failed: %v", err)
-	}
-	if cancelledTask.Status != appModels.TaskStatusCancelled {
-		t.Fatalf("expected cancelled status, got %s", cancelledTask.Status)
-	}
-	if _, ok := taskManager.envLocks["dev"]; ok {
+	if _, ok := manager.envLocks["dev"]; ok {
 		t.Fatalf("expected env lock to be released")
+	}
+	event, ok := <-ch
+	if !ok {
+		t.Fatalf("expected buffered error event before channel close")
+	}
+	if event.Type != "error" {
+		t.Fatalf("expected error event, got %s", event.Type)
+	}
+	errData, ok := event.Data.(errorEvent)
+	if !ok {
+		t.Fatalf("expected errorEvent payload, got %T", event.Data)
+	}
+	if errData.ErrMsg != task.ErrMsg {
+		t.Fatalf("expected err msg %q, got %q", task.ErrMsg, errData.ErrMsg)
+	}
+	if _, ok := <-ch; ok {
+		t.Fatalf("expected subscriber channel to be closed")
 	}
 }

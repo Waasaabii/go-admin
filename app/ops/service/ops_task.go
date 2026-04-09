@@ -141,10 +141,7 @@ func (e *OpsTask) Cancel(id int) (*appModels.OpsTask, error) {
 	}
 
 	if wasQueued {
-		_ = GetTaskManager().CancelTask(task.Id)
-		GetTaskManager().UnlockEnv(task.Env, task.Id)
-		broadcastTaskError(task.Id, task)
-		GetTaskManager().Close(task.Id)
+		finalizeQueuedTaskCancellation(GetTaskManager(), task)
 		return task, nil
 	}
 
@@ -152,6 +149,25 @@ func (e *OpsTask) Cancel(id int) (*appModels.OpsTask, error) {
 		return nil, errors.New("任务正在收尾，请稍后刷新状态")
 	}
 	return task, nil
+}
+
+func finalizeQueuedTaskCancellation(manager *TaskManager, task *appModels.OpsTask) {
+	if manager == nil || task == nil {
+		return
+	}
+	_ = manager.CancelTask(task.Id)
+	manager.UnlockEnv(task.Env, task.Id)
+	manager.Broadcast(task.Id, TaskEvent{
+		Type: "error",
+		Data: errorEvent{
+			Status:     task.Status,
+			Step:       task.Step,
+			StepName:   task.StepName,
+			ErrMsg:     task.ErrMsg,
+			Suggestion: task.Suggestion,
+		},
+	})
+	manager.Close(task.Id)
 }
 
 func ToTaskListItem(task *appModels.OpsTask) dto.TaskListItem {

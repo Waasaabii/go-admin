@@ -1050,6 +1050,10 @@ func broadcastTaskError(taskID int, task *appModels.OpsTask) {
 }
 
 func syncDir(srcDir, dstDir string) error {
+	return syncDirWithCopy(srcDir, dstDir, copyDirContents)
+}
+
+func syncDirWithCopy(srcDir, dstDir string, copyContents func(string, string) error) error {
 	if srcDir == "" || dstDir == "" {
 		return errors.New("发布目录配置不完整")
 	}
@@ -1081,7 +1085,7 @@ func syncDir(srcDir, dstDir string) error {
 			_ = os.RemoveAll(stageDir)
 		}
 	}()
-	if err = copyDirContents(srcDir, stageDir); err != nil {
+	if err = copyContents(srcDir, stageDir); err != nil {
 		return err
 	}
 
