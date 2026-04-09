@@ -26,8 +26,8 @@ import {
   TableRow,
   TaskStatusCard,
   toast,
-} from "@suiyuan/ui-admin";
-import { ApiError, createApiClient } from "@suiyuan/api";
+} from "@go-admin/ui-admin";
+import { ApiError, createApiClient } from "@go-admin/api";
 import type {
   CommitInfo,
   CreateOpsTaskPayload,
@@ -37,7 +37,7 @@ import type {
   OpsTaskDetail,
   OpsTaskStatus,
   OpsTaskType,
-} from "@suiyuan/types";
+} from "@go-admin/types";
 
 const actionMeta: Record<OpsTaskType, { label: string; variant: "default" | "outline" }> = {
   deploy_backend: { label: "发布后端", variant: "outline" },

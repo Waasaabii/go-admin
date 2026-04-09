@@ -2,7 +2,7 @@
 
 本文件为 Claude Code (claude.ai/code) 在本目录中工作时提供指引。
 
-## 包：@suiyuan/api
+## 包：@go-admin/api
 
 前端 HTTP 请求客户端层。封装所有与后端 API 的通信逻辑。
 
@@ -34,8 +34,8 @@
 
 - `axios` — HTTP 客户端
 - `@microsoft/fetch-event-source` — SSE 支持
-- `@suiyuan/auth` — Token 工具函数
-- `@suiyuan/types` — 请求/响应类型定义
+- `@go-admin/auth` — Token 工具函数
+- `@go-admin/types` — 请求/响应类型定义
 
 ## 开发命令
 

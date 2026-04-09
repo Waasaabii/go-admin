@@ -18,6 +18,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  Error404,
+  Error500,
+  ErrorFooterLink,
   EmptyBlock,
   EmptyLogState,
   EmptyState,
@@ -38,7 +41,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
   toast,
-} from "@suiyuan/ui-admin";
+} from "@go-admin/ui-admin";
 import { useState } from "react";
 import {
   ShowcaseDocPage,
@@ -591,6 +594,103 @@ function EmptyStatePage() {
   );
 }
 
+function ErrorPagesPage() {
+  return (
+    <ShowcaseDocPage
+      apiItems={[
+        { defaultValue: '"页面没有找到" / "服务暂时不可用"', description: "错误页主标题；未传时使用内置默认文案。", name: "title", type: "ReactNode" },
+        { defaultValue: "内置默认说明", description: "错误页说明文案；未传时回退到组件默认说明。", name: "description", type: "ReactNode" },
+        { defaultValue: '"404" / "500"', description: "状态码徽标；未传时使用组件默认值。", name: "code", type: "ReactNode" },
+        { defaultValue: "内置 Badge", description: "顶部徽标区；未传走默认徽标，传 null 可显式清空。", name: "badge", type: "ReactNode" },
+        { description: "主操作区，例如返回首页或重试。", name: "action", type: "ReactNode" },
+        { description: "次操作区，例如查看帮助或联系支持。", name: "secondaryAction", type: "ReactNode" },
+        { defaultValue: "false", description: "是否使用紧凑布局；未传默认 false。", name: "compact", type: "boolean" },
+        { defaultValue: "内置底部说明", description: "底部补充说明区；未传走默认内容，传 null 可显式清空。", name: "footer", type: "ReactNode" },
+      ]}
+      categoryLabel="反馈与浮层"
+      demos={[
+        {
+          code: `<Error404
+  compact
+  action={<Button type="button">返回首页</Button>}
+  secondaryAction={<Button type="button" variant="outline">重新搜索</Button>}
+/>`,
+          content: (
+            <Error404
+              action={
+                <Button type="button">
+                  返回首页
+                </Button>
+              }
+              compact
+              secondaryAction={
+                <Button type="button" variant="outline">
+                  重新搜索
+                </Button>
+              }
+            />
+          ),
+          description: "404 建议给用户一个明确去向，而不是只告诉他页面不存在。",
+          title: "404 页面",
+        },
+        {
+          code: `<Error500
+  compact
+  action={<Button type="button">重试请求</Button>}
+  secondaryAction={<Button type="button" variant="outline">查看状态页</Button>}
+  footer={<ErrorFooterLink>最近一次健康检查已在 20 秒前完成。</ErrorFooterLink>}
+/>`,
+          content: (
+            <Error500
+              action={
+                <Button type="button">
+                  重试请求
+                </Button>
+              }
+              compact
+              footer={<ErrorFooterLink>最近一次健康检查已在 20 秒前完成。</ErrorFooterLink>}
+              secondaryAction={
+                <Button type="button" variant="outline">
+                  查看状态页
+                </Button>
+              }
+            />
+          ),
+          description: "500 页面要保留重试与排查路径，避免用户停在死路。",
+          title: "500 页面",
+        },
+        {
+          code: `<Error404
+  badge={null}
+  footer={null}
+  compact
+  title="这个地址已经下线"
+  description="这里演示显式清空默认徽标和底部说明。"
+/>`,
+          content: (
+            <Error404
+              badge={null}
+              compact
+              description="这里演示显式清空默认徽标和底部说明。"
+              footer={null}
+              title="这个地址已经下线"
+            />
+          ),
+          description: "组件遵循“未传走默认，传值覆盖”。如果需要去掉默认插槽，直接传 null。",
+          title: "覆盖与清空默认值",
+        },
+      ]}
+      description="Error404 和 Error500 基于现成 SVG 插画封装了完整错误页结构，主题切换时会自动响应浅色 / 深色视觉，并统一遵循“未传走默认，传值覆盖”的 props 语义。"
+      notes={[
+        "错误页默认就是完整页面布局；嵌入 showcase 或卡片场景时改用 compact。",
+        "badge、footer 这类插槽如果要去掉默认内容，直接传 null，不要依赖空字符串等旁路写法。",
+        "切换右上角主题后，可以直接观察错误页容器、层次和插画亮度的变化。",
+      ]}
+      title="Error Pages"
+    />
+  );
+}
+
 function SkeletonPage() {
   return (
     <ShowcaseDocPage
@@ -1097,6 +1197,7 @@ function DialogPrimitivesPage() {
 export const feedbackRoutes: ShowcaseRoute[] = [
   { component: InlineNoticePage, label: "InlineNotice", path: "/feedback/inline-notice", shortLabel: "MSG", summaryKey: "showcase.route.feedback.inline-notice.summary" },
   { component: EmptyStatePage, label: "EmptyState", path: "/feedback/empty-state", shortLabel: "EMP", summaryKey: "showcase.route.feedback.empty-state.summary" },
+  { component: ErrorPagesPage, label: "Error Pages", path: "/feedback/error-pages", shortLabel: "ERR", summaryKey: "showcase.route.feedback.error-pages.summary" },
   { component: SkeletonPage, label: "Skeleton", path: "/feedback/skeleton", shortLabel: "SKL", summaryKey: "showcase.route.feedback.skeleton.summary" },
   { component: ToastViewportPage, label: "ToastViewport", path: "/feedback/toast-viewport", shortLabel: "TST", summaryKey: "showcase.route.feedback.toast-viewport.summary" },
   { component: ConfirmDialogPage, label: "ConfirmDialog", path: "/feedback/confirm-dialog", shortLabel: "CFM", summaryKey: "showcase.route.feedback.confirm-dialog.summary" },

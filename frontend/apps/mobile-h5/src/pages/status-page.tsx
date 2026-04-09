@@ -1,4 +1,4 @@
-import { SurfaceCard } from "@suiyuan/ui-mobile";
+import { SurfaceCard } from "@go-admin/ui-mobile";
 
 export function StatusPage() {
   return (

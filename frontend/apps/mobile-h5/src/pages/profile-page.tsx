@@ -1,5 +1,5 @@
-import { SurfaceCard } from "@suiyuan/ui-mobile";
-import type { InfoResponse, ProfileResponse } from "@suiyuan/types";
+import { SurfaceCard } from "@go-admin/ui-mobile";
+import type { InfoResponse, ProfileResponse } from "@go-admin/types";
 
 export function ProfilePage({ info, profile }: { info: InfoResponse; profile: ProfileResponse }) {
   return (

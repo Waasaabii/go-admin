@@ -1,5 +1,5 @@
-import { ActionTile, MobileHero, SurfaceCard } from "@suiyuan/ui-mobile";
-import type { InfoResponse, ProfileResponse } from "@suiyuan/types";
+import { ActionTile, MobileHero, SurfaceCard } from "@go-admin/ui-mobile";
+import type { InfoResponse, ProfileResponse } from "@go-admin/types";
 
 export function HomePage({
   info,

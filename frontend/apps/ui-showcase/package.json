@@ -1,5 +1,5 @@
 {
-  "name": "@suiyuan/ui-showcase",
+  "name": "@go-admin/ui-showcase",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,9 +9,9 @@
     "typecheck": "tsc --project tsconfig.json"
   },
   "dependencies": {
-    "@suiyuan/design-tokens": "workspace:*",
-    "@suiyuan/i18n": "workspace:*",
-    "@suiyuan/ui-admin": "workspace:*",
+    "@go-admin/design-tokens": "workspace:*",
+    "@go-admin/i18n": "workspace:*",
+    "@go-admin/ui-admin": "workspace:*",
     "lucide-react": "^0.542.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

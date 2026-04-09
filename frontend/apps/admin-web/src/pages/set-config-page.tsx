@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { AdminPageStack, AdminThreeColumn, Button, DetailGrid, FormActions, FormField, PageHeader, SectionCard, Textarea, toast } from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
+import { AdminPageStack, AdminThreeColumn, Button, DetailGrid, FormActions, FormField, PageHeader, SectionCard, Textarea, toast } from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
 
 export function SetConfigPage({ api }: { api: ReturnType<typeof createApiClient> }) {
   const queryClient = useQueryClient();

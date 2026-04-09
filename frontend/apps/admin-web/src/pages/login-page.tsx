@@ -3,7 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { useI18n } from "@suiyuan/i18n";
+import { useI18n } from "@go-admin/i18n";
 import {
   AuthLayout,
   AuthPanel,
@@ -11,7 +11,7 @@ import {
   FormField,
   InlineNotice,
   Input,
-} from "@suiyuan/ui-admin";
+} from "@go-admin/ui-admin";
 
 import { AdminLocaleToggle } from "../components/admin-locale-toggle";
 type LoginFormValues = {

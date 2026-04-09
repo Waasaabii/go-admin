@@ -10,7 +10,7 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@suiyuan/ui-admin",
-    "utils": "@suiyuan/ui-admin/src/lib/utils"
+    "components": "@go-admin/ui-admin",
+    "utils": "@go-admin/ui-admin/src/lib/utils"
   }
 }

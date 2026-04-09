@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AdminPageStack,
   AdminTwoColumn,
+  AppScrollbar,
   AsyncActionButton,
   Button,
   Checkbox,
@@ -27,9 +28,9 @@ import {
   Toolbar,
   TreeTableSection,
   toast,
-} from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
-import type { SysApiRecord, SysMenuRecord } from "@suiyuan/types";
+} from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
+import type { SysApiRecord, SysMenuRecord } from "@go-admin/types";
 
 type FlatMenuRecord = SysMenuRecord & { level: number };
 
@@ -349,7 +350,7 @@ export function MenusPage({ api }: { api: ReturnType<typeof createApiClient> }) 
           <div className="flex flex-1 items-center py-6 text-sm text-muted-foreground">正在加载菜单详情...</div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+            <AppScrollbar className="min-h-0 flex-1" viewportClassName="pr-1">
               <div className="grid gap-6">
                 <FormSection description="目录、菜单、按钮的核心字段统一在这里维护。" title="基础信息">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -427,7 +428,7 @@ export function MenusPage({ api }: { api: ReturnType<typeof createApiClient> }) 
                   </FormSection>
                 ) : null}
               </div>
-            </div>
+            </AppScrollbar>
             <FormActions className="mt-4 shrink-0 border-t border-border pt-4">
               <AsyncActionButton disabled={!draft.title.trim()} loading={saveMutation.isPending} onClick={() => saveMutation.mutate(draft)} type="button">
                 保存菜单

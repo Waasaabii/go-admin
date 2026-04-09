@@ -2,7 +2,7 @@
 
 本文件为 Claude Code (claude.ai/code) 在本目录中工作时提供指引。
 
-## 包：@suiyuan/core
+## 包：@go-admin/core
 
 前端业务工具函数库，提供与 UI 无关的核心逻辑。
 
@@ -27,4 +27,4 @@ pnpm test                       # vitest run
 
 ## 依赖
 
-- `@suiyuan/types` — `RawMenuItem`、`AppMenuNode`、`TenantContext` 类型定义
+- `@go-admin/types` — `RawMenuItem`、`AppMenuNode`、`TenantContext` 类型定义

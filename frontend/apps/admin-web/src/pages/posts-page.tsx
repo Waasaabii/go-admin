@@ -1,6 +1,6 @@
 import { CrudDataPage } from "../components/crud-data-page";
-import { createApiClient } from "@suiyuan/api";
-import type { SysPostRecord } from "@suiyuan/types";
+import { createApiClient } from "@go-admin/api";
+import type { SysPostRecord } from "@go-admin/types";
 
 export function PostsPage({ api }: { api: ReturnType<typeof createApiClient> }) {
   return (

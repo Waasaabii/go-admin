@@ -13,15 +13,15 @@
 
 ## 主题接入
 
-- `@suiyuan/design-tokens/base.css`：基础 reset 与全局基础行为，不携带品牌视觉。
-- `@suiyuan/design-tokens/default-theme.css`：仓库当前默认主题，现有应用显式引入它。
-- `@suiyuan/design-tokens/host-theme-template.css`：宿主项目主题模板，按同名 token 提供值即可接管组件库样式。
-- `@suiyuan/design-tokens/theme.css`：兼容入口，等价于 `base.css + default-theme.css`。
+- `@go-admin/design-tokens/base.css`：基础 reset 与全局基础行为，不携带品牌视觉。
+- `@go-admin/design-tokens/default-theme.css`：仓库当前默认主题，现有应用显式引入它。
+- `@go-admin/design-tokens/host-theme-template.css`：宿主项目主题模板，按同名 token 提供值即可接管组件库样式。
+- `@go-admin/design-tokens/theme.css`：兼容入口，等价于 `base.css + default-theme.css`。
 
 宿主项目推荐入口顺序：
 
 ```css
-@import "@suiyuan/design-tokens/base.css";
+@import "@go-admin/design-tokens/base.css";
 @import "./your-host-theme.css";
 ```
 
@@ -32,15 +32,24 @@
 在仓库根目录执行：
 
 ```bash
-go build -o ./devctl ./tools/devctl
-./devctl setup
-./devctl service start backend
-./devctl service start admin
-./devctl service start mobile
+pnpm repo:deps:all
+pnpm repo:setup
+pnpm repo:service:infra
+pnpm repo:service:backend
+pnpm repo:service:admin
+pnpm repo:service:mobile
+pnpm repo:build:backend
 pnpm typecheck
 pnpm test
 pnpm build
 ```
+
+## 局部滚动规范
+
+- 局部滚动区域默认使用公共滚动组件，不直接以 `overflow-y-auto`、`overflow-x-auto`、`overflow-auto` 作为实现。
+- `apps/admin-web` 优先通过 `@go-admin/ui-admin` 公共组件获得滚动行为；`apps/mobile-h5` 优先通过 `@go-admin/ui-mobile` 公共组件承接布局。
+- 页面主内容区和浏览器窗口滚动保持原生，不纳入统一滚动组件规则。
+- 仓库提供滚动规则检查脚本，提交前可执行 `pnpm check:local-scrollbars`。
 
 ## 环境变量
 
@@ -53,16 +62,18 @@ pnpm build
 本地开发推荐先执行：
 
 ```bash
-go build -o ./devctl ./tools/devctl
-./devctl service start postgres redis
-./devctl service start backend
-./devctl service start admin
+pnpm repo:deps:all
+pnpm repo:service:infra
+pnpm repo:service:backend
+pnpm repo:service:admin
 ```
 
+这些 `pnpm repo:*` 命令会直接执行 `tools/repo-cli/src/*.mjs`，不依赖额外的 CLI 编译步骤。
+
 - Docker 项目前缀默认取仓库根 `package.json.name`，当前仓库默认值为 `go-admin`
-- `./devctl service start postgres redis`、`./devctl reinit --yes` 等命令都会读取同一个前缀
-- 如需覆盖，可使用 `./devctl --project-prefix 你的前缀 ...`
-- 如需回到全新安装状态，再执行 `./devctl reinit --yes`
+- `pnpm repo:service:infra`、`pnpm repo:reinit` 等命令都会读取同一个前缀
+- 如需覆盖，可使用 `pnpm run repo -- --project-prefix 你的前缀 ...`
+- 如需回到全新安装状态，再执行 `pnpm repo:reinit`
 
 生产环境推荐按域名或子域部署，由前端自动识别租户编码。
 

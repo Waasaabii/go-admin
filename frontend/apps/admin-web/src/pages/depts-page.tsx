@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AdminPageStack,
   AdminTwoColumn,
+  AppScrollbar,
   AsyncActionButton,
   Button,
   ConfirmDialog,
@@ -25,9 +26,9 @@ import {
   Toolbar,
   TreeTableSection,
   toast,
-} from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
-import type { SysDeptRecord } from "@suiyuan/types";
+} from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
+import type { SysDeptRecord } from "@go-admin/types";
 
 type FlatDeptRecord = SysDeptRecord & { level: number };
 
@@ -267,7 +268,7 @@ export function DeptsPage({ api }: { api: ReturnType<typeof createApiClient> }) 
           <div className="flex flex-1 items-center py-6 text-sm text-muted-foreground">正在加载部门详情...</div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+            <AppScrollbar className="min-h-0 flex-1" viewportClassName="pr-1">
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField label="上级部门">
                   <Select onValueChange={(value) => setDraft((current) => ({ ...current, parentId: Number(value) }))} options={parentOptions} value={String(draft.parentId)} />
@@ -291,7 +292,7 @@ export function DeptsPage({ api }: { api: ReturnType<typeof createApiClient> }) 
                   <Select onValueChange={(value) => setDraft((current) => ({ ...current, status: Number(value) }))} options={statusOptions.filter((item) => item.value)} value={String(draft.status)} />
                 </FormField>
               </div>
-            </div>
+            </AppScrollbar>
             <FormActions className="mt-4 shrink-0 border-t border-border pt-4">
               <AsyncActionButton
                 disabled={!draft.deptName.trim() || !draft.leader.trim()}

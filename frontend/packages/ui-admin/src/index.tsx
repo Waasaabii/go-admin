@@ -1,4 +1,5 @@
 export * from "./primitives";
+export * from "./error-pages";
 export {
   AppFrameShell,
   ThemeToggle,

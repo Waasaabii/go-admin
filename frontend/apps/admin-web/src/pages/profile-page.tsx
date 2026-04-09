@@ -1,5 +1,5 @@
-import { AdminPageStack, AdminTwoColumn, DetailGrid, PageHeader, SectionCard } from "@suiyuan/ui-admin";
-import type { InfoResponse, ProfileResponse } from "@suiyuan/types";
+import { AdminPageStack, AdminTwoColumn, DetailGrid, PageHeader, SectionCard } from "@go-admin/ui-admin";
+import type { InfoResponse, ProfileResponse } from "@go-admin/types";
 
 export function ProfilePage({ info, profile }: { info: InfoResponse; profile: ProfileResponse }) {
   return (

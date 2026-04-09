@@ -1,6 +1,6 @@
 import { CrudDataPage } from "../components/crud-data-page";
-import { createApiClient } from "@suiyuan/api";
-import type { SysConfigRecord } from "@suiyuan/types";
+import { createApiClient } from "@go-admin/api";
+import type { SysConfigRecord } from "@go-admin/types";
 
 export function ConfigsPage({ api }: { api: ReturnType<typeof createApiClient> }) {
   return (

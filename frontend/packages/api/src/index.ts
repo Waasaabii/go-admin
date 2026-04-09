@@ -1,7 +1,7 @@
 import axios, { AxiosError, type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 
-import { isSessionExpired, toAuthorizationToken } from "@suiyuan/auth";
+import { isSessionExpired, toAuthorizationToken } from "@go-admin/auth";
 import type {
   ApiEnvelope,
   AppSession,
@@ -41,7 +41,7 @@ import type {
   SysPostRecord,
   SysRoleRecord,
   SysUserRecord,
-} from "@suiyuan/types";
+} from "@go-admin/types";
 
 export class ApiError extends Error {
   code: number;

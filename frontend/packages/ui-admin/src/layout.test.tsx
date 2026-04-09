@@ -13,7 +13,7 @@ import {
 
 const setTheme = vi.fn();
 
-vi.mock("@suiyuan/design-tokens", () => ({
+vi.mock("@go-admin/design-tokens", () => ({
   useTheme: () => ({
     theme: "light",
     setTheme,
@@ -23,6 +23,9 @@ vi.mock("@suiyuan/design-tokens", () => ({
 let host: HTMLDivElement;
 let root: Root;
 let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
 
 function findButton(label: string) {
   return Array.from(document.querySelectorAll("button")).find((item) => item.textContent?.includes(label));
@@ -35,10 +38,17 @@ beforeEach(() => {
   document.body.appendChild(host);
   root = createRoot(host);
   setTheme.mockReset();
-  consoleErrorSpy = vi.spyOn(console, "error").mockImplementation((message?: unknown) => {
-    if (typeof message === "string" && message.includes("DialogContent")) {
+  consoleErrorSpy = vi.spyOn(console, "error").mockImplementation((message?: unknown, ...args: unknown[]) => {
+    if (typeof message === "string" && message.includes("Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.")) {
       return;
     }
+    originalConsoleError(message, ...args);
+  });
+  consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation((message?: unknown, ...args: unknown[]) => {
+    if (typeof message === "string" && message.includes("Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.")) {
+      return;
+    }
+    originalConsoleWarn(message, ...args);
   });
 });
 
@@ -49,6 +59,7 @@ afterEach(() => {
   host.remove();
   document.body.innerHTML = "";
   consoleErrorSpy.mockRestore();
+  consoleWarnSpy.mockRestore();
 });
 
 describe("ui-admin components", () => {

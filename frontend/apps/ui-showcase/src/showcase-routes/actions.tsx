@@ -10,7 +10,7 @@ import {
   StatusBadge,
   ThemeToggle,
   toast,
-} from "@suiyuan/ui-admin";
+} from "@go-admin/ui-admin";
 
 import {
   ShowcaseDocPage,

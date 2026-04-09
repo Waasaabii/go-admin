@@ -2,7 +2,7 @@
 
 本文件为 Claude Code (claude.ai/code) 在本目录中工作时提供指引。
 
-## 应用：@suiyuan/mobile-h5
+## 应用：@go-admin/mobile-h5
 
 移动端 H5 单页应用，面向普通用户。
 
@@ -34,15 +34,15 @@ src/
 
 ## 依赖的内部包
 
-- `@suiyuan/api` — HTTP 请求客户端
-- `@suiyuan/auth` — 会话管理
-- `@suiyuan/core` — 业务工具
-- `@suiyuan/design-tokens` — 主题色
-- `@suiyuan/types` — TypeScript 类型
-- `@suiyuan/ui-mobile` — 移动端布局组件
+- `@go-admin/api` — HTTP 请求客户端
+- `@go-admin/auth` — 会话管理
+- `@go-admin/core` — 业务工具
+- `@go-admin/design-tokens` — 主题色
+- `@go-admin/types` — TypeScript 类型
+- `@go-admin/ui-mobile` — 移动端布局组件
 
 ## 与 admin-web 的区别
 
-- 使用 `@suiyuan/ui-mobile` 而非 `@suiyuan/ui-admin`
+- 使用 `@go-admin/ui-mobile` 而非 `@go-admin/ui-admin`
 - API 前缀为 `/app-api/v1/`（ClientType 为 `"mobile-user"`）
 - 页面较少，聚焦普通用户功能

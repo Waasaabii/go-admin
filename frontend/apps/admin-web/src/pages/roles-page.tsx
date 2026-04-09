@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AdminPageStack,
   AdminTwoColumn,
+  AppScrollbar,
   AsyncActionButton,
   Button,
   ConfirmDialog,
@@ -29,9 +30,9 @@ import {
   Toolbar,
   TreeSelectorPanel,
   toast,
-} from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
-import type { SysRoleRecord, TreeOptionNode } from "@suiyuan/types";
+} from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
+import type { SysRoleRecord, TreeOptionNode } from "@go-admin/types";
 
 type RoleDraft = {
   roleId?: number;
@@ -379,7 +380,7 @@ export function RolesPage({ api }: { api: ReturnType<typeof createApiClient> }) 
           <div className="flex flex-1 items-center py-6 text-sm text-muted-foreground">正在加载角色权限树...</div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+            <AppScrollbar className="min-h-0 flex-1" viewportClassName="pr-1">
               <div className="grid gap-6">
                 <FormSection description="字段直接对应后端 DTO，不额外引入兼容层。" title="基础信息">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -434,7 +435,7 @@ export function RolesPage({ api }: { api: ReturnType<typeof createApiClient> }) 
                   />
                 </div>
               </div>
-            </div>
+            </AppScrollbar>
             <FormActions className="mt-4 shrink-0 border-t border-border pt-4">
               <AsyncActionButton
                 disabled={!draft.roleName.trim() || !draft.roleKey.trim()}

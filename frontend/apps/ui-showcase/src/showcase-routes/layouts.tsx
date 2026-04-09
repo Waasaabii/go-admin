@@ -7,6 +7,7 @@ import {
   AdminTopbar,
   AdminTwoColumn,
   AppFrameShell,
+  AppScrollbar,
   AuthLayout,
   AuthPanel,
   Backtop,
@@ -19,8 +20,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  DateRange,
   DateRangePicker,
+  type DateRangePickerValue,
   DefinitionList,
   DetailItem,
   DetailPane,
@@ -55,7 +56,7 @@ import {
   Watermark,
   WizardLayout,
   toast,
-} from "@suiyuan/ui-admin";
+} from "@go-admin/ui-admin";
 import { useState } from "react";
 import {
   ShowcaseDocPage,
@@ -70,10 +71,7 @@ import {
 function FilterPanelPage() {
   const [selectedCluster, setSelectedCluster] = useState("shanghai");
   const [selectedStatus, setSelectedStatus] = useState("running");
-  const [range, setRange] = useState<DateRange | undefined>({
-    from: new Date("2026-04-01"),
-    to: new Date("2026-04-08"),
-  });
+  const [range, setRange] = useState<DateRangePickerValue>(["2026-04-01", "2026-04-08"]);
 
   return (
     <ShowcaseDocPage
@@ -99,7 +97,7 @@ function FilterPanelPage() {
                   <Select onValueChange={setSelectedCluster} options={selectOptions} value={selectedCluster} />
                 </FormField>
                 <FormField label="时间范围">
-                  <DateRangePicker onChange={setRange} value={range} />
+                  <DateRangePicker onChange={setRange} value={range} valueFormat="YYYY-MM-DD" />
                 </FormField>
               </div>
               <Toolbar>
@@ -163,7 +161,7 @@ function FilterPanelPage() {
                   <Select onValueChange={setSelectedCluster} options={selectOptions} value={selectedCluster} />
                 </FormField>
                 <FormField className="md:col-span-2" label="时间范围">
-                  <DateRangePicker onChange={setRange} value={range} />
+                  <DateRangePicker onChange={setRange} value={range} valueFormat="YYYY-MM-DD" />
                 </FormField>
               </div>
               <RowActions>
@@ -1880,18 +1878,26 @@ function BacktopPage() {
         { description: "目标滚动容器选择器；不传时监听 window。", name: "target", type: "string" },
         { defaultValue: "32", description: "距离右侧的偏移。", name: "right", type: "number" },
         { defaultValue: "32", description: "距离底部的偏移。", name: "bottom", type: "number" },
+        { defaultValue: "false", description: "是否允许在视口内纵向拖拽按钮位置。", name: "draggable", type: "boolean" },
+        { defaultValue: "300", description: "纵向拖拽最大偏移，且不会被拖出当前视口。", name: "maxDragOffset", type: "number" },
         { defaultValue: "320", description: "滚动动画时长参数。", name: "duration", type: "number" },
       ]}
       categoryLabel="文档骨架"
       demos={[
         {
           code: `<div className="relative">
-  <div id="backtop-demo-pane" className="h-80 overflow-y-auto">...</div>
+  <AppScrollbar className="h-80 rounded-2xl border border-border bg-card" viewportProps={{ id: "backtop-demo-pane" }} viewportClassName="p-4">
+    ...
+  </AppScrollbar>
   <Backtop target="#backtop-demo-pane" />
 </div>`,
           content: (
             <div className="relative">
-              <div className="h-80 overflow-y-auto rounded-2xl border border-border bg-card p-4" id="backtop-demo-pane">
+              <AppScrollbar
+                className="h-80 rounded-2xl border border-border bg-card"
+                viewportClassName="p-4"
+                viewportProps={{ id: "backtop-demo-pane" }}
+              >
                 <div className="grid gap-4">
                   {Array.from({ length: 12 }, (_, index) => (
                     <SectionCard description={`内容区块 ${index + 1}`} key={index} title={`文档章节 ${index + 1}`}>
@@ -1901,7 +1907,7 @@ function BacktopPage() {
                     </SectionCard>
                   ))}
                 </div>
-              </div>
+              </AppScrollbar>
               <Backtop bottom={20} right={20} target="#backtop-demo-pane" visibilityHeight={120} />
             </div>
           ),
@@ -1912,11 +1918,11 @@ function BacktopPage() {
           code: `<Backtop bottom={24} right={24} visibilityHeight={120} />`,
           content: (
             <InlineNotice title="页面级返回顶部">
-              页面级场景直接监听 window，常见于超长文档页和历史记录页。当前展示站不主动触发全局滚动，以容器模式为主。
+              展示站已经把 Backtop 注册到全局 content 区；当正文滚动超过阈值后显示，并支持在视口内上下拖拽 300px。
             </InlineNotice>
           ),
-          description: "页面级与容器级的区别在于是否传入 `target`。",
-          title: "页面级说明",
+          description: "页面级与容器级的区别在于是否传入 `target`；展示站默认采用 content 容器注册。",
+          title: "全局 content 注册",
         },
       ]}
       description="Backtop 在长页面或滚动容器中提供快速返回顶部的入口，适合文档站、日志页和长详情页。"
@@ -1943,11 +1949,11 @@ function WatermarkPage() {
       categoryLabel="文档骨架"
       demos={[
         {
-          code: `<Watermark content="SUIYUAN UI">
+          code: `<Watermark content="GO ADMIN UI">
   <Card>...</Card>
 </Watermark>`,
           content: (
-            <Watermark content="SUIYUAN UI">
+            <Watermark content="GO ADMIN UI">
               <Card>
                 <CardHeader>
                   <CardTitle>基础水印</CardTitle>

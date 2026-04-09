@@ -1,6 +1,12 @@
 import {
+  AppVirtualList,
   Avatar,
   Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   CommitList,
   DataTableSection,
   DefinitionList,
@@ -25,7 +31,7 @@ import {
   TabsList,
   TabsTrigger,
   TaskStatusCard,
-} from "@suiyuan/ui-admin";
+} from "@go-admin/ui-admin";
 import { Bell, Database, Shield, UserRound } from "lucide-react";
 import { useState } from "react";
 import {
@@ -802,6 +808,104 @@ function CommitListPage() {
   );
 }
 
+function VirtualListPage() {
+  const services = Array.from({ length: 160 }, (_, index) => ({
+    id: `svc-${index + 1}`,
+    latency: 40 + (index % 9) * 12,
+    name: `ops-worker-${String(index + 1).padStart(3, "0")}`,
+    owner: ["平台组", "风控组", "订单组", "审计组"][index % 4],
+  }));
+
+  return (
+    <ShowcaseDocPage
+      apiItems={[
+        { description: "列表数据数组。", name: "items", required: true, type: "readonly Item[]" },
+        { defaultValue: "56", description: "初始估算高度；渲染后会被真实内容高度覆盖。", name: "estimatedItemSize", type: "number" },
+        { description: "按项返回更精细的预估高度，适合不等高场景。", name: "getEstimatedItemSize", type: "(item, index) => number" },
+        { defaultValue: "4", description: "上下额外渲染的缓冲项数量。", name: "overscan", type: "number" },
+        { description: "滚动容器根节点插槽，适合直接塞一个 HTML 容器。", name: "rootSlot", type: "ReactElement" },
+        { description: "无数据时的空态内容。", name: "empty", type: "ReactNode" },
+        { description: "单项渲染函数。", name: "children", required: true, type: "(item, index) => ReactNode" },
+      ]}
+      categoryLabel="数据展示"
+      demos={[
+        {
+          code: `const services = Array.from({ length: 160 }, (_, index) => ({ id: index, name: \`ops-worker-\${index}\` }));
+
+<AppVirtualList
+  estimatedItemSize={72}
+  items={services}
+  rootSlot={<section className="h-80 rounded-2xl border border-border bg-card" />}
+  viewportClassName="p-3"
+>
+  {(item) => <article className="flex h-full items-center rounded-xl border px-4">{item.name}</article>}
+</AppVirtualList>`,
+          content: (
+            <AppVirtualList
+              estimatedItemSize={72}
+              getItemKey={(item) => item.id}
+              items={services}
+              rootSlot={<section className="h-80 rounded-2xl border border-border bg-card shadow-sm" />}
+              viewportClassName="p-3"
+            >
+              {(item, index) => (
+                <article className="flex items-center justify-between rounded-xl border border-border/70 bg-background px-4 py-3 shadow-sm">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-foreground">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">{item.owner} 负责维护</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">P95 延迟</p>
+                    <p className="text-sm font-semibold text-foreground">{item.latency} ms</p>
+                    <p className="text-[11px] text-muted-foreground">#{String(index + 1).padStart(3, "0")}</p>
+                  </div>
+                </article>
+              )}
+            </AppVirtualList>
+          ),
+          description: "组件先用估算高度完成初次布局，随后按真实内容高度重排。根容器通过 rootSlot 直接接一个 HTML 节点。",
+          title: "rootSlot 容器插槽",
+        },
+        {
+          code: `<AppVirtualList
+  empty={<div className="rounded-xl border border-dashed px-4 py-8 text-sm text-muted-foreground">暂无任务</div>}
+  estimatedItemSize={56}
+  items={[]}
+  rootSlot={<section className="h-48 rounded-2xl border border-border bg-card" />}
+  viewportClassName="p-3"
+>
+  {(item) => <div>{item.name}</div>}
+</AppVirtualList>`,
+          content: (
+            <Card>
+              <CardHeader>
+                <CardTitle>空态承接</CardTitle>
+                <CardDescription>无数据时不需要页面层额外判断，直接让组件承接空态。</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AppVirtualList
+                  empty={<div className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">当前没有待处理任务</div>}
+                  estimatedItemSize={56}
+                  items={[]}
+                  rootSlot={<section className="h-48 rounded-2xl border border-border bg-background" />}
+                  viewportClassName="p-3"
+                >
+                  {() => <div />}
+                </AppVirtualList>
+              </CardContent>
+            </Card>
+          ),
+          description: "组件直接承接空态，可以减少业务页在滚动容器外再包一层判断。",
+          title: "空态兜底",
+        },
+      ]}
+      description="AppVirtualList 是 `AppScrollbar` 之上的动态高度虚拟滚动能力，目标是让后台长列表只靠一个容器插槽和一个渲染函数就能接入。"
+      notes={["estimatedItemSize 只是首屏估算值，真实位置以后续测量结果为准。", "高度变化发生在当前视口上方时，组件会按锚点修正 scrollTop，尽量避免跳动。", "rootSlot 负责外层滚动容器，列表内容仍建议在 children 中输出清晰的单项结构。"]}
+      title="AppVirtualList"
+    />
+  );
+}
+
 export const dataRoutes: ShowcaseRoute[] = [
   { component: TablePage, label: "Table", path: "/data/table", shortLabel: "TBL", summaryKey: "showcase.route.data.table.summary" },
   { component: PaginationPage, label: "Pagination", path: "/data/pagination", shortLabel: "PAG", summaryKey: "showcase.route.data.pagination.summary" },
@@ -810,6 +914,7 @@ export const dataRoutes: ShowcaseRoute[] = [
   { component: AvatarPage, label: "Avatar", path: "/data/avatar", shortLabel: "AVT", summaryKey: "showcase.route.data.avatar.summary" },
   { component: IconPage, label: "Icon", path: "/data/icon", shortLabel: "ICN", summaryKey: "showcase.route.data.icon.summary" },
   { component: LogViewerPage, label: "LogViewer", path: "/data/log-viewer", shortLabel: "LOG", summaryKey: "showcase.route.data.log-viewer.summary" },
+  { component: VirtualListPage, label: "AppVirtualList", path: "/data/virtual-list", shortLabel: "VTL", summaryKey: "showcase.route.data.virtual-list.summary" },
   { component: DetailGridPage, label: "DetailGrid", path: "/data/detail-grid", shortLabel: "DTL", summaryKey: "showcase.route.data.detail-grid.summary" },
   { component: TaskStatusCardPage, label: "TaskStatusCard", path: "/data/task-status-card", shortLabel: "TSK", summaryKey: "showcase.route.data.task-status-card.summary" },
   { component: CommitListPage, label: "CommitList", path: "/data/commit-list", shortLabel: "CMT", summaryKey: "showcase.route.data.commit-list.summary" },

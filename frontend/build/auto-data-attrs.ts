@@ -221,7 +221,7 @@ export function createAutoDataAttrsBabelPlugin(options: AutoDataAttrsOptions) {
     const { types: t } = api;
 
     return {
-      name: "suiyuan-auto-data-attrs",
+      name: "go-admin-auto-data-attrs",
       visitor: {
         JSXOpeningElement(pathNode: BabelNodePath, state: BabelState) {
           const filename = state.filename;

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from "react";
 
-export const THEME_STORAGE_KEY = "suiyuan-admin-theme";
+export const THEME_STORAGE_KEY = "go-admin-theme";
 
 export type ThemeMode = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";

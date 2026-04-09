@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { AdminPageStack, MetricCard, MetricGrid, PageHeader, ReadonlyCodeBlock, SectionCard } from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
+import { AdminPageStack, MetricCard, MetricGrid, PageHeader, ReadonlyCodeBlock, SectionCard } from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
 
 export function ServerMonitorPage({ api }: { api: ReturnType<typeof createApiClient> }) {
   const monitorQuery = useQuery({

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import { useI18n, type Locale } from "@suiyuan/i18n";
-import { Badge, Button, DocsShell, GlobalSearch, ThemeToggle } from "@suiyuan/ui-admin";
+import { useI18n, type Locale } from "@go-admin/i18n";
+import { AppScrollbar, Backtop, Badge, Button, DocsShell, GlobalSearch, ThemeToggle } from "@go-admin/ui-admin";
 
 import {
   getShowcaseCategoryDescription,
@@ -67,7 +67,7 @@ function ShowcaseHeader({ onSearchOpen }: { onSearchOpen: () => void }) {
   return (
     <header className="showcase-header hidden xl:flex">
       <div className="showcase-header__brand">
-        <Badge>Suiyuan UI</Badge>
+        <Badge>Go Admin UI</Badge>
         <span className="showcase-header__section">{t("showcase.header.section")}</span>
       </div>
       <div className="showcase-header__crumb">
@@ -89,11 +89,11 @@ function ShowcaseSidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="showcase-sidebar">
       <div className="showcase-sidebar__brand">
-        <p className="showcase-sidebar__name">Suiyuan UI</p>
+        <p className="showcase-sidebar__name">Go Admin UI</p>
         <p className="showcase-sidebar__tagline">{t("showcase.sidebar.tagline")}</p>
       </div>
 
-      <div className="showcase-sidebar__body">
+      <AppScrollbar className="min-h-0 flex-1" viewportClassName="showcase-sidebar__body">
         {showcaseCategories.map((category) => (
           <section className="showcase-sidebar__group" key={category.key}>
             <div className="showcase-sidebar__group-head">
@@ -115,7 +115,7 @@ function ShowcaseSidebar({ onNavigate }: { onNavigate?: () => void }) {
             </nav>
           </section>
         ))}
-      </div>
+      </AppScrollbar>
     </div>
   );
 }
@@ -162,7 +162,7 @@ export function App() {
       <ScrollToTop />
       <DocsShell
         className="showcase-shell"
-        contentClassName="px-4 py-6 md:px-8 md:py-8 xl:min-h-0 xl:overflow-y-auto"
+        contentClassName="showcase-content-scroll-root px-4 py-6 md:px-8 md:py-8 xl:min-h-0 xl:overflow-y-auto"
         contentInnerClassName="max-w-[1120px] gap-8 xl:pb-12"
         header={<ShowcaseHeader onSearchOpen={() => handleSearchOpenChange(true)} />}
         mobileBar={({ openSidebar }) => (
@@ -171,7 +171,7 @@ export function App() {
               <span className="text-lg leading-none">≡</span>
             </Button>
             <div className="showcase-mobile-bar__title">
-              <span>Suiyuan UI</span>
+              <span>Go Admin UI</span>
               <small>{t("showcase.mobile.subtitle")}</small>
             </div>
             <div className="showcase-mobile-bar__actions">
@@ -196,6 +196,7 @@ export function App() {
           <Route element={<Navigate replace to={defaultRoute} />} path="*" />
         </Routes>
       </DocsShell>
+      <Backtop draggable maxDragOffset={300} target=".showcase-content-scroll-root" visibilityHeight={160} />
       <GlobalSearch
         description={t("showcase.search.description")}
         enableHotkeys

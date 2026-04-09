@@ -5,8 +5,8 @@ import {
   AdminPageStack,
   Button,
   DataTableSection,
-  type DateRange,
   DateRangePicker,
+  type DateRangePickerValue,
   DetailDialog,
   DetailGrid,
   FilterPanel,
@@ -25,14 +25,36 @@ import {
   TableHeader,
   TableRow,
   Toolbar,
-} from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
+} from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
 
 const statusOptions = [
   { value: "", label: "全部状态" },
   { value: "2", label: "成功" },
   { value: "1", label: "失败" },
 ];
+
+const RANGE_DEFAULT_TIME: [Date, Date] = [new Date(2000, 0, 1, 0, 0, 0), new Date(2000, 0, 1, 23, 59, 59)];
+
+function addDays(value: Date, amount: number) {
+  const next = new Date(value);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function startOfMonth(value: Date) {
+  return new Date(value.getFullYear(), value.getMonth(), 1);
+}
+
+function createCommonShortcuts() {
+  const today = new Date();
+  return [
+    { text: "今天", value: [today, today] as [Date, Date] },
+    { text: "最近 7 天", value: [addDays(today, -6), today] as [Date, Date] },
+    { text: "最近 30 天", value: [addDays(today, -29), today] as [Date, Date] },
+    { text: "本月", value: [startOfMonth(today), today] as [Date, Date] },
+  ];
+}
 
 function formatDateTime(value?: string) {
   if (!value) {
@@ -45,16 +67,16 @@ function formatDateTime(value?: string) {
   return date.toLocaleString("zh-CN", { hour12: false });
 }
 
-function isInRange(value: string | undefined, range?: DateRange) {
-  if (!range?.from) {
+function isInRange(value: string | undefined, range?: DateRangePickerValue) {
+  if (!range?.[0]) {
     return true;
   }
   if (!value) {
     return false;
   }
   const current = new Date(value).getTime();
-  const start = new Date(range.from).setHours(0, 0, 0, 0);
-  const end = range.to ? new Date(range.to).setHours(23, 59, 59, 999) : new Date(range.from).setHours(23, 59, 59, 999);
+  const start = new Date(String(range[0])).getTime();
+  const end = range[1] ? new Date(String(range[1])).getTime() : start;
   return current >= start && current <= end;
 }
 
@@ -63,7 +85,7 @@ export function ScheduleLogsPage({ api }: { api: ReturnType<typeof createApiClie
   const [jobName, setJobName] = useState("");
   const [jobGroup, setJobGroup] = useState("");
   const [status, setStatus] = useState("");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [dateRange, setDateRange] = useState<DateRangePickerValue>();
   const [detailId, setDetailId] = useState<number | null>(null);
 
   const listQuery = useQuery({
@@ -116,7 +138,13 @@ export function ScheduleLogsPage({ api }: { api: ReturnType<typeof createApiClie
             }} options={statusOptions} value={status} />
           </FormField>
           <FormField label="开始时间">
-            <DateRangePicker onChange={setDateRange} value={dateRange} />
+            <DateRangePicker
+              defaultTime={RANGE_DEFAULT_TIME}
+              onChange={setDateRange}
+              shortcuts={createCommonShortcuts()}
+              value={dateRange}
+              valueFormat="YYYY-MM-DD HH:mm:ss"
+            />
           </FormField>
         </div>
         <Toolbar>

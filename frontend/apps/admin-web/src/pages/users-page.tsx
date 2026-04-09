@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { CrudDataPage } from "../components/crud-data-page";
-import { Button, ConfirmDialog, FormActions, FormDialog, Input, SectionCard, toast } from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
-import type { SysDeptRecord, SysPostRecord, SysRoleRecord, SysUserRecord } from "@suiyuan/types";
+import { Button, ConfirmDialog, FormActions, FormDialog, Input, SectionCard, toast } from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
+import type { SysDeptRecord, SysPostRecord, SysRoleRecord, SysUserRecord } from "@go-admin/types";
 
 type SelectOption = {
   label: string;

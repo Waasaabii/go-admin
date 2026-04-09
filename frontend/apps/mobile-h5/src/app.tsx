@@ -2,11 +2,11 @@ import { useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import { ApiError, createApiClient } from "@suiyuan/api";
-import { createSessionManager } from "@suiyuan/auth";
-import { deriveTenantCode } from "@suiyuan/core";
-import { BottomTabBar, MobileShell, SurfaceCard } from "@suiyuan/ui-mobile";
-import type { AppSession } from "@suiyuan/types";
+import { ApiError, createApiClient } from "@go-admin/api";
+import { createSessionManager } from "@go-admin/auth";
+import { deriveTenantCode } from "@go-admin/core";
+import { BottomTabBar, MobileShell, SurfaceCard } from "@go-admin/ui-mobile";
+import type { AppSession } from "@go-admin/types";
 
 import { HomePage } from "./pages/home-page";
 import { LoginPage } from "./pages/login-page";

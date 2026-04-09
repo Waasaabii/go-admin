@@ -1,6 +1,6 @@
-import type { AppSession, ClientType } from "@suiyuan/types";
+import type { AppSession, ClientType } from "@go-admin/types";
 
-const SESSION_PREFIX = "suiyuan:session";
+const SESSION_PREFIX = "go-admin:session";
 
 function readStorage() {
   if (typeof window === "undefined") {

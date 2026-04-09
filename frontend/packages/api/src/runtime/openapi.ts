@@ -5,8 +5,8 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 
-import { isSessionExpired, toAuthorizationToken } from "@suiyuan/auth";
-import type { AppSession, ClientType, LoginResult } from "@suiyuan/types";
+import { isSessionExpired, toAuthorizationToken } from "@go-admin/auth";
+import type { AppSession, ClientType, LoginResult } from "@go-admin/types";
 
 type SessionManager = {
   read: () => AppSession | null;

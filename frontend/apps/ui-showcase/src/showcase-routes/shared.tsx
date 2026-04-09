@@ -1,10 +1,10 @@
 import { type ReactElement, type ReactNode } from "react";
-import { useI18n } from "@suiyuan/i18n";
+import { useI18n } from "@go-admin/i18n";
 
 import {
   DocsApiTable,
   DocsDemoCard,
-} from "@suiyuan/ui-admin";
+} from "@go-admin/ui-admin";
 
 import { translateShowcaseCategoryLabel } from "../i18n/showcase";
 

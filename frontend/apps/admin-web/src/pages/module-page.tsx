@@ -1,5 +1,5 @@
-import { AdminPageStack, AdminTwoColumn, DetailGrid, PageHeader, SectionCard } from "@suiyuan/ui-admin";
-import type { AppMenuNode } from "@suiyuan/types";
+import { AdminPageStack, AdminTwoColumn, DetailGrid, PageHeader, SectionCard } from "@go-admin/ui-admin";
+import type { AppMenuNode } from "@go-admin/types";
 
 export function ModulePage({ currentMenu }: { currentMenu: AppMenuNode | undefined }) {
   if (!currentMenu) {

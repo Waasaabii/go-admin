@@ -2,7 +2,7 @@
 
 本文件为 Claude Code (claude.ai/code) 在本目录中工作时提供指引。
 
-## 包：@suiyuan/types
+## 包：@go-admin/types
 
 前端共享 TypeScript 类型定义包。定义所有 API 请求/响应的接口，无运行时代码。
 

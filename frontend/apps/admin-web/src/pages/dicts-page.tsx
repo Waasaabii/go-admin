@@ -29,9 +29,9 @@ import {
   Textarea,
   Toolbar,
   toast,
-} from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
-import type { SysDictDataRecord, SysDictTypeRecord } from "@suiyuan/types";
+} from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
+import type { SysDictDataRecord, SysDictTypeRecord } from "@go-admin/types";
 
 type DictTypeDraft = {
   id?: number;

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { CrudDataPage } from "../components/crud-data-page";
-import { Button, ConfirmDialog, SectionCard, toast } from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
-import type { SysJobRecord } from "@suiyuan/types";
+import { Button, ConfirmDialog, SectionCard, toast } from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
+import type { SysJobRecord } from "@go-admin/types";
 
 const jobGroupOptions = [
   { label: "默认", value: "DEFAULT" },

@@ -1,7 +1,7 @@
-import { countLeafMenus, countVisibleMenus, flattenMenuTree } from "@suiyuan/core";
-import { useI18n } from "@suiyuan/i18n";
-import { AdminPageStack, AdminTwoColumn, MetricCard, MetricGrid, PageHeader, SectionCard } from "@suiyuan/ui-admin";
-import type { AppMenuNode, InfoResponse, ProfileResponse } from "@suiyuan/types";
+import { countLeafMenus, countVisibleMenus, flattenMenuTree } from "@go-admin/core";
+import { useI18n } from "@go-admin/i18n";
+import { AdminPageStack, AdminTwoColumn, MetricCard, MetricGrid, PageHeader, SectionCard } from "@go-admin/ui-admin";
+import type { AppMenuNode, InfoResponse, ProfileResponse } from "@go-admin/types";
 
 export function DashboardPage({
   info,

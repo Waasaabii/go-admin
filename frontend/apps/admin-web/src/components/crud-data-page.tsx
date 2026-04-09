@@ -1,8 +1,9 @@
 import { type ReactNode, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useI18n } from "@suiyuan/i18n";
+import { useI18n } from "@go-admin/i18n";
 import {
+  AppScrollbar,
   Button,
   ConfirmDialog,
   DataTableSection,
@@ -27,8 +28,8 @@ import {
   Textarea,
   Toolbar,
   toast,
-} from "@suiyuan/ui-admin";
-import type { PagePayload, QueryPayload } from "@suiyuan/types";
+} from "@go-admin/ui-admin";
+import type { PagePayload, QueryPayload } from "@go-admin/types";
 
 type Column<T> = {
   label: string;
@@ -281,7 +282,7 @@ export function CrudDataPage<T extends object>({
           title={editingId !== null ? t("admin.crud.dialog.editTitle") : t("admin.crud.dialog.createTitle")}
         >
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+            <AppScrollbar className="min-h-0 flex-1" viewportClassName="pr-1">
               <div className="grid gap-4 md:grid-cols-2">
                 {formFields.map((field) => (
                   <FormField
@@ -330,7 +331,7 @@ export function CrudDataPage<T extends object>({
                   </FormField>
                 ))}
               </div>
-            </div>
+            </AppScrollbar>
             <FormActions className="mt-4 shrink-0 border-t border-border pt-4">
             <Button
               disabled={saveMutation.isPending}

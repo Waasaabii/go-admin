@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState, type HTMLAttributes, type PropsWithChildren, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type HTMLAttributes, type PropsWithChildren, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { useTheme, type ThemeMode } from "@suiyuan/design-tokens";
+import { useTheme, type ThemeMode } from "@go-admin/design-tokens";
 import { ChevronDown, LogOut, MoonStar, PanelLeftClose, PanelLeftOpen, Search, Sun, SunMoon, UserRound } from "lucide-react";
 
-import type { AppMenuNode } from "@suiyuan/types";
+import type { AppMenuNode } from "@go-admin/types";
 
 import {
+  AppScrollbar,
   Badge,
   Breadcrumb,
   Button,
@@ -44,8 +45,8 @@ import {
 } from "./primitives";
 import { cn } from "./lib/utils";
 
-const SIDEBAR_KEY = "suiyuan-admin-sidebar-collapsed";
-const NAV_KEY = "suiyuan-admin-nav-open";
+const SIDEBAR_KEY = "go-admin-sidebar-collapsed";
+const NAV_KEY = "go-admin-nav-open";
 
 function readStoredBoolean(key: string, fallback: boolean) {
   if (typeof window === "undefined") {
@@ -268,7 +269,7 @@ export function GlobalSearch({
                 value={query}
               />
             </div>
-            <div className="max-h-[26rem] overflow-y-auto">
+            <AppScrollbar className="max-h-[26rem]">
               {filteredItems.length ? (
                 <div className="grid gap-4">
                   {Object.entries(groupedItems).map(([section, groupItems]) => (
@@ -303,7 +304,7 @@ export function GlobalSearch({
                   title={emptyLabel}
                 />
               )}
-            </div>
+            </AppScrollbar>
           </div>
         </DialogContent>
       </Dialog>
@@ -420,7 +421,9 @@ export function DataTableSection({
   return (
     <SectionCard description={typeof description === "string" ? description : undefined} title={String(title)}>
       {typeof description === "string" ? null : description}
-      <div className="overflow-x-auto">{children}</div>
+      <AppScrollbar className="w-full" viewportClassName="pb-1">
+        {children}
+      </AppScrollbar>
     </SectionCard>
   );
 }
@@ -444,12 +447,14 @@ export function FormDialog({
   open,
   title,
 }: PropsWithChildren<{ description?: ReactNode; onOpenChange: (open: boolean) => void; open: boolean; title: ReactNode }>) {
+  const descriptionId = useId();
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[min(96vw,52rem)] flex-col overflow-hidden p-0">
+      <DialogContent aria-describedby={description ? descriptionId : undefined} className="flex max-h-[calc(100dvh-2rem)] w-[min(96vw,52rem)] flex-col overflow-hidden p-0">
         <DialogHeader className="shrink-0 px-6 pb-0 pt-6 pr-12">
           <DialogTitle>{title}</DialogTitle>
-          {description ? <DialogDescription>{description}</DialogDescription> : null}
+          {description ? <DialogDescription id={descriptionId}>{description}</DialogDescription> : null}
         </DialogHeader>
         <div className="flex min-h-0 flex-1 flex-col px-6 pb-6 pt-4">{children}</div>
       </DialogContent>
@@ -464,14 +469,18 @@ export function DetailDialog({
   open,
   title,
 }: PropsWithChildren<{ description?: ReactNode; onOpenChange: (open: boolean) => void; open: boolean; title: ReactNode }>) {
+  const descriptionId = useId();
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[min(96vw,44rem)] flex-col overflow-hidden p-0">
+      <DialogContent aria-describedby={description ? descriptionId : undefined} className="flex max-h-[calc(100dvh-2rem)] w-[min(96vw,44rem)] flex-col overflow-hidden p-0">
         <DialogHeader className="shrink-0 px-6 pb-0 pt-6 pr-12">
           <DialogTitle>{title}</DialogTitle>
-          {description ? <DialogDescription>{description}</DialogDescription> : null}
+          {description ? <DialogDescription id={descriptionId}>{description}</DialogDescription> : null}
         </DialogHeader>
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4">{children}</div>
+        <AppScrollbar className="min-h-0 flex-1" viewportClassName="px-6 pb-6 pt-4">
+          {children}
+        </AppScrollbar>
       </DialogContent>
     </Dialog>
   );
@@ -524,7 +533,7 @@ export function AdminTopbar({
 export function BrandBlock() {
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Suiyuan Admin</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Go Admin</p>
       <div className="space-y-1">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">统一后台工作台</h1>
         <p className="text-sm leading-6 text-muted-foreground">后台管理系统</p>
@@ -730,9 +739,9 @@ export function AdminSidebar({
         </TooltipProvider>
       </div>
       <div className="mt-5">{collapsed ? null : userCard}</div>
-      <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
+      <AppScrollbar className="mt-5 min-h-0 flex-1" viewportClassName="pr-1">
         <TreeNav currentPath={currentPath} menuTree={menuTree} onNavigate={onNavigate} sidebarCollapsed={collapsed} />
-      </div>
+      </AppScrollbar>
       <div className="mt-5 grid gap-2">
         <NavLink className="rounded-control px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" onClick={onNavigate} to="/ops-service">
           {collapsed ? "运" : "运维服务"}
@@ -817,9 +826,9 @@ export function AdminAppShell({
         <div className="flex h-full flex-col gap-4">
           <BrandBlock />
           {userCard}
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <AppScrollbar className="min-h-0 flex-1" viewportClassName="pr-1">
             <TreeNav currentPath={currentPath} menuTree={menuTree} onNavigate={closeSidebar} />
-          </div>
+          </AppScrollbar>
         </div>
       )}
     >
@@ -884,7 +893,9 @@ export function TreeTableSection({
   return (
     <SectionCard description={typeof description === "string" ? description : undefined} title={String(title)}>
       {typeof description === "string" ? null : description}
-      <div className={cn("overflow-x-auto", className)}>{children}</div>
+      <AppScrollbar className={cn("w-full", className)} viewportClassName="pb-1">
+        {children}
+      </AppScrollbar>
     </SectionCard>
   );
 }
@@ -964,11 +975,13 @@ export function TreeSelectorPanel({
       <CardContent className="grid gap-4">
         <Badge tone="muted">当前选中 {checkedIds.length} 项</Badge>
         {nodes.length ? (
-          <ul className="grid max-h-[24rem] gap-3 overflow-auto pr-1">
-            {nodes.map((node) => (
-              <TreeSelectorNode checkedIds={checkedIds} disabled={disabled} key={node.id} node={node} onChange={onChange} />
-            ))}
-          </ul>
+          <AppScrollbar className="max-h-[24rem]" viewportClassName="pr-1">
+            <ul className="grid gap-3">
+              {nodes.map((node) => (
+                <TreeSelectorNode checkedIds={checkedIds} disabled={disabled} key={node.id} node={node} onChange={onChange} />
+              ))}
+            </ul>
+          </AppScrollbar>
         ) : (
           <EmptyState description={emptyLabel} title="没有可展示的树节点" />
         )}
@@ -1544,7 +1557,7 @@ export function DocsApiTable({
   return (
     <SectionCard description={typeof description === "string" ? description : undefined} title={String(title)}>
       {typeof description === "string" ? null : description}
-      <div className={cn("overflow-x-auto", className)}>
+      <AppScrollbar className={cn("w-full", className)} viewportClassName="pb-1">
         <Table>
           <TableHeader>
             <TableRow>
@@ -1587,7 +1600,7 @@ export function DocsApiTable({
             ))}
           </TableBody>
         </Table>
-      </div>
+      </AppScrollbar>
     </SectionCard>
   );
 }

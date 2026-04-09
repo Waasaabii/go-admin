@@ -2,7 +2,7 @@
 
 本文件为 Claude Code (claude.ai/code) 在本目录中工作时提供指引。
 
-## 包：@suiyuan/design-tokens
+## 包：@go-admin/design-tokens
 
 设计令牌包，定义主题 token 契约、默认主题与基础全局样式。
 
@@ -32,8 +32,8 @@
 默认主题应用可在入口处导入：
 
 ```css
-@import "@suiyuan/design-tokens/base.css";
-@import "@suiyuan/design-tokens/default-theme.css";
+@import "@go-admin/design-tokens/base.css";
+@import "@go-admin/design-tokens/default-theme.css";
 ```
 
 宿主项目接管主题时，只引入 `base.css`，再按 `host-theme-template.css` 的 token 结构提供自己的主题文件。

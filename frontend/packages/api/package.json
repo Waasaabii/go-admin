@@ -1,5 +1,5 @@
 {
-  "name": "@suiyuan/api",
+  "name": "@go-admin/api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,8 +7,8 @@
   "types": "src/index.ts",
   "dependencies": {
     "@microsoft/fetch-event-source": "^2.0.1",
-    "@suiyuan/auth": "workspace:*",
-    "@suiyuan/types": "workspace:*",
+    "@go-admin/auth": "workspace:*",
+    "@go-admin/types": "workspace:*",
     "axios": "^1.12.2"
   },
   "scripts": {

@@ -4,8 +4,10 @@ import {
   Checkbox,
   Combobox,
   DatePicker,
+  type DatePickerModelValue,
   DateRange,
   DateRangePicker,
+  type DateRangePickerValue,
   FieldError,
   Form,
   FormActions,
@@ -22,7 +24,7 @@ import {
   Upload,
   toast,
   type UploadFileItem,
-} from "@suiyuan/ui-admin";
+} from "@go-admin/ui-admin";
 import { CalendarDays, Search } from "lucide-react";
 import { useState } from "react";
 
@@ -296,43 +298,44 @@ function ComboboxPage() {
 }
 
 function DatePickerPage() {
-  const [date, setDate] = useState<Date | undefined>(new Date("2026-04-08"));
-  const [errorDate, setErrorDate] = useState<Date | undefined>();
+  const [date, setDate] = useState<DatePickerModelValue>("2026-04-08");
+  const [errorDate, setErrorDate] = useState<DatePickerModelValue>();
 
   return (
     <ShowcaseDocPage
       apiItems={[
-        { description: "日期变化回调。", name: "onChange", required: true, type: "(date?: Date) => void" },
-        { description: "当前日期值。", name: "value", type: "Date | undefined" },
-        { defaultValue: "false", description: "是否可清空。", name: "clearable", type: "boolean" },
-        { defaultValue: '"default"', description: "尺寸。", name: "size", type: '"large" | "default" | "small"' },
-        { defaultValue: '"default"', description: "状态。", name: "status", type: '"default" | "error"' },
-        { defaultValue: "false", description: "是否禁用。", name: "disabled", type: "boolean" },
+        { description: "日期变化回调。", name: "onChange", required: true, type: "(value?: Date | string | number) => void" },
+        { description: "当前日期值。", name: "value", type: "Date | string | number | undefined" },
+        { defaultValue: '"YYYY-MM-DD"', description: "输入框展示格式。", name: "format", type: "string" },
+        { description: "绑定值格式；设置后不再返回 Date。", name: "valueFormat", type: "string" },
+        { defaultValue: "true", description: "是否可清空。", name: "clearable", type: "boolean" },
+        { defaultValue: "true", description: "是否允许手输。", name: "editable", type: "boolean" },
+        { defaultValue: "true", description: "是否展示确认区。", name: "showConfirm", type: "boolean" },
       ]}
       categoryLabel="表单录入"
       demos={[
         {
-          code: `<DatePicker clearable onChange={setDate} value={date} />`,
+          code: `<DatePicker onChange={setDate} value={date} valueFormat="YYYY-MM-DD" />`,
           content: (
             <FormField label="发布时间">
-              <DatePicker clearable onChange={setDate} value={date} />
+              <DatePicker onChange={setDate} value={date} valueFormat="YYYY-MM-DD" />
             </FormField>
           ),
-          description: "单日期录入基础用法。",
+          description: "单日期输入默认支持手输、弹层选择和确认提交。",
           title: "基础用法",
         },
         {
           code: `<RowActions>
-  <DatePicker size="large" onChange={() => undefined} />
-  <DatePicker size="small" onChange={() => undefined} />
+  <DatePicker size="large" valueFormat="YYYY-MM-DD" onChange={() => undefined} />
+  <DatePicker size="small" valueFormat="YYYY-MM-DD" onChange={() => undefined} />
 </RowActions>`,
           content: (
             <div className="grid gap-4 md:grid-cols-2">
               <FormField label="Large">
-                <DatePicker onChange={() => undefined} size="large" />
+                <DatePicker onChange={() => undefined} size="large" valueFormat="YYYY-MM-DD" />
               </FormField>
               <FormField label="Small">
-                <DatePicker onChange={() => undefined} size="small" />
+                <DatePicker onChange={() => undefined} size="small" valueFormat="YYYY-MM-DD" />
               </FormField>
             </div>
           ),
@@ -340,15 +343,15 @@ function DatePickerPage() {
           title: "尺寸",
         },
         {
-          code: `<DatePicker status="error" clearable onChange={setErrorDate} value={errorDate} />
-<DatePicker disabled onChange={() => undefined} value={new Date("2026-04-09")} />`,
+          code: `<DatePicker status="error" onChange={setErrorDate} value={errorDate} valueFormat="YYYY-MM-DD" />
+<DatePicker disabled onChange={() => undefined} value="2026-04-09" valueFormat="YYYY-MM-DD" />`,
           content: (
             <div className="grid gap-4 md:grid-cols-2">
               <FormField error="请选择发布日期" label="错误态">
-                <DatePicker clearable onChange={setErrorDate} status="error" value={errorDate} />
+                <DatePicker onChange={setErrorDate} status="error" value={errorDate} valueFormat="YYYY-MM-DD" />
               </FormField>
               <FormField label="禁用态">
-                <DatePicker disabled onChange={() => undefined} value={new Date("2026-04-09")} />
+                <DatePicker disabled onChange={() => undefined} value="2026-04-09" valueFormat="YYYY-MM-DD" />
               </FormField>
             </div>
           ),
@@ -364,44 +367,51 @@ function DatePickerPage() {
 }
 
 function DateRangePickerPage() {
-  const [range, setRange] = useState<DateRange | undefined>({
-    from: new Date("2026-04-01"),
-    to: new Date("2026-04-08"),
-  });
-  const [emptyRange, setEmptyRange] = useState<DateRange | undefined>();
+  const [range, setRange] = useState<DateRangePickerValue>(["2026-04-01 00:00:00", "2026-04-08 23:59:59"]);
+  const [emptyRange, setEmptyRange] = useState<DateRangePickerValue>();
 
   return (
     <ShowcaseDocPage
       apiItems={[
-        { description: "范围变化回调。", name: "onChange", required: true, type: "(value?: DateRange) => void" },
-        { description: "当前范围值。", name: "value", type: "DateRange | undefined" },
-        { defaultValue: "false", description: "是否可清空。", name: "clearable", type: "boolean" },
-        { defaultValue: '"default"', description: "尺寸。", name: "size", type: '"large" | "default" | "small"' },
-        { defaultValue: '"default"', description: "状态。", name: "status", type: '"default" | "error"' },
-        { defaultValue: "false", description: "是否禁用。", name: "disabled", type: "boolean" },
+        { description: "范围变化回调。", name: "onChange", required: true, type: "(value?: [Date | string | number, Date | string | number]) => void" },
+        { description: "当前范围值。", name: "value", type: "[Date | string | number, Date | string | number] | undefined" },
+        { defaultValue: '"YYYY-MM-DD"', description: "展示格式。", name: "format", type: "string" },
+        { description: "绑定值格式。", name: "valueFormat", type: "string" },
+        { defaultValue: "false", description: "是否拆开双面板导航。", name: "unlinkPanels", type: "boolean" },
+        { description: "范围过程态回调。", name: "onCalendarChange", type: "(value?: [...]) => void" },
       ]}
       categoryLabel="表单录入"
       demos={[
         {
-          code: `<DateRangePicker clearable onChange={setRange} value={range} />`,
+          code: `<DateRangePicker
+  defaultTime={[new Date(2000, 0, 1, 0, 0, 0), new Date(2000, 0, 1, 23, 59, 59)]}
+  onChange={setRange}
+  value={range}
+  valueFormat="YYYY-MM-DD HH:mm:ss"
+/>`,
           content: (
             <FormField label="观察窗口">
-              <DateRangePicker clearable onChange={setRange} value={range} />
+              <DateRangePicker
+                defaultTime={[new Date(2000, 0, 1, 0, 0, 0), new Date(2000, 0, 1, 23, 59, 59)]}
+                onChange={setRange}
+                value={range}
+                valueFormat="YYYY-MM-DD HH:mm:ss"
+              />
             </FormField>
           ),
-          description: "筛选区常用的时间范围输入。",
+          description: "范围输入支持双输入框、双面板和闭区间字符串输出。",
           title: "基础用法",
         },
         {
-          code: `<DateRangePicker size="large" onChange={() => undefined} />
-<DateRangePicker size="small" onChange={() => undefined} />`,
+          code: `<DateRangePicker size="large" onChange={() => undefined} valueFormat="YYYY-MM-DD" />
+<DateRangePicker size="small" onChange={() => undefined} valueFormat="YYYY-MM-DD" />`,
           content: (
             <div className="grid gap-4 md:grid-cols-2">
               <FormField label="Large">
-                <DateRangePicker onChange={() => undefined} size="large" />
+                <DateRangePicker onChange={() => undefined} size="large" valueFormat="YYYY-MM-DD" />
               </FormField>
               <FormField label="Small">
-                <DateRangePicker onChange={() => undefined} size="small" />
+                <DateRangePicker onChange={() => undefined} size="small" valueFormat="YYYY-MM-DD" />
               </FormField>
             </div>
           ),
@@ -409,18 +419,19 @@ function DateRangePickerPage() {
           title: "尺寸",
         },
         {
-          code: `<DateRangePicker status="error" clearable onChange={setEmptyRange} value={emptyRange} />
-<DateRangePicker disabled onChange={() => undefined} value={{ from: new Date("2026-04-01"), to: new Date("2026-04-08") }} />`,
+          code: `<DateRangePicker status="error" onChange={setEmptyRange} value={emptyRange} valueFormat="YYYY-MM-DD" />
+<DateRangePicker disabled onChange={() => undefined} value={["2026-04-01", "2026-04-08"]} valueFormat="YYYY-MM-DD" />`,
           content: (
             <div className="grid gap-4 md:grid-cols-2">
               <FormField error="请选择时间范围" label="错误态">
-                <DateRangePicker clearable onChange={setEmptyRange} status="error" value={emptyRange} />
+                <DateRangePicker onChange={setEmptyRange} status="error" value={emptyRange} valueFormat="YYYY-MM-DD" />
               </FormField>
               <FormField label="禁用态">
                 <DateRangePicker
                   disabled
                   onChange={() => undefined}
-                  value={{ from: new Date("2026-04-01"), to: new Date("2026-04-08") }}
+                  value={["2026-04-01", "2026-04-08"]}
+                  valueFormat="YYYY-MM-DD"
                 />
               </FormField>
             </div>

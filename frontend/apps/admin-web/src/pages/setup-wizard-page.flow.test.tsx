@@ -2,8 +2,10 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { I18nProvider } from "@go-admin/i18n";
 
 import { SetupWizardPage } from "./setup-wizard-page";
+import { adminMessages } from "../i18n/admin";
 
 let host: HTMLDivElement;
 let root: Root;
@@ -126,7 +128,11 @@ describe("SetupWizardPage 页面流程", () => {
     const onComplete = vi.fn();
 
     await act(async () => {
-      root.render(<SetupWizardPage initialStatus={initialStatus} onComplete={onComplete} setupApi={setupApi as never} />);
+      root.render(
+        <I18nProvider initialLocale="zh-CN" messages={adminMessages}>
+          <SetupWizardPage initialStatus={initialStatus} onComplete={onComplete} setupApi={setupApi as never} />
+        </I18nProvider>,
+      );
     });
 
     await clickButton("下一步");
@@ -170,7 +176,11 @@ describe("SetupWizardPage 页面流程", () => {
     const onComplete = vi.fn();
 
     await act(async () => {
-      root.render(<SetupWizardPage initialStatus={initialStatus} onComplete={onComplete} setupApi={setupApi as never} />);
+      root.render(
+        <I18nProvider initialLocale="zh-CN" messages={adminMessages}>
+          <SetupWizardPage initialStatus={initialStatus} onComplete={onComplete} setupApi={setupApi as never} />
+        </I18nProvider>,
+      );
     });
 
     await advanceToAdminStep(setupApi);

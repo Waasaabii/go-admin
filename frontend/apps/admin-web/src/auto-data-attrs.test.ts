@@ -8,7 +8,7 @@ import {
   toKebabCase,
 } from "../../../build/auto-data-attrs";
 
-const workspaceRoot = "/Users/wangshangbin/My/OrderProject/suiyuan";
+const workspaceRoot = "/Users/wangshangbin/My/OrderProject/go-admin";
 
 describe("auto data attrs", () => {
   it("会生成稳定的 kebab-case 名称", () => {
@@ -19,7 +19,7 @@ describe("auto data attrs", () => {
   it("会输出工作区相对路径", () => {
     expect(
       getWorkspaceRelativePath(
-        "/Users/wangshangbin/My/OrderProject/suiyuan/frontend/apps/admin-web/src/pages/login-page.tsx",
+        "/Users/wangshangbin/My/OrderProject/go-admin/frontend/apps/admin-web/src/pages/login-page.tsx",
         workspaceRoot,
       ),
     ).toBe("frontend/apps/admin-web/src/pages/login-page.tsx");
@@ -34,7 +34,7 @@ describe("auto data attrs", () => {
     expect(
       resolveAutoDataAttributes({
         column: 13,
-        filename: "/Users/wangshangbin/My/OrderProject/suiyuan/frontend/apps/admin-web/src/pages/login-page.tsx",
+        filename: "/Users/wangshangbin/My/OrderProject/go-admin/frontend/apps/admin-web/src/pages/login-page.tsx",
         includeSource: true,
         line: 85,
         tagName: "Input",

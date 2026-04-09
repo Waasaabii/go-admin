@@ -1,6 +1,6 @@
-import { useI18n } from "@suiyuan/i18n";
+import { useI18n } from "@go-admin/i18n";
 
-import { Button } from "@suiyuan/ui-admin";
+import { Button } from "@go-admin/ui-admin";
 
 export function AdminLocaleToggle() {
   const { locale, setLocale, t } = useI18n();

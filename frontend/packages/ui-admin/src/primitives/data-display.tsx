@@ -2,10 +2,12 @@ import { ArrowUp, ChevronLeft, ChevronRight, LoaderCircle, TriangleAlert, UserRo
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type HTMLAttributes,
   type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type TdHTMLAttributes,
   type ThHTMLAttributes,
@@ -14,6 +16,7 @@ import {
 import { cn } from "../lib/utils";
 import { Button } from "./button";
 import { Input, Select } from "./form-controls";
+import { AppScrollbar } from "./scroll-area";
 import { type ControlSize } from "./shared";
 
 function clampPercentage(value: number) {
@@ -23,6 +26,8 @@ function clampPercentage(value: number) {
 
   return Math.min(100, Math.max(0, value));
 }
+
+const BACKTOP_DRAG_THRESHOLD = 6;
 
 function getAvatarInitials(name?: string) {
   if (!name) {
@@ -562,7 +567,7 @@ export function Watermark({
   children,
   className,
   color = "rgba(100, 116, 139, 0.18)",
-  content = "SUIYUAN UI",
+  content = "GO ADMIN UI",
   fontSize = 15,
   gapX = 96,
   gapY = 72,
@@ -600,28 +605,55 @@ export function Watermark({
 export function Backtop({
   bottom = 32,
   className,
+  draggable = false,
   duration = 320,
   fixed = true,
+  maxDragOffset = 300,
   right = 32,
   target,
   visibilityHeight = 240,
 }: {
   bottom?: number;
   className?: string;
+  draggable?: boolean;
   duration?: number;
   fixed?: boolean;
+  maxDragOffset?: number;
   right?: number;
   target?: string;
   visibilityHeight?: number;
 }) {
   const [visible, setVisible] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const draggingRef = useRef<{ pointerId: number; startOffset: number; startY: number } | null>(null);
+  const movedRef = useRef(false);
+
+  function resolveTargetContainer() {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return null;
+    }
+
+    if (!target) {
+      return null;
+    }
+
+    const container = document.querySelector<HTMLElement>(target);
+    if (!container) {
+      return null;
+    }
+
+    const overflowY = window.getComputedStyle(container).overflowY;
+    return /(auto|scroll|overlay)/.test(overflowY) ? container : null;
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    const container = target ? document.querySelector<HTMLElement>(target) : null;
+    const container = resolveTargetContainer();
     const scrollElement = container ?? window;
     const readScrollTop = () => (container ? container.scrollTop : window.scrollY);
     const handleScroll = () => setVisible(readScrollTop() >= visibilityHeight);
@@ -634,12 +666,93 @@ export function Backtop({
     };
   }, [target, visibilityHeight]);
 
-  function handleClick() {
+  useEffect(() => {
+    if (!draggable || typeof window === "undefined") {
+      return;
+    }
+
+    function handlePointerMove(event: PointerEvent) {
+      if (!draggingRef.current) {
+        return;
+      }
+
+      const button = buttonRef.current;
+      if (!button) {
+        return;
+      }
+
+      const deltaY = draggingRef.current.startY - event.clientY;
+      if (!movedRef.current && Math.abs(deltaY) < BACKTOP_DRAG_THRESHOLD) {
+        return;
+      }
+
+      movedRef.current = true;
+      if (!dragging) {
+        setDragging(true);
+      }
+      const viewportHeight =
+        fixed
+          ? window.innerHeight
+          : button.offsetParent instanceof HTMLElement
+            ? button.offsetParent.clientHeight
+            : window.innerHeight;
+      const buttonHeight = button.offsetHeight || 44;
+      const minBottom = 8;
+      const maxBottom = Math.max(minBottom, viewportHeight - buttonHeight - 8);
+      const minOffset = Math.max(-maxDragOffset, minBottom - bottom);
+      const maxOffset = Math.min(maxDragOffset, maxBottom - bottom);
+      const rawOffset = draggingRef.current.startOffset + deltaY;
+      const nextOffset = Math.min(maxOffset, Math.max(minOffset, rawOffset));
+
+      setDragOffset(nextOffset);
+    }
+
+    function handlePointerUp(event: PointerEvent) {
+      if (!draggingRef.current || draggingRef.current.pointerId !== event.pointerId) {
+        return;
+      }
+
+      draggingRef.current = null;
+      setDragging(false);
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+  }, [bottom, draggable, dragging, fixed, maxDragOffset]);
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (!draggable) {
+      return;
+    }
+
+    draggingRef.current = {
+      pointerId: event.pointerId,
+      startOffset: dragOffset,
+      startY: event.clientY,
+    };
+    movedRef.current = false;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }
+
+  function handleClick(event: ReactMouseEvent<HTMLButtonElement>) {
+    if (movedRef.current) {
+      movedRef.current = false;
+      event.preventDefault();
+      return;
+    }
+
     if (typeof window === "undefined") {
       return;
     }
 
-    const container = target ? document.querySelector<HTMLElement>(target) : null;
+    const container = resolveTargetContainer();
     if (container) {
       container.scrollTo({ behavior: duration <= 0 ? "auto" : "smooth", top: 0 });
       return;
@@ -652,13 +765,17 @@ export function Backtop({
     <button
       aria-hidden={!visible}
       className={cn(
-        "z-40 inline-flex items-center justify-center rounded-full border border-border/70 bg-card/95 p-0 text-foreground shadow-[var(--shadow-soft)] backdrop-blur transition-all duration-200 hover:border-primary/35 hover:text-primary",
+        "z-40 inline-flex select-none items-center justify-center rounded-full border border-border/70 bg-card/95 p-0 text-foreground shadow-[var(--shadow-soft)] backdrop-blur transition-[opacity,color,border-color,box-shadow,transform] duration-200 hover:border-primary/35 hover:text-primary",
         fixed ? "fixed" : "absolute",
+        draggable ? "touch-none cursor-grab active:cursor-grabbing" : undefined,
+        dragging ? "duration-0" : undefined,
         visible ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0",
         className,
       )}
+      onPointerDown={handlePointerDown}
       onClick={handleClick}
-      style={{ bottom, right }}
+      ref={buttonRef}
+      style={{ bottom: bottom + dragOffset, right }}
       tabIndex={visible ? 0 : -1}
       type="button"
     >
@@ -1231,7 +1348,9 @@ export function ReadonlyCodeBlock({
   return (
     <div className={cn("grid gap-3 rounded-3xl border border-border bg-slate-950 px-5 py-4 text-slate-100", className)}>
       {title ? <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{title}</div> : null}
-      <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-all text-xs leading-6">{content || emptyLabel}</pre>
+      <AppScrollbar className="max-h-80">
+        <pre className="whitespace-pre-wrap break-all pr-1 text-xs leading-6">{content || emptyLabel}</pre>
+      </AppScrollbar>
     </div>
   );
 }

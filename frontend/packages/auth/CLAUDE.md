@@ -2,13 +2,13 @@
 
 本文件为 Claude Code (claude.ai/code) 在本目录中工作时提供指引。
 
-## 包：@suiyuan/auth
+## 包：@go-admin/auth
 
 前端会话管理包。负责 Token 的存储、读取、过期判断和格式化。
 
 ## 核心导出
 
-- `createSessionManager(clientType)` — 创建会话管理器，基于 `localStorage` 按 `clientType` 隔离存储（key 为 `suiyuan:session:{clientType}`）
+- `createSessionManager(clientType)` — 创建会话管理器，基于 `localStorage` 按 `clientType` 隔离存储（key 为 `go-admin:session:{clientType}`）
   - `.read()` — 读取当前会话
   - `.write(session)` — 写入会话
   - `.clear()` — 清除会话
@@ -17,7 +17,7 @@
 
 ## 依赖
 
-- `@suiyuan/types` — `AppSession` 和 `ClientType` 类型定义
+- `@go-admin/types` — `AppSession` 和 `ClientType` 类型定义
 
 ## 开发命令
 

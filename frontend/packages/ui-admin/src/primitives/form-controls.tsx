@@ -1,9 +1,9 @@
-import { DayPicker, type DateRange, type Matcher } from "react-day-picker";
+import { DayPicker, type DateRange as CalendarDateRange, type Matcher } from "react-day-picker";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
-import { CalendarDays, Check, ChevronsUpDown, ChevronDown, Circle, Search, UploadCloud, X } from "lucide-react";
+import { Check, ChevronsUpDown, ChevronDown, Circle, Search, UploadCloud, X } from "lucide-react";
 import {
   type ChangeEvent,
   forwardRef,
@@ -20,10 +20,22 @@ import {
 
 import { Button } from "./button";
 import { Popover, PopoverContent, PopoverTrigger } from "./overlays";
+import { AppScrollbar } from "./scroll-area";
 import { cn } from "../lib/utils";
 import { controlSizeClasses, getControlStateClass, type ControlSize, type ControlStatus, type SelectOption } from "./shared";
 
-export type { DateRange };
+export type { CalendarDateRange as DateRange };
+export {
+  DatePicker,
+  DateRangePicker,
+  type DatePickerModelValue,
+  type DatePickerPanelChangeEvent,
+  type DatePickerProps,
+  type DatePickerRef,
+  type DateRangePickerProps,
+  type DateRangePickerValue,
+  type DateShortcut,
+} from "./date-picker";
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "prefix" | "size"> {
   append?: ReactNode;
@@ -388,7 +400,7 @@ export const RadioGroupItem = forwardRef<
 ));
 RadioGroupItem.displayName = RadioGroupPrimitive.Item.displayName;
 
-const EMPTY_SELECT_VALUE = "__suiyuan_select_empty__";
+const EMPTY_SELECT_VALUE = "__go_admin_select_empty__";
 
 export function Select({
   clearable = false,
@@ -533,7 +545,7 @@ export function Combobox({
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
           <div className="grid gap-2">
             <Input onChange={(event) => setKeyword(event.target.value)} placeholder={searchPlaceholder} prefix={<Search className="h-4 w-4" />} value={keyword} />
-            <div className="max-h-64 overflow-y-auto">
+            <AppScrollbar className="max-h-64">
               {filteredOptions.length ? (
                 <div className="grid gap-1">
                   {filteredOptions.map((option) => (
@@ -558,7 +570,7 @@ export function Combobox({
               ) : (
                 <p className="px-3 py-4 text-sm text-muted-foreground">{emptyLabel}</p>
               )}
-            </div>
+            </AppScrollbar>
           </div>
         </PopoverContent>
       </Popover>
@@ -572,124 +584,6 @@ export function Combobox({
             }
             onSelect("");
           }}
-          type="button"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-export function DatePicker({
-  clearable = false,
-  disabled = false,
-  onChange,
-  placeholder = "选择日期",
-  size = "default",
-  status = "default",
-  value,
-}: {
-  clearable?: boolean;
-  disabled?: boolean;
-  onChange: (value?: Date) => void;
-  placeholder?: string;
-  size?: ControlSize;
-  status?: ControlStatus;
-  value?: Date;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <Popover onOpenChange={setOpen} open={open}>
-        <PopoverTrigger asChild>
-          <button
-            className={cn(
-              "flex w-full items-center justify-between rounded-xl border bg-background text-left text-foreground transition-all ring-offset-background focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50",
-              controlSizeClasses[size],
-              getControlStateClass(status),
-              clearable && value ? "pr-16" : "pr-10",
-              size === "large" || size === "lg" ? "px-4" : "px-3",
-            )}
-            disabled={disabled}
-            type="button"
-          >
-            <span className={cn(!value && "text-muted-foreground")}>{value ? value.toLocaleDateString("zh-CN") : placeholder}</span>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <DayPicker
-            mode="single"
-            onSelect={(next) => {
-              onChange(next);
-              setOpen(false);
-            }}
-            selected={value}
-          />
-        </PopoverContent>
-      </Popover>
-      {clearable && value && !disabled ? (
-        <button
-          className="absolute right-9 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          onClick={() => onChange(undefined)}
-          type="button"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-export function DateRangePicker({
-  clearable = false,
-  disabled = false,
-  onChange,
-  size = "default",
-  status = "default",
-  value,
-}: {
-  clearable?: boolean;
-  disabled?: boolean;
-  onChange: (value?: DateRange) => void;
-  size?: ControlSize;
-  status?: ControlStatus;
-  value?: DateRange;
-}) {
-  const [open, setOpen] = useState(false);
-  const label = value?.from
-    ? `${value.from.toLocaleDateString("zh-CN")} - ${value.to?.toLocaleDateString("zh-CN") || "未结束"}`
-    : "选择时间范围";
-
-  return (
-    <div className="relative">
-      <Popover onOpenChange={setOpen} open={open}>
-        <PopoverTrigger asChild>
-          <button
-            className={cn(
-              "flex w-full items-center justify-between rounded-xl border bg-background text-left text-foreground transition-all ring-offset-background focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50",
-              controlSizeClasses[size],
-              getControlStateClass(status),
-              clearable && value?.from ? "pr-16" : "pr-10",
-              size === "large" || size === "lg" ? "px-4" : "px-3",
-            )}
-            disabled={disabled}
-            type="button"
-          >
-            <span className={cn("truncate", !value?.from && "text-muted-foreground")}>{label}</span>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <DayPicker mode="range" onSelect={onChange} selected={value} />
-        </PopoverContent>
-      </Popover>
-      {clearable && value?.from && !disabled ? (
-        <button
-          className="absolute right-9 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          onClick={() => onChange(undefined)}
           type="button"
         >
           <X className="h-3.5 w-3.5" />
@@ -720,8 +614,8 @@ type CalendarMultipleProps = CalendarBaseProps & {
 
 type CalendarRangeProps = CalendarBaseProps & {
   mode: "range";
-  onSelect?: (value?: DateRange) => void;
-  selected?: DateRange;
+  onSelect?: (value?: CalendarDateRange) => void;
+  selected?: CalendarDateRange;
 };
 
 export type CalendarProps = CalendarMultipleProps | CalendarRangeProps | CalendarSingleProps;

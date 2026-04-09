@@ -1,12 +1,12 @@
 {
-  "name": "@suiyuan/auth",
+  "name": "@go-admin/auth",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "dependencies": {
-    "@suiyuan/types": "workspace:*"
+    "@go-admin/types": "workspace:*"
   },
   "scripts": {
     "build": "tsc --project tsconfig.json",

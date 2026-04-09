@@ -1,4 +1,4 @@
-import type { TenantContext } from "@suiyuan/types";
+import type { TenantContext } from "@go-admin/types";
 
 function isIpAddress(hostname: string) {
   return /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname);

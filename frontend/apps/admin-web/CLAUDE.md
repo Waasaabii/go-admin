@@ -2,7 +2,7 @@
 
 本文件为 Claude Code (claude.ai/code) 在本目录中工作时提供指引。
 
-## 应用：@suiyuan/admin-web
+## 应用：@go-admin/admin-web
 
 PC 端管理后台单页应用。
 
@@ -35,9 +35,15 @@ src/
 
 ## 依赖的内部包
 
-- `@suiyuan/api` — HTTP 请求客户端
-- `@suiyuan/auth` — 会话管理
-- `@suiyuan/core` — 业务工具（菜单树构建等）
-- `@suiyuan/design-tokens` — 主题色
-- `@suiyuan/types` — TypeScript 类型
-- `@suiyuan/ui-admin` — PC 端布局组件
+- `@go-admin/api` — HTTP 请求客户端
+- `@go-admin/auth` — 会话管理
+- `@go-admin/core` — 业务工具（菜单树构建等）
+- `@go-admin/design-tokens` — 主题色
+- `@go-admin/types` — TypeScript 类型
+- `@go-admin/ui-admin` — PC 端布局组件
+
+## 布局与滚动约束
+
+- 页面优先使用 `@go-admin/ui-admin` 公共组件拼装，不在页面层重复定义已经存在的侧栏、筛选区、详情区和列表容器。
+- 组件内部独立滚动区域默认走 `@go-admin/ui-admin` 提供的统一滚动组件；不要在页面里直接写 `overflow-y-auto`、`overflow-x-auto`、`overflow-auto` 作为局部滚动实现。
+- 页面主内容区保留原生滚动，不要为了视觉统一把整页滚动改成局部容器滚动。

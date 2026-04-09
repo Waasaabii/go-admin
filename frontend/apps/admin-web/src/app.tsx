@@ -1,14 +1,14 @@
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Component, Suspense, lazy, useEffect, useRef, useState, type ErrorInfo, type PropsWithChildren, type ReactNode } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import { createApiClient, ApiError, createSetupApi } from "@suiyuan/api";
-import type { SetupStatus } from "@suiyuan/api";
-import { createSessionManager } from "@suiyuan/auth";
-import { adaptMenuTree, deriveTenantCode, findMenuByPath } from "@suiyuan/core";
-import { useI18n } from "@suiyuan/i18n";
-import { AdminAppShell, Card, CardContent, CardDescription, CardHeader, CardTitle, Loading } from "@suiyuan/ui-admin";
-import type { AppMenuNode, AppSession, InfoResponse, ProfileResponse } from "@suiyuan/types";
+import { createApiClient, ApiError, createSetupApi } from "@go-admin/api";
+import type { SetupStatus } from "@go-admin/api";
+import { createSessionManager } from "@go-admin/auth";
+import { adaptMenuTree, deriveTenantCode, findMenuByPath } from "@go-admin/core";
+import { useI18n } from "@go-admin/i18n";
+import { AdminAppShell, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Error404, Error500, Loading } from "@go-admin/ui-admin";
+import type { AppMenuNode, AppSession, InfoResponse, ProfileResponse } from "@go-admin/types";
 
 import { AdminLocaleToggle } from "./components/admin-locale-toggle";
 
@@ -39,6 +39,147 @@ const ModulePage = lazy(async () => ({ default: (await import("./pages/module-pa
 const tenant = deriveTenantCode(window.location.hostname, import.meta.env.VITE_TENANT_CODE || "local");
 const sessionManager = createSessionManager("admin");
 const setupApi = createSetupApi(import.meta.env.VITE_API_BASE_URL || "");
+
+function goToAdminHome() {
+  window.location.assign("/");
+}
+
+function goBackOrHome() {
+  if (window.history.length > 1) {
+    window.history.back();
+    return;
+  }
+
+  goToAdminHome();
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return null;
+}
+
+function ErrorScreenFrame({ children }: { children: ReactNode }) {
+  return (
+    <div className="min-h-[100dvh] bg-background px-4 py-4 md:px-6 md:py-6">
+      <AdminLocaleToggle />
+      <div className="mx-auto max-w-[1600px]">{children}</div>
+    </div>
+  );
+}
+
+function AdminNotFoundPage() {
+  const { t } = useI18n();
+  const location = useLocation();
+
+  return (
+    <ErrorScreenFrame>
+      <Error404
+        action={
+          <Button onClick={goToAdminHome} type="button">
+            {t("admin.error.404.home")}
+          </Button>
+        }
+        description={t("admin.error.404.description")}
+        footer={
+          <div className="grid gap-2">
+            <div className="text-sm font-semibold text-foreground">{t("admin.error.404.footerTitle")}</div>
+            <div className="text-sm leading-7 text-muted-foreground">{location.pathname}</div>
+          </div>
+        }
+        secondaryAction={
+          <Button onClick={goBackOrHome} type="button" variant="outline">
+            {t("admin.error.404.back")}
+          </Button>
+        }
+        title={t("admin.error.404.title")}
+      />
+    </ErrorScreenFrame>
+  );
+}
+
+function AdminServerErrorPage({
+  description,
+  error,
+  onRetry,
+  title,
+}: {
+  description?: string;
+  error?: unknown;
+  onRetry?: () => void;
+  title?: string;
+}) {
+  const { t } = useI18n();
+  const errorMessage = getErrorMessage(error);
+
+  return (
+    <ErrorScreenFrame>
+      <Error500
+        action={
+          <Button onClick={onRetry ?? (() => window.location.reload())} type="button">
+            {t("admin.error.500.retry")}
+          </Button>
+        }
+        description={description ?? t("admin.error.500.description")}
+        footer={
+          <div className="grid gap-2">
+            <div className="text-sm font-semibold text-foreground">{t("admin.error.500.footerTitle")}</div>
+            <div className="text-sm leading-7 text-muted-foreground">{errorMessage ?? t("admin.error.500.footerFallback")}</div>
+          </div>
+        }
+        secondaryAction={
+          <Button onClick={goToAdminHome} type="button" variant="outline">
+            {t("admin.error.500.home")}
+          </Button>
+        }
+        title={title ?? t("admin.error.500.title")}
+      />
+    </ErrorScreenFrame>
+  );
+}
+
+class AdminAppErrorBoundaryInner extends Component<
+  PropsWithChildren<{
+    fallback: (error: Error) => ReactNode;
+  }>,
+  { error: Error | null }
+> {
+  state = { error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {}
+
+  render() {
+    if (this.state.error) {
+      return this.props.fallback(this.state.error);
+    }
+
+    return this.props.children;
+  }
+}
+
+function AdminAppErrorBoundary({ children }: PropsWithChildren) {
+  const { t } = useI18n();
+
+  return (
+    <AdminAppErrorBoundaryInner
+      fallback={(error) => (
+        <AdminServerErrorPage
+          description={t("admin.error.500.boundaryDescription")}
+          error={error}
+          title={t("admin.error.500.boundaryTitle")}
+        />
+      )}
+    >
+      {children}
+    </AdminAppErrorBoundaryInner>
+  );
+}
 
 function useAdminApi(setAuthenticated: (value: boolean) => void) {
   return createApiClient({
@@ -97,8 +238,29 @@ function AdminWorkbench({
     return <LoadingScreen />;
   }
 
+  const bootstrapError = infoQuery.error ?? profileQuery.error ?? menuQuery.error;
+  if (bootstrapError) {
+    return (
+      <AdminServerErrorPage
+        description={t("admin.error.500.bootstrapDescription")}
+        error={bootstrapError}
+        onRetry={() => {
+          void infoQuery.refetch();
+          void profileQuery.refetch();
+          void menuQuery.refetch();
+        }}
+        title={t("admin.error.500.bootstrapTitle")}
+      />
+    );
+  }
+
   if (!infoQuery.data || !profileQuery.data || !menuQuery.data) {
-    throw new Error(t("admin.workbench.initError"));
+    return (
+      <AdminServerErrorPage
+        description={t("admin.error.500.bootstrapDescription")}
+        title={t("admin.error.500.bootstrapTitle")}
+      />
+    );
   }
 
   return (
@@ -128,19 +290,7 @@ function ShellContent({
   profile: ProfileResponse;
 }) {
   const location = useLocation();
-  const navigate = useNavigate();
   const currentMenu = findMenuByPath(menuTree, location.pathname);
-  const isFixedRoute = location.pathname === "/profile" || location.pathname === "/ops-service";
-
-  useEffect(() => {
-    if (location.pathname === "/" || isFixedRoute) {
-      return;
-    }
-
-    if (!currentMenu && menuTree.length > 0) {
-      navigate("/", { replace: true });
-    }
-  }, [currentMenu, isFixedRoute, location.pathname, menuTree, navigate]);
 
   return (
     <>
@@ -160,6 +310,8 @@ function ShellContent({
               element={<DashboardPage info={info} menuTree={menuTree} profile={profile} tenantCode={tenant.tenantCode} />}
               path="/"
             />
+            <Route element={<AdminNotFoundPage />} path="/404" />
+            <Route element={<AdminServerErrorPage />} path="/500" />
             <Route element={<UsersPage api={api} />} path="/admin/sys-user" />
             <Route element={<MenusPage api={api} />} path="/admin/sys-menu" />
             <Route element={<RolesPage api={api} />} path="/admin/sys-role" />
@@ -181,7 +333,7 @@ function ShellContent({
             <Route element={<ScheduleLogsPage api={api} />} path="/schedule/log" />
             <Route element={<OpsPage api={api} />} path="/ops-service" />
             <Route element={<ProfilePage info={info} profile={profile} />} path="/profile" />
-            <Route element={<ModulePage currentMenu={currentMenu} />} path="*" />
+            <Route element={currentMenu ? <ModulePage currentMenu={currentMenu} /> : <AdminNotFoundPage />} path="*" />
           </Routes>
         </Suspense>
       </AdminAppShell>
@@ -189,7 +341,7 @@ function ShellContent({
   );
 }
 
-export function App() {
+function AppContent() {
   const { t } = useI18n();
   const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
@@ -276,4 +428,12 @@ export function App() {
 
   // 阶段 4：已登录，进入管理后台
   return <AdminWorkbench api={api} onLogout={handleLogout} />;
+}
+
+export function App() {
+  return (
+    <AdminAppErrorBoundary>
+      <AppContent />
+    </AdminAppErrorBoundary>
+  );
 }

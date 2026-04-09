@@ -1,7 +1,7 @@
 /*
  * 宿主项目主题模板。
  * 用法：
- * 1. 应用入口先引入 @suiyuan/design-tokens/base.css
+ * 1. 应用入口先引入 @go-admin/design-tokens/base.css
  * 2. 再引入宿主自己的主题文件，按下面这套 token 提供值
  * 3. 如需深色模式，在 .dark 下覆盖对应 token
  */

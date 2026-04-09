@@ -2,8 +2,10 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { I18nProvider } from "@go-admin/i18n";
 
 import { SetupWizardPage } from "./setup-wizard-page";
+import { adminMessages } from "../i18n/admin";
 
 const defaults = {
   environment: "dev",
@@ -87,7 +89,11 @@ describe("SetupWizardPage 行为测试", () => {
   function renderPage(overrides: Parameters<typeof createSetupApi>[0] = {}) {
     setupApi = createSetupApi(overrides);
     act(() => {
-      root.render(<SetupWizardPage initialStatus={{ defaults } as any} setupApi={setupApi as any} onComplete={vi.fn()} />);
+      root.render(
+        <I18nProvider initialLocale="zh-CN" messages={adminMessages}>
+          <SetupWizardPage initialStatus={{ defaults } as any} setupApi={setupApi as any} onComplete={vi.fn()} />
+        </I18nProvider>,
+      );
     });
   }
 

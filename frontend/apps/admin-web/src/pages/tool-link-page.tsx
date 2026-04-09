@@ -1,4 +1,4 @@
-import { AdminPageStack, Button, PageHeader, ReadonlyCodeBlock, SectionCard } from "@suiyuan/ui-admin";
+import { AdminPageStack, Button, PageHeader, ReadonlyCodeBlock, SectionCard } from "@go-admin/ui-admin";
 
 type ToolLinkPageProps = {
   title: string;

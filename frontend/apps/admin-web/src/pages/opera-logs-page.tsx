@@ -6,8 +6,8 @@ import {
   Button,
   ConfirmDialog,
   DataTableSection,
-  type DateRange,
   DateRangePicker,
+  type DateRangePickerValue,
   DetailDialog,
   DetailGrid,
   FilterPanel,
@@ -27,15 +27,37 @@ import {
   TableRow,
   Toolbar,
   toast,
-} from "@suiyuan/ui-admin";
-import { createApiClient } from "@suiyuan/api";
-import type { SysOperaLogRecord } from "@suiyuan/types";
+} from "@go-admin/ui-admin";
+import { createApiClient } from "@go-admin/api";
+import type { SysOperaLogRecord } from "@go-admin/types";
 
 const statusOptions = [
   { value: "", label: "全部状态" },
   { value: "1", label: "正常" },
   { value: "2", label: "关闭" },
 ];
+
+const RANGE_DEFAULT_TIME: [Date, Date] = [new Date(2000, 0, 1, 0, 0, 0), new Date(2000, 0, 1, 23, 59, 59)];
+
+function addDays(value: Date, amount: number) {
+  const next = new Date(value);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function startOfMonth(value: Date) {
+  return new Date(value.getFullYear(), value.getMonth(), 1);
+}
+
+function createCommonShortcuts() {
+  const today = new Date();
+  return [
+    { text: "今天", value: [today, today] as [Date, Date] },
+    { text: "最近 7 天", value: [addDays(today, -6), today] as [Date, Date] },
+    { text: "最近 30 天", value: [addDays(today, -29), today] as [Date, Date] },
+    { text: "本月", value: [startOfMonth(today), today] as [Date, Date] },
+  ];
+}
 
 function formatDateTime(value?: string) {
   if (!value) {
@@ -44,10 +66,10 @@ function formatDateTime(value?: string) {
   return new Date(value).toLocaleString("zh-CN", { hour12: false });
 }
 
-function toRangeParams(range?: DateRange) {
+function toRangeParams(range?: DateRangePickerValue) {
   return {
-    beginTime: range?.from ? `${range.from.toLocaleDateString("sv-SE")} 00:00:00` : undefined,
-    endTime: range?.to ? `${range.to.toLocaleDateString("sv-SE")} 23:59:59` : undefined,
+    beginTime: typeof range?.[0] === "string" ? range[0] : undefined,
+    endTime: typeof range?.[1] === "string" ? range[1] : undefined,
   };
 }
 
@@ -57,12 +79,12 @@ export function OperaLogsPage({ api }: { api: ReturnType<typeof createApiClient>
   const [title, setTitle] = useState("");
   const [operUrl, setOperUrl] = useState("");
   const [status, setStatus] = useState("");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [dateRange, setDateRange] = useState<DateRangePickerValue>();
   const [detailId, setDetailId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SysOperaLogRecord | null>(null);
 
   const listQuery = useQuery({
-    queryKey: ["admin-page", "opera-logs", title, operUrl, status, dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), pageIndex],
+    queryKey: ["admin-page", "opera-logs", title, operUrl, status, dateRange?.[0], dateRange?.[1], pageIndex],
     queryFn: () =>
       api.admin.listOperaLogs({
         pageIndex,
@@ -122,7 +144,7 @@ export function OperaLogsPage({ api }: { api: ReturnType<typeof createApiClient>
             <DateRangePicker onChange={(value) => {
               setPageIndex(1);
               setDateRange(value);
-            }} value={dateRange} />
+            }} shortcuts={createCommonShortcuts()} value={dateRange} valueFormat="YYYY-MM-DD HH:mm:ss" defaultTime={RANGE_DEFAULT_TIME} />
           </FormField>
         </div>
         <Toolbar>

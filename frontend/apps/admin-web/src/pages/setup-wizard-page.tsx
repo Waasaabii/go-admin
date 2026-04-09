@@ -3,7 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { useI18n } from "@suiyuan/i18n";
+import { useI18n } from "@go-admin/i18n";
 import {
   AsyncActionButton,
   AuthLayout,
@@ -13,8 +13,8 @@ import {
   InlineNotice,
   Input,
   WizardLayout,
-} from "@suiyuan/ui-admin";
-import type { SetupApi } from "@suiyuan/api";
+} from "@go-admin/ui-admin";
+import type { SetupApi } from "@go-admin/api";
 
 function createDbSchema(t: ReturnType<typeof useI18n>["t"]) {
   return z.object({

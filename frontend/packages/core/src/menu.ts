@@ -1,4 +1,4 @@
-import type { AppMenuNode, RawMenuItem } from "@suiyuan/types";
+import type { AppMenuNode, RawMenuItem } from "@go-admin/types";
 
 function normalizePathSegment(path: string) {
   if (!path) {

@@ -5,9 +5,10 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { CornerDownLeft, Search, X } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import { forwardRef, useEffect, useMemo, useState, type HTMLAttributes, type ReactNode } from "react";
+import { forwardRef, useEffect, useId, useMemo, useState, type HTMLAttributes, type ReactNode } from "react";
 
 import { Button, type ButtonProps } from "./button";
+import { AppScrollbar } from "./scroll-area";
 import { cn } from "../lib/utils";
 
 export { toast };
@@ -31,22 +32,31 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 export const DialogContent = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ children, className, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      className={cn("fixed left-[50%] top-[50%] z-50 grid w-[min(94vw,48rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-[1.5rem] border border-border bg-card p-6 shadow-[var(--shadow-soft)] duration-200", className)}
-      ref={ref}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground hover:bg-secondary hover:text-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">关闭</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-));
+>(({ children, className, ...props }, ref) => {
+  const describedBy = props["aria-describedby"];
+  const { ["aria-describedby"]: _ignoredAriaDescribedBy, ...restProps } = props;
+  const fallbackDescriptionId = useId();
+  const descriptionId = describedBy ?? fallbackDescriptionId;
+
+  return (
+    <DialogPortal>
+      <DialogOverlay />
+      <DialogPrimitive.Content
+        aria-describedby={descriptionId}
+        className={cn("fixed left-[50%] top-[50%] z-50 grid w-[min(94vw,48rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-[1.5rem] border border-border bg-card p-6 shadow-[var(--shadow-soft)] duration-200", className)}
+        ref={ref}
+        {...restProps}
+      >
+        {describedBy ? null : <DialogPrimitive.Description className="sr-only" id={fallbackDescriptionId} />}
+        {children}
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground hover:bg-secondary hover:text-foreground">
+          <X className="h-4 w-4" />
+          <span className="sr-only">关闭</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  );
+});
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 export function Drawer({
@@ -64,16 +74,18 @@ export function Drawer({
   onOpenChange: (open: boolean) => void;
   title?: ReactNode;
 }) {
+  const descriptionId = useId();
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogPortal>
         <DialogOverlay />
         <DialogPrimitive.Content
-          aria-describedby={description ? undefined : undefined}
+          aria-describedby={description ? descriptionId : undefined}
           className={cn("fixed inset-y-0 right-0 z-50 w-[min(88vw,22rem)] border-l border-border bg-card p-5 shadow-[var(--shadow-soft)]", className)}
         >
           <DialogTitle className="sr-only">{title}</DialogTitle>
-          {description ? <DialogDescription className="sr-only">{description}</DialogDescription> : null}
+          {description ? <DialogDescription className="sr-only" id={descriptionId}>{description}</DialogDescription> : null}
           {children}
         </DialogPrimitive.Content>
       </DialogPortal>
@@ -299,27 +311,29 @@ export function GlobalSearch({
               回车执行
             </span>
           </label>
-          <div className="grid max-h-[22rem] gap-2 overflow-y-auto pr-1">
-            {filteredItems.length ? (
-              filteredItems.map((item) => (
-                <button
-                  className="grid gap-1 rounded-2xl border border-border/70 bg-card px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
-                  key={item.id}
-                  onClick={() => {
-                    onSelect?.(item);
-                    onOpenChange(false);
-                  }}
-                  type="button"
-                >
-                  {item.section ? <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{item.section}</span> : null}
-                  <span className="text-sm font-semibold text-foreground">{item.title}</span>
-                  {item.description ? <span className="text-sm leading-6 text-muted-foreground">{item.description}</span> : null}
-                </button>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-dashed border-border/70 bg-secondary/25 px-4 py-8 text-center text-sm text-muted-foreground">{emptyLabel}</div>
-            )}
-          </div>
+          <AppScrollbar className="max-h-[22rem]" viewportClassName="pr-1">
+            <div className="grid gap-2">
+              {filteredItems.length ? (
+                filteredItems.map((item) => (
+                  <button
+                    className="grid gap-1 rounded-2xl border border-border/70 bg-card px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
+                    key={item.id}
+                    onClick={() => {
+                      onSelect?.(item);
+                      onOpenChange(false);
+                    }}
+                    type="button"
+                  >
+                    {item.section ? <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{item.section}</span> : null}
+                    <span className="text-sm font-semibold text-foreground">{item.title}</span>
+                    {item.description ? <span className="text-sm leading-6 text-muted-foreground">{item.description}</span> : null}
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-border/70 bg-secondary/25 px-4 py-8 text-center text-sm text-muted-foreground">{emptyLabel}</div>
+              )}
+            </div>
+          </AppScrollbar>
         </div>
       </DialogContent>
     </Dialog>
@@ -337,18 +351,21 @@ export function ConfirmDialog({
 }: {
   actionLabel?: string;
   cancelLabel?: string;
-  description: ReactNode;
+  description?: ReactNode;
   onConfirm: () => void | Promise<void>;
   open: boolean;
   setOpen: (open: boolean) => void;
   title: ReactNode;
 }) {
+  const descriptionId = useId();
+  const hasDescription = description !== undefined && description !== null && description !== "";
+
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogContent className="max-w-md">
+      <DialogContent aria-describedby={hasDescription ? descriptionId : undefined} className="max-w-md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          {hasDescription ? <DialogDescription id={descriptionId}>{description}</DialogDescription> : null}
         </DialogHeader>
         <div className="flex justify-end gap-3">
           <Button onClick={() => setOpen(false)} type="button" variant="outline">
@@ -391,12 +408,15 @@ export function ConfirmActionDialog({
   setOpen: (open: boolean) => void;
   title: ReactNode;
 }) {
+  const descriptionId = useId();
+  const hasDescription = description !== undefined && description !== null && description !== "";
+
   return (
     <Dialog onOpenChange={setOpen} open={open}>
-      <DialogContent className="max-w-xl">
+      <DialogContent aria-describedby={hasDescription ? descriptionId : undefined} className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description ? <DialogDescription>{description}</DialogDescription> : null}
+          {hasDescription ? <DialogDescription id={descriptionId}>{description}</DialogDescription> : null}
         </DialogHeader>
         {children ? <div className="grid gap-4">{children}</div> : null}
         <div className="flex justify-end gap-3">

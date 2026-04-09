@@ -64,7 +64,7 @@ export function resolveLocale(value?: string | null, fallback: Locale = "zh-CN")
 
 export function detectLocale({
   fallback = "zh-CN",
-  storageKey = "suiyuan:locale",
+  storageKey = "go-admin:locale",
 }: {
   fallback?: Locale;
   storageKey?: string;
@@ -97,7 +97,7 @@ export function I18nProvider({
   fallbackLocale = "zh-CN",
   initialLocale,
   messages,
-  storageKey = "suiyuan:locale",
+  storageKey = "go-admin:locale",
 }: PropsWithChildren<{
   fallbackLocale?: Locale;
   initialLocale?: Locale;
