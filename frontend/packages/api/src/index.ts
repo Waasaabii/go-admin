@@ -575,17 +575,9 @@ type TestDBPayload = {
   dbname: string;
 };
 
-type TestRedisPayload = {
-  host: string;
-  port: number;
-  password: string;
-  db: number;
-};
-
 export type SetupDefaults = {
   environment: string;
   database: TestDBPayload;
-  redis: TestRedisPayload;
   admin: {
     username: string;
     email: string;
@@ -607,7 +599,6 @@ type SetupStatusPayload = {
 
 type InstallPayload = {
   database: TestDBPayload;
-  redis: TestRedisPayload;
   admin: {
     username: string;
     password: string;
@@ -625,12 +616,6 @@ export function getFallbackSetupDefaults(): SetupDefaults {
       user: "postgres",
       password: "",
       dbname: "go_admin",
-    },
-    redis: {
-      host: "127.0.0.1",
-      port: 6379,
-      password: "",
-      db: 0,
     },
     admin: {
       username: "admin",
@@ -668,11 +653,6 @@ export function createSetupApi(baseURL: string) {
     async testDatabase(payload: TestDBPayload) {
       return unwrap<{ message: string }>(() =>
         instance.post<ApiEnvelope<{ message: string }>>("/api/v1/setup/test-db", payload),
-      );
-    },
-    async testRedis(payload: TestRedisPayload) {
-      return unwrap<{ message: string }>(() =>
-        instance.post<ApiEnvelope<{ message: string }>>("/api/v1/setup/test-redis", payload),
       );
     },
     async install(payload: InstallPayload) {

@@ -114,8 +114,6 @@ settings:
   database:
     driver: postgres
     source: host=127.0.0.1 port=15432 user=dev_user password=dev_pass dbname=dev_db sslmode=disable
-  locker:
-    redis:
 `)
 	if err := os.WriteFile(configFile, content, 0600); err != nil {
 		t.Fatalf("write config failed: %v", err)
@@ -132,9 +130,6 @@ settings:
 	}
 	if defaults.Database.User != "dev_user" || defaults.Database.DBName != "dev_db" {
 		t.Fatalf("unexpected database credentials: %+v", defaults.Database)
-	}
-	if defaults.Redis.Host != "127.0.0.1" || defaults.Redis.Port != 16379 {
-		t.Fatalf("expected local redis fallback, got %+v", defaults.Redis)
 	}
 	if defaults.Admin.Username != "admin" {
 		t.Fatalf("expected default admin username, got %q", defaults.Admin.Username)
@@ -158,11 +153,6 @@ settings:
   database:
     driver: postgres
     source: host=db.internal port=5433 user=app_user password=secret dbname=orders sslmode=require
-  cache:
-    redis:
-      addr: redis.internal:6380
-      password: redis_secret
-      db: 5
 `)
 	if err := os.WriteFile(configFile, content, 0600); err != nil {
 		t.Fatalf("write config failed: %v", err)
@@ -185,12 +175,6 @@ settings:
 	}
 	if defaults.Database.Password != "" {
 		t.Fatalf("expected prod database password to stay empty, got %+v", defaults.Database)
-	}
-	if defaults.Redis.Host != "redis.internal" || defaults.Redis.Port != 6380 {
-		t.Fatalf("unexpected redis host defaults: %+v", defaults.Redis)
-	}
-	if defaults.Redis.Password != "" || defaults.Redis.DB != 5 {
-		t.Fatalf("unexpected redis auth defaults: %+v", defaults.Redis)
 	}
 }
 

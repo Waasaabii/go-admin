@@ -3,7 +3,6 @@ package setup
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -14,13 +13,11 @@ import (
 type SetupDefaults struct {
 	Environment string         `json:"environment"`
 	Database    DatabaseConfig `json:"database"`
-	Redis       RedisConfig    `json:"redis"`
 	Admin       AdminConfig    `json:"admin"`
 }
 
 type devEnvDefaults struct {
 	postgresPort     int
-	redisPort        int
 	postgresDB       string
 	postgresUser     string
 	postgresPassword string
@@ -33,10 +30,6 @@ type repoProfile struct {
 			Host string `json:"host"`
 			Port int    `json:"port"`
 		} `json:"postgres"`
-		Redis struct {
-			Host string `json:"host"`
-			Port int    `json:"port"`
-		} `json:"redis"`
 	} `json:"infra"`
 }
 
@@ -79,10 +72,8 @@ func ReadSetupDefaults() SetupDefaults {
 	}
 
 	applyDatabaseDefaults(&defaults.Database, settingsMap)
-	applyRedisDefaults(&defaults.Redis, settingsMap)
 	if !isLocalEnvironment(mode) {
 		defaults.Database.Password = ""
-		defaults.Redis.Password = ""
 	}
 	return defaults
 }
@@ -108,11 +99,6 @@ func defaultSetupDefaults(mode string) SetupDefaults {
 				DBName:   devDefaults.postgresDB,
 				SSLMode:  "disable",
 			},
-			Redis: RedisConfig{
-				Host: "127.0.0.1",
-				Port: devDefaults.redisPort,
-				DB:   0,
-			},
 			Admin: AdminConfig{
 				Username: "admin",
 			},
@@ -127,11 +113,6 @@ func defaultSetupDefaults(mode string) SetupDefaults {
 			User:    "postgres",
 			DBName:  "go_admin",
 			SSLMode: "disable",
-		},
-		Redis: RedisConfig{
-			Host: "redis",
-			Port: 6379,
-			DB:   0,
 		},
 		Admin: AdminConfig{
 			Username: "admin",
@@ -154,7 +135,6 @@ func readDevEnvDefaults() devEnvDefaults {
 
 	defaults := devEnvDefaults{
 		postgresPort:     15432,
-		redisPort:        16379,
 		postgresDB:       devDBName,
 		postgresUser:     devDBName,
 		postgresPassword: devDBName,
@@ -185,10 +165,6 @@ func readDevEnvDefaults() devEnvDefaults {
 			if port, err := strconv.Atoi(value); err == nil && validatePort(port) {
 				defaults.postgresPort = port
 			}
-		case "DEV_REDIS_PORT":
-			if port, err := strconv.Atoi(value); err == nil && validatePort(port) {
-				defaults.redisPort = port
-			}
 		case "DEV_POSTGRES_DB":
 			if value != "" {
 				defaults.postgresDB = value
@@ -205,9 +181,6 @@ func readDevEnvDefaults() devEnvDefaults {
 	if profile, err := readRepoProfile(); err == nil {
 		if validatePort(profile.Infra.Postgres.Port) {
 			defaults.postgresPort = profile.Infra.Postgres.Port
-		}
-		if validatePort(profile.Infra.Redis.Port) {
-			defaults.redisPort = profile.Infra.Redis.Port
 		}
 	}
 
@@ -406,90 +379,6 @@ func databaseConfigFromMap(values map[string]string) DatabaseConfig {
 		DBName:   values["dbname"],
 		SSLMode:  values["sslmode"],
 	}
-}
-
-func applyRedisDefaults(target *RedisConfig, settingsMap map[string]interface{}) {
-	redisMap := firstRedisMap(settingsMap)
-	if redisMap == nil {
-		return
-	}
-
-	if host, port := parseRedisAddress(readString(redisMap["addr"])); host != "" {
-		target.Host = host
-		if port > 0 {
-			target.Port = port
-		}
-	}
-
-	if host := readString(redisMap["host"]); host != "" {
-		target.Host = host
-	}
-	if port := readInt(redisMap["port"]); port > 0 {
-		target.Port = port
-	}
-	if password := readString(redisMap["password"]); password != "" {
-		target.Password = password
-	}
-	if db := readInt(redisMap["db"]); db >= 0 {
-		target.DB = db
-	}
-}
-
-func firstRedisMap(settingsMap map[string]interface{}) map[string]interface{} {
-	paths := [][]string{
-		{"cache", "redis"},
-		{"queue", "redis"},
-		{"locker", "redis"},
-	}
-
-	for _, path := range paths {
-		current := settingsMap
-		valid := true
-		for _, key := range path {
-			next := readMap(current[key])
-			if next == nil {
-				valid = false
-				break
-			}
-			current = next
-		}
-		if valid && len(current) > 0 {
-			return current
-		}
-	}
-
-	return nil
-}
-
-func parseRedisAddress(addr string) (string, int) {
-	addr = strings.TrimSpace(addr)
-	if addr == "" {
-		return "", 0
-	}
-
-	if strings.Contains(addr, "://") {
-		parsedURL, err := url.Parse(addr)
-		if err == nil {
-			port, _ := strconv.Atoi(parsedURL.Port())
-			return parsedURL.Hostname(), port
-		}
-	}
-
-	host, portStr, err := net.SplitHostPort(addr)
-	if err == nil {
-		port, _ := strconv.Atoi(portStr)
-		return host, port
-	}
-
-	lastColon := strings.LastIndex(addr, ":")
-	if lastColon > 0 && lastColon < len(addr)-1 {
-		port, err := strconv.Atoi(addr[lastColon+1:])
-		if err == nil {
-			return addr[:lastColon], port
-		}
-	}
-
-	return addr, 0
 }
 
 func readMap(value interface{}) map[string]interface{} {

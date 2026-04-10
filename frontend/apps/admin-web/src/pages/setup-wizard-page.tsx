@@ -26,15 +26,6 @@ function createDbSchema(t: ReturnType<typeof useI18n>["t"]) {
   });
 }
 
-function createRedisSchema(t: ReturnType<typeof useI18n>["t"]) {
-  return z.object({
-    host: z.string().min(1, t("admin.setup.redis.host.required")),
-    port: z.number().min(1).max(65535, t("admin.setup.redis.port.invalid")),
-    password: z.string(),
-    db: z.number().min(0).max(15, t("admin.setup.redis.db.invalid")),
-  });
-}
-
 function createAdminSchema(t: ReturnType<typeof useI18n>["t"]) {
   return z
     .object({
@@ -50,7 +41,7 @@ function createAdminSchema(t: ReturnType<typeof useI18n>["t"]) {
     });
 }
 
-const STEPS = ["database", "redis", "admin", "complete"] as const;
+const STEPS = ["database", "admin", "complete"] as const;
 type Step = (typeof STEPS)[number];
 
 type SetupStepLabels = Record<Step, string>;
@@ -58,14 +49,12 @@ type SetupStepLabels = Record<Step, string>;
 function getStepLabels(t: ReturnType<typeof useI18n>["t"]): SetupStepLabels {
   return {
     database: t("admin.setup.db.step"),
-    redis: t("admin.setup.redis.step"),
     admin: t("admin.setup.admin.step"),
     complete: t("admin.setup.complete.step"),
   };
 }
 
 type DBFormValues = z.infer<ReturnType<typeof createDbSchema>>;
-type RedisFormValues = z.infer<ReturnType<typeof createRedisSchema>>;
 type AdminFormValues = z.infer<ReturnType<typeof createAdminSchema>>;
 
 type SetupWizardPageProps = {
@@ -81,7 +70,6 @@ export function SetupWizardPage({ initialStatus, setupApi, onComplete }: SetupWi
   const defaults = initialStatus.defaults;
   const [currentStep, setCurrentStep] = useState<Step>("database");
   const [dbValues, setDbValues] = useState<DBFormValues | null>(() => defaults.database);
-  const [redisValues, setRedisValues] = useState<RedisFormValues | null>(() => defaults.redis);
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState("");
   const [completionHint, setCompletionHint] = useState("");
@@ -91,7 +79,7 @@ export function SetupWizardPage({ initialStatus, setupApi, onComplete }: SetupWi
   const environmentLabel = getEnvironmentLabel(defaults.environment, t);
 
   async function handleAdminComplete(values: AdminFormValues) {
-    if (!dbValues || !redisValues) {
+    if (!dbValues) {
       return;
     }
 
@@ -101,7 +89,6 @@ export function SetupWizardPage({ initialStatus, setupApi, onComplete }: SetupWi
     try {
       await setupApi.install({
         database: dbValues,
-        redis: redisValues,
         admin: {
           username: values.username,
           password: values.password,
@@ -149,26 +136,15 @@ export function SetupWizardPage({ initialStatus, setupApi, onComplete }: SetupWi
         {currentStep === "database" ? (
           <DatabaseStep defaultValues={dbValues} onComplete={(values) => {
             setDbValues(values);
-            setCurrentStep("redis");
+            setCurrentStep("admin");
           }} setupApi={setupApi} />
-        ) : null}
-        {currentStep === "redis" ? (
-          <RedisStep
-            defaultValues={redisValues}
-            onBack={() => setCurrentStep("database")}
-            onComplete={(values) => {
-              setRedisValues(values);
-              setCurrentStep("admin");
-            }}
-            setupApi={setupApi}
-          />
         ) : null}
         {currentStep === "admin" ? (
           <AdminStep
             defaultValues={defaults.admin}
             installError={installError}
             installing={installing}
-            onBack={() => setCurrentStep("redis")}
+            onBack={() => setCurrentStep("database")}
             onComplete={handleAdminComplete}
           />
         ) : null}
@@ -249,87 +225,6 @@ function DatabaseStep({
       </FormField>
       {testResult ? <InlineNotice tone={testResult.ok ? "success" : "danger"}>{testResult.msg}</InlineNotice> : null}
       <FormActions>
-        <Button disabled={testing} onClick={() => void handleTest()} type="button" variant="outline">
-          {testing ? t("admin.setup.db.testing") : t("admin.setup.db.test")}
-        </Button>
-        <Button type="submit">{t("admin.setup.next")}</Button>
-      </FormActions>
-    </form>
-  );
-}
-
-function RedisStep({
-  setupApi,
-  defaultValues,
-  onBack,
-  onComplete,
-}: {
-  setupApi: SetupApi;
-  defaultValues: RedisFormValues | null;
-  onBack: () => void;
-  onComplete: (values: RedisFormValues) => void;
-}) {
-  const { t } = useI18n();
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
-
-  const form = useForm<RedisFormValues>({
-    defaultValues: defaultValues ?? {
-      host: "127.0.0.1",
-      port: 6379,
-      password: "",
-      db: 0,
-    },
-    resolver: zodResolver(createRedisSchema(t)),
-  });
-
-  async function handleTest() {
-    const valid = await form.trigger();
-    if (!valid) {
-      return;
-    }
-    setTesting(true);
-    setTestResult(null);
-    try {
-      await setupApi.testRedis(form.getValues());
-      setTestResult({ ok: true, msg: t("admin.setup.redis.success") });
-    } catch (error) {
-      setTestResult({ ok: false, msg: error instanceof Error ? error.message : t("admin.setup.testFailed") });
-    } finally {
-      setTesting(false);
-    }
-  }
-
-  return (
-    <form
-      className="grid gap-5"
-      onSubmit={form.handleSubmit((values) => {
-        if (!testResult?.ok) {
-          setTestResult({ ok: false, msg: t("admin.setup.step.testFirst") });
-          return;
-        }
-        onComplete(values);
-      })}
-    >
-      <div className="grid gap-4 md:grid-cols-2">
-        <FormField error={form.formState.errors.host?.message} label={t("admin.setup.redis.host.label")}>
-          <Input {...form.register("host")} placeholder="127.0.0.1" />
-        </FormField>
-        <FormField error={form.formState.errors.port?.message} label={t("admin.setup.redis.port.label")}>
-          <Input {...form.register("port", { valueAsNumber: true })} placeholder="6379" type="number" />
-        </FormField>
-        <FormField error={form.formState.errors.password?.message} label={t("admin.setup.redis.password.label")}>
-          <Input {...form.register("password")} placeholder={t("admin.setup.redis.password.placeholder")} type="password" />
-        </FormField>
-        <FormField error={form.formState.errors.db?.message} label={t("admin.setup.redis.db.label")}>
-          <Input {...form.register("db", { valueAsNumber: true })} max={15} min={0} placeholder="0" type="number" />
-        </FormField>
-      </div>
-      {testResult ? <InlineNotice tone={testResult.ok ? "success" : "danger"}>{testResult.msg}</InlineNotice> : null}
-      <FormActions>
-        <Button onClick={onBack} type="button" variant="ghost">
-          {t("admin.setup.back")}
-        </Button>
         <Button disabled={testing} onClick={() => void handleTest()} type="button" variant="outline">
           {testing ? t("admin.setup.db.testing") : t("admin.setup.db.test")}
         </Button>

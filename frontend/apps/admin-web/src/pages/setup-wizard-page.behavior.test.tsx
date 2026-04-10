@@ -16,12 +16,6 @@ const defaults = {
     password: "",
     dbname: "go_admin",
   },
-  redis: {
-    host: "127.0.0.1",
-    port: 6379,
-    password: "",
-    db: 0,
-  },
   admin: {
     username: "admin",
     email: "",
@@ -29,10 +23,36 @@ const defaults = {
   },
 };
 
+let originalLocalStorage: Storage;
+
+function createLocalStorageMock(): Storage {
+  const store = new Map<string, string>();
+
+  return {
+    clear() {
+      store.clear();
+    },
+    getItem(key) {
+      return store.has(key) ? store.get(key)! : null;
+    },
+    key(index) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    get length() {
+      return store.size;
+    },
+    removeItem(key) {
+      store.delete(key);
+    },
+    setItem(key, value) {
+      store.set(key, String(value));
+    },
+  };
+}
+
 function createSetupApi(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     testDatabase: vi.fn().mockResolvedValue(undefined),
-    testRedis: vi.fn().mockResolvedValue(undefined),
     install: vi.fn().mockResolvedValue(undefined),
     getStatus: vi.fn().mockResolvedValue({ needs_setup: false, step: "complete", defaults }),
     ...overrides,
@@ -72,6 +92,11 @@ describe("SetupWizardPage 行为测试", () => {
 
   beforeEach(() => {
     (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    originalLocalStorage = window.localStorage;
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: createLocalStorageMock(),
+    });
     host = document.createElement("div");
     document.body.appendChild(host);
     root = createRoot(host);
@@ -81,6 +106,10 @@ describe("SetupWizardPage 行为测试", () => {
   afterEach(() => {
     act(() => {
       root.unmount();
+    });
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: originalLocalStorage,
     });
     host.remove();
     document.body.innerHTML = "";
@@ -97,7 +126,7 @@ describe("SetupWizardPage 行为测试", () => {
     });
   }
 
-  it("在数据库测试成功后前进到 Redis 步骤", async () => {
+  it("在数据库测试成功后前进到管理员步骤", async () => {
     renderPage();
 
     const testButton = findButton("测试连接");
@@ -122,7 +151,7 @@ describe("SetupWizardPage 行为测试", () => {
     });
 
     await waitForCondition(() => {
-      expect(document.body.textContent).toContain("Redis 配置");
+      expect(document.body.textContent).toContain("管理员账号");
     });
   });
 

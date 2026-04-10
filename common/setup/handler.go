@@ -23,7 +23,6 @@ func RegisterRoutes(r *gin.Engine) {
 	protected.Use(setupGuard())
 	{
 		protected.POST("/test-db", testDatabase)
-		protected.POST("/test-redis", testRedis)
 		protected.POST("/install", install)
 	}
 }
@@ -124,16 +123,8 @@ type testDBRequest struct {
 	DBName   string `json:"dbname" binding:"required"`
 }
 
-type testRedisRequest struct {
-	Host     string `json:"host" binding:"required"`
-	Port     int    `json:"port" binding:"required"`
-	Password string `json:"password"`
-	DB       int    `json:"db"`
-}
-
 type installRequest struct {
 	Database DatabaseConfig `json:"database" binding:"required"`
-	Redis    RedisConfig    `json:"redis" binding:"required"`
 	Admin    AdminConfig    `json:"admin" binding:"required"`
 }
 
@@ -188,41 +179,6 @@ func testDatabase(c *gin.Context) {
 	setupOK(c, gin.H{"message": "数据库连接成功"})
 }
 
-func testRedis(c *gin.Context) {
-	var req testRedisRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		setupError(c, http.StatusBadRequest, "请求参数错误: "+err.Error())
-		return
-	}
-
-	if !validateHostname(req.Host) {
-		setupError(c, http.StatusBadRequest, "主机名格式无效")
-		return
-	}
-	if !validatePort(req.Port) {
-		setupError(c, http.StatusBadRequest, "端口号无效")
-		return
-	}
-	if req.DB < 0 || req.DB > 15 {
-		setupError(c, http.StatusBadRequest, "Redis 数据库编号无效 (0-15)")
-		return
-	}
-
-	cfg := &RedisConfig{
-		Host:     req.Host,
-		Port:     req.Port,
-		Password: req.Password,
-		DB:       req.DB,
-	}
-
-	if err := TestRedisConnection(cfg); err != nil {
-		setupError(c, http.StatusBadRequest, "Redis 连接失败: "+err.Error())
-		return
-	}
-
-	setupOK(c, gin.H{"message": "Redis 连接成功"})
-}
-
 func install(c *gin.Context) {
 	// TOCTOU 保护：双重检查
 	if !NeedsSetup() {
@@ -261,21 +217,6 @@ func install(c *gin.Context) {
 	}
 	req.Database.SSLMode = "disable"
 
-	// Redis
-	req.Redis.Host = strings.TrimSpace(req.Redis.Host)
-	if !validateHostname(req.Redis.Host) {
-		setupError(c, http.StatusBadRequest, "Redis 主机名无效")
-		return
-	}
-	if !validatePort(req.Redis.Port) {
-		setupError(c, http.StatusBadRequest, "Redis 端口无效")
-		return
-	}
-	if req.Redis.DB < 0 || req.Redis.DB > 15 {
-		setupError(c, http.StatusBadRequest, "Redis 数据库编号无效")
-		return
-	}
-
 	// 管理员
 	req.Admin.Username = strings.TrimSpace(req.Admin.Username)
 	req.Admin.Email = strings.TrimSpace(req.Admin.Email)
@@ -298,7 +239,6 @@ func install(c *gin.Context) {
 
 	cfg := &SetupConfig{
 		Database: req.Database,
-		Redis:    req.Redis,
 		Admin:    req.Admin,
 	}
 

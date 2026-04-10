@@ -97,7 +97,6 @@ func getInstallLockPath() string {
 // SetupConfig 汇总所有 Setup 阶段需要的配置
 type SetupConfig struct {
 	Database DatabaseConfig `json:"database" yaml:"-"`
-	Redis    RedisConfig    `json:"redis" yaml:"-"`
 	Admin    AdminConfig    `json:"admin" yaml:"-"`
 }
 
@@ -109,14 +108,6 @@ type DatabaseConfig struct {
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
 	SSLMode  string `json:"sslmode"`
-}
-
-// RedisConfig Redis 连接参数
-type RedisConfig struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Password string `json:"password"`
-	DB       int    `json:"db"`
 }
 
 // AdminConfig 管理员账号
@@ -158,19 +149,6 @@ func TestPgConnection(cfg *DatabaseConfig) error {
 	return nil
 }
 
-// TestRedisConnection 测试 Redis 连接
-func TestRedisConnection(cfg *RedisConfig) error {
-	// 使用原生 net.Dial 做最简单的 PING 测试，避免引入 redis 依赖
-	// go-admin 的 redis 由 go-admin-core 的 config.CacheConfig 管理
-	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
-	conn, err := dialRedis(addr, cfg.Password, cfg.DB)
-	if err != nil {
-		return fmt.Errorf("连接失败: %w", err)
-	}
-	defer func() { _ = conn.Close() }()
-	return nil
-}
-
 // ─── 安装流程 ───
 
 // installMutex 防止并发安装（TOCTOU 保护）
@@ -191,27 +169,22 @@ func Install(cfg *SetupConfig) error {
 		return fmt.Errorf("数据库连接失败: %w", err)
 	}
 
-	// 2. 测试 Redis 连接
-	if err := TestRedisConnection(&cfg.Redis); err != nil {
-		return fmt.Errorf("Redis 连接失败: %w", err)
-	}
-
-	// 3. 初始化数据库表结构 + 种子数据
+	// 2. 初始化数据库表结构 + 种子数据
 	if err := initializeDatabase(cfg); err != nil {
 		return fmt.Errorf("数据库初始化失败: %w", err)
 	}
 
-	// 4. 创建管理员
+	// 3. 创建管理员
 	if err := createAdminUser(cfg); err != nil {
 		return fmt.Errorf("管理员创建失败: %w", err)
 	}
 
-	// 5. 生成 settings.yml
+	// 4. 生成 settings.yml
 	if err := writeSettingsYml(cfg); err != nil {
 		return fmt.Errorf("配置文件写入失败: %w", err)
 	}
 
-	// 6. 写入锁文件
+	// 5. 写入锁文件
 	if err := createInstallLock(); err != nil {
 		return fmt.Errorf("锁文件创建失败: %w", err)
 	}
@@ -371,14 +344,11 @@ func writeSettingsYml(cfg *SetupConfig) error {
 					"environments":       []interface{}{},
 				},
 			},
-			"cache": buildCacheConfig(&cfg.Redis),
+			"cache": buildCacheConfig(),
 			"queue": map[string]interface{}{
 				"memory": map[string]interface{}{
 					"poolSize": 100,
 				},
-			},
-			"locker": map[string]interface{}{
-				"redis": map[string]interface{}{},
 			},
 		},
 	}
@@ -400,23 +370,9 @@ func writeSettingsYml(cfg *SetupConfig) error {
 	return os.WriteFile(configPath, data, 0600)
 }
 
-func buildCacheConfig(cfg *RedisConfig) map[string]interface{} {
-	if cfg.Host == "" {
-		// 没有 Redis 配置时使用内存模式
-		return map[string]interface{}{
-			"memory": "",
-		}
-	}
-	redisAddr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
-	redisCfg := map[string]interface{}{
-		"addr": redisAddr,
-		"db":   cfg.DB,
-	}
-	if cfg.Password != "" {
-		redisCfg["password"] = cfg.Password
-	}
+func buildCacheConfig() map[string]interface{} {
 	return map[string]interface{}{
-		"redis": redisCfg,
+		"memory": "",
 	}
 }
 

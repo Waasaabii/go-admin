@@ -9,6 +9,32 @@ import { adminMessages } from "../i18n/admin";
 
 let host: HTMLDivElement;
 let root: Root;
+let originalLocalStorage: Storage;
+
+function createLocalStorageMock(): Storage {
+  const store = new Map<string, string>();
+
+  return {
+    clear() {
+      store.clear();
+    },
+    getItem(key) {
+      return store.has(key) ? store.get(key)! : null;
+    },
+    key(index) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    get length() {
+      return store.size;
+    },
+    removeItem(key) {
+      store.delete(key);
+    },
+    setItem(key, value) {
+      store.set(key, String(value));
+    },
+  };
+}
 
 const initialStatus = {
   needs_setup: true,
@@ -21,12 +47,6 @@ const initialStatus = {
       user: "postgres",
       password: "",
       dbname: "go_admin",
-    },
-    redis: {
-      host: "127.0.0.1",
-      port: 6379,
-      password: "",
-      db: 0,
     },
     admin: {
       username: "admin",
@@ -80,27 +100,23 @@ async function setInputValue(name: string, value: string) {
 
 async function advanceToAdminStep(setupApi: {
   testDatabase: ReturnType<typeof vi.fn>;
-  testRedis: ReturnType<typeof vi.fn>;
 }) {
   await clickButton("测试连接");
   await flushPromises();
   await clickButton("下一步");
   await flushPromises();
 
-  expect(document.body.textContent).toContain("步骤 2 / 4：Redis 配置");
-
-  await clickButton("测试连接");
-  await flushPromises();
-  await clickButton("下一步");
-  await flushPromises();
-
   expect(setupApi.testDatabase).toHaveBeenCalledTimes(1);
-  expect(setupApi.testRedis).toHaveBeenCalledTimes(1);
-  expect(document.body.textContent).toContain("步骤 3 / 4：管理员账号");
+  expect(document.body.textContent).toContain("步骤 2 / 3：管理员账号");
 }
 
 beforeEach(() => {
   (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  originalLocalStorage = window.localStorage;
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: createLocalStorageMock(),
+  });
   host = document.createElement("div");
   document.body.appendChild(host);
   root = createRoot(host);
@@ -110,20 +126,23 @@ afterEach(() => {
   act(() => {
     root.unmount();
   });
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: originalLocalStorage,
+  });
   host.remove();
   document.body.innerHTML = "";
   vi.useRealTimers();
 });
 
 describe("SetupWizardPage 页面流程", () => {
-  it("完成数据库与 Redis 测试后可以进入安装，并在服务就绪后触发 onComplete", async () => {
+  it("完成数据库测试后可以进入安装，并在服务就绪后触发 onComplete", async () => {
     vi.useFakeTimers();
 
     const setupApi = {
       getStatus: vi.fn().mockResolvedValue({ ...initialStatus, needs_setup: false }),
       install: vi.fn().mockResolvedValue(undefined),
       testDatabase: vi.fn().mockResolvedValue(undefined),
-      testRedis: vi.fn().mockResolvedValue(undefined),
     };
     const onComplete = vi.fn();
 
@@ -154,7 +173,6 @@ describe("SetupWizardPage 页面流程", () => {
         username: "admin",
       },
       database: initialStatus.defaults.database,
-      redis: initialStatus.defaults.redis,
     });
 
     await act(async () => {
@@ -171,7 +189,6 @@ describe("SetupWizardPage 页面流程", () => {
       getStatus: vi.fn(),
       install: vi.fn().mockRejectedValue(new Error("数据库初始化失败")),
       testDatabase: vi.fn().mockResolvedValue(undefined),
-      testRedis: vi.fn().mockResolvedValue(undefined),
     };
     const onComplete = vi.fn();
 
