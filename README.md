@@ -133,6 +133,7 @@ pnpm run repo -- --project-prefix my-local-env infra start
 
 ```bash
 pnpm repo:service:backend
+pnpm repo:service:start:backend
 pnpm repo:service:start admin
 ```
 
@@ -142,10 +143,10 @@ pnpm repo:service:start admin
 pnpm repo:service:start mobile
 ```
 
-`repo service start backend` 默认读取 `config/settings.pg.yml`，与本地 PostgreSQL 开发基础设施配套。
+`repo service start backend` now prefers project-scoped `air` hot reload and reads `config/settings.pg.yml` by default. The first run prepares `./.tmp/bin/air` inside the repository, and `pnpm repo:service:start:backend` is available as an all-colon alias.
 
-- Windows / macOS：`backend`、`admin`、`mobile` 默认在独立终端窗口启动
-- Linux：本地服务保持在当前终端体系内运行，不依赖额外图形窗口
+- `backend`, `admin`, and `mobile` are managed by `repo-cli` as detached background processes.
+- Use `pnpm repo:service:status <service>` and `pnpm repo:service:logs <service>` to inspect the actual state.
 首次启动时，后端检测到系统未安装，会进入 **Setup Wizard 模式**：仅暴露 `/api/v1/setup/*` 路由，不连接数据库，等待前端引导完成初始化配置。
 
 所有受管服务日志和状态文件都会写入项目内的 `temp/repo-cli/`，便于直接排查：
@@ -228,7 +229,8 @@ pnpm repo:setup-status                            # 检查是否会进入 Setup 
 pnpm repo:infra:start                             # 自动探测并启动开发基础设施
 pnpm repo:infra:stop                              # 停止当前开发基础设施来源
 pnpm repo:infra:status                            # 查看当前基础设施来源与健康状态
-pnpm repo:service:start backend                   # 启动 API 服务（默认使用 config/settings.pg.yml）
+pnpm repo:service:start backend                   # 启动 API 服务（默认项目级 air 热更新）
+pnpm repo:service:start:backend                  # 启动 API 服务（全冒号别名）
 pnpm repo:service:start admin                     # 启动 admin-web 开发服务器
 pnpm repo:service:start mobile                    # 启动 mobile-h5 开发服务器
 pnpm repo:service:stop all                        # 停止全部受管服务

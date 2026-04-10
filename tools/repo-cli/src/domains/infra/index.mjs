@@ -1,21 +1,23 @@
 import { composeBaseArgs, composeEnv, localServicePort } from "../runtime/context.mjs";
 import { saveInfraProfile } from "../runtime/state.mjs";
 import { commandExists, portOpen, runCommand, runCommandOrThrow } from "../../shared/process.mjs";
+import { printDivider, printField, printFields, printHint, printSection } from "../../shared/output.mjs";
 
 const GLOBAL_POSTGRES_FORMULAS = ["postgresql@17", "postgresql@16", "postgresql@15", "postgresql"];
 const GLOBAL_REDIS_FORMULAS = ["redis"];
 
 export async function startInfra(context) {
+  printSection("检查开发基础设施");
   const report = await inspectInfra(context);
   const active = pickActiveProvider(report);
   if (active === "docker" && report.docker.healthy) {
     persistInfraSelection(context, report.docker.profile);
-    console.log(`开发基础设施已就绪，当前来源：docker (${formatPair(report.docker.profile)})`);
+    printInfraReady("docker", report.docker.profile);
     return;
   }
   if (active === "global" && report.global.healthy) {
     persistInfraSelection(context, report.global.profile);
-    console.log(`开发基础设施已就绪，当前来源：global (${formatPair(report.global.profile)})`);
+    printInfraReady("global", report.global.profile);
     return;
   }
 
@@ -32,33 +34,43 @@ export async function startInfra(context) {
 }
 
 export async function stopInfra(context) {
+  printSection("停止开发基础设施");
   const report = await inspectInfra(context);
   const active = pickActiveProvider(report, { allowInstalledFallback: false });
   if (active === "docker") {
     stopDockerInfra(context);
-    console.log("已停止开发基础设施：docker");
+    printField("结果", "已停止");
+    printField("来源", "docker");
     return;
   }
   if (active === "global") {
     if (!report.global.postgresFormula && !report.global.redisFormula) {
-      console.log("检测到全局基础设施正在运行，但未识别到 brew 托管服务，请手动停止对应进程");
+      printField("结果", "检测到运行中的全局基础设施");
+      printHint("未识别到 brew 托管服务，请手动停止对应进程");
       return;
     }
     stopGlobalInfra(report.global);
-    console.log("已停止开发基础设施：global");
+    printField("结果", "已停止");
+    printField("来源", "global");
     return;
   }
-  console.log("开发基础设施当前未运行，无需停止");
+  printField("结果", "当前未运行，无需停止");
 }
 
 export async function printInfraStatus(context) {
+  printSection("基础设施状态");
   const report = await inspectInfra(context);
   const active = pickActiveProvider(report, { allowInstalledFallback: false }) || "-";
-
-  console.log(`当前来源: ${active}`);
+  printFields([
+    ["当前来源", active],
+    ["偏好来源", report.preferredProvider || "-"],
+  ]);
   console.log(`${pad("来源", 10)} ${pad("已安装", 8)} ${pad("运行中", 8)} ${pad("健康", 8)} 说明`);
   console.log(formatStatusLine("docker", report.docker));
   console.log(formatStatusLine("global", report.global));
+  printDivider();
+  printHint("启动基础设施: pnpm repo:infra:start");
+  printHint("启动后端: pnpm repo:service:start backend");
 }
 
 export async function inspectInfra(context) {
@@ -166,6 +178,7 @@ async function inspectGlobalInfra(context) {
 }
 
 async function startDockerInfra(context) {
+  printField("来源", "docker");
   runCommandOrThrow("docker", [...composeBaseArgs(context, true), "up", "-d", "postgres", "redis"], {
     cwd: context.repoRoot,
     env: composeEnv(context),
@@ -181,10 +194,11 @@ async function startDockerInfra(context) {
   }
 
   persistInfraSelection(context, report.profile);
-  console.log(`已启动开发基础设施：docker (${formatPair(report.profile)})`);
+  printInfraReady("docker", report.profile);
 }
 
 async function startGlobalInfra(context, report) {
+  printField("来源", "global");
   runCommandOrThrow("brew", ["services", "start", report.postgresFormula], {
     cwd: context.repoRoot,
     env: process.env,
@@ -205,7 +219,7 @@ async function startGlobalInfra(context, report) {
   }
 
   persistInfraSelection(context, healthy.profile);
-  console.log(`已启动开发基础设施：global (${formatPair(healthy.profile)})`);
+  printInfraReady("global", healthy.profile);
 }
 
 function stopDockerInfra(context) {
@@ -236,6 +250,18 @@ function persistInfraSelection(context, profile) {
     ...profile,
     updated_at: new Date().toISOString(),
   });
+}
+
+function printInfraReady(provider, profile) {
+  printField("结果", "已就绪");
+  printFields([
+    ["来源", provider],
+    ["PostgreSQL", `${profile.postgres.host}:${profile.postgres.port}`],
+    ["Redis", `${profile.redis.host}:${profile.redis.port}`],
+  ]);
+  printDivider();
+  printHint("查看状态: pnpm repo:infra:status");
+  printHint("启动后端: pnpm repo:service:start backend");
 }
 
 function firstInstalledFormula(formulas) {

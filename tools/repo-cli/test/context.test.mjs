@@ -1,13 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import os from "node:os";
-import path from "node:path";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 
 import { createRepoContext, goEnv } from "../src/domains/runtime/context.mjs";
+import { createFixtureRepo, removeFixtureRepo } from "./support/fixture-repo.mjs";
 
 test("goEnv provides stable default GOPROXY for repo commands", () => {
-  const repoRoot = createFixtureRepo();
+  const repoRoot = createFixtureRepo("repo-cli-context");
 
   try {
     const previous = process.env.GOPROXY;
@@ -27,17 +25,20 @@ test("goEnv provides stable default GOPROXY for repo commands", () => {
       delete process.env.GOPROXY;
     }
   } finally {
-    rmSync(repoRoot, { recursive: true, force: true });
+    removeFixtureRepo(repoRoot);
   }
 });
 
-function createFixtureRepo() {
-  const repoRoot = mkdtempSync(path.join(os.tmpdir(), "repo-cli-context-"));
-  mkdirSync(path.join(repoRoot, "config"), { recursive: true });
+test("createRepoContext exposes project-scoped air paths", () => {
+  const repoRoot = createFixtureRepo("repo-cli-air-context");
 
-  writeFileSync(path.join(repoRoot, "package.json"), JSON.stringify({ name: "fixture-repo", private: true }, null, 2));
-  writeFileSync(path.join(repoRoot, "go.mod"), "module fixture-repo\n\ngo 1.24.0\n");
-  writeFileSync(path.join(repoRoot, "config", "dev-ports.env"), "DEV_BACKEND_PORT=18123\n");
-
-  return repoRoot;
-}
+  try {
+    const context = createRepoContext({ repoRoot });
+    assert.equal(context.airConfigFile.endsWith(".air.toml"), true);
+    assert.equal(context.airBinary.includes(".tmp"), true);
+    assert.equal(context.airVersionFile.includes(".tmp"), true);
+    assert.equal(context.backendDevBinary.includes(".tmp"), true);
+  } finally {
+    removeFixtureRepo(repoRoot);
+  }
+});

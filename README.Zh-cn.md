@@ -101,6 +101,7 @@ pnpm repo:doctor
 pnpm repo:deps all
 pnpm repo:infra:start
 pnpm repo:service:start backend
+pnpm repo:service:start:backend
 pnpm repo:service:start admin
 ```
 
@@ -148,19 +149,22 @@ pnpm repo:reinit
 - `repo infra start`：自动探测并启动开发基础设施，优先复用当前可用的 Docker / Homebrew 服务
 - `repo infra stop`：停止当前选中的开发基础设施来源
 - `repo infra status`：查看当前基础设施来源、安装状态、运行状态和健康状态
-- `repo service start backend`：启动后端，默认读取 `config/settings.pg.yml`
+- `repo service start backend`：启动后端，默认优先使用项目级 `air` 热更新并读取 `config/settings.pg.yml`
 - `repo service start admin`：启动管理端开发服务器
 - `repo reinit --yes`：按当前前缀清理应用栈、项目级 Docker 数据目录、安装锁和本地产物
 - 所有受管服务日志和状态文件都会写到项目内 `temp/repo-cli/`：
   - `temp/repo-cli/logs/<service>.log`
   - `temp/repo-cli/state.json`
+- 项目级 `air` 二进制固定安装到 `.tmp/bin/air`
+- 首次执行后端启动时若未准备，会自动在仓库内安装；可用 `pnpm repo:doctor` / `pnpm repo:env` 查看状态
 
-- Windows / macOS：`backend`、`admin`、`mobile` 默认在独立终端窗口启动
-- Linux：本地服务保持在当前终端体系内运行，不依赖额外图形窗口
+- `backend`、`admin`、`mobile` 都由 `repo-cli` 以后台进程方式托管
+- 可通过 `pnpm repo:service:status <service>` 与 `pnpm repo:service:logs <service>` 查看实际状态
 
 ### Setup Wizard 说明
 
 - 首次执行 `repo service start backend` 时，如果 `config/.installed` 不存在，后端会进入 Setup Wizard 模式
+- `repo service start backend` 与 `pnpm repo:service:start:backend` 等价，后者是全冒号快捷别名
 - Setup 模式下只暴露 `/api/v1/setup/*` 接口，不会托管前端静态资源
 - 启动 `repo service start admin` 后，前端会自动检测安装状态并引导初始化数据库和管理员账号
 - 安装完成后会写入当前启动使用的配置文件（默认 `config/settings.pg.yml`）与同目录下的 `.installed`

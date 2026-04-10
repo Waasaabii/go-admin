@@ -1,15 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import os from "node:os";
 import path from "node:path";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import { createRepoContext } from "../src/domains/runtime/context.mjs";
 import { runReinit } from "../src/domains/misc/index.mjs";
 import { setProjectPrefix } from "../src/domains/project-prefix/index.mjs";
+import { createFixtureRepo, removeFixtureRepo } from "./support/fixture-repo.mjs";
 
 test("setProjectPrefix writes and resets local profile", () => {
-  const repoRoot = createFixtureRepo();
+  const repoRoot = createFixtureRepo("repo-cli-prefix");
   try {
     const context = createRepoContext({ repoRoot });
 
@@ -19,12 +19,12 @@ test("setProjectPrefix writes and resets local profile", () => {
     setProjectPrefix(context, "", true);
     assert.equal(existsSync(context.profilePath), false);
   } finally {
-    rmSync(repoRoot, { recursive: true, force: true });
+    removeFixtureRepo(repoRoot);
   }
 });
 
 test("runReinit clears runtime artifacts in isolated repo", async () => {
-  const repoRoot = createFixtureRepo();
+  const repoRoot = createFixtureRepo("repo-cli-reinit");
 
   try {
     const context = createRepoContext({ repoRoot });
@@ -57,19 +57,6 @@ test("runReinit clears runtime artifacts in isolated repo", async () => {
       assert.equal(existsSync(target), false, `expected ${target} to be removed`);
     }
   } finally {
-    rmSync(repoRoot, { recursive: true, force: true });
+    removeFixtureRepo(repoRoot);
   }
 });
-
-function createFixtureRepo() {
-  const repoRoot = mkdtempSync(path.join(os.tmpdir(), "repo-cli-misc-"));
-  mkdirSync(path.join(repoRoot, "config"), { recursive: true });
-  mkdirSync(path.join(repoRoot, "frontend", "apps", "admin-web"), { recursive: true });
-  mkdirSync(path.join(repoRoot, "frontend", "apps", "mobile-h5"), { recursive: true });
-  mkdirSync(path.join(repoRoot, "frontend", "apps", "ui-showcase"), { recursive: true });
-
-  writeFileSync(path.join(repoRoot, "package.json"), JSON.stringify({ name: "fixture-repo", private: true }, null, 2));
-  writeFileSync(path.join(repoRoot, "go.mod"), "module fixture-repo\n\ngo 1.24.0\n");
-  writeFileSync(path.join(repoRoot, "config", "dev-ports.env"), "DEV_BACKEND_PORT=18123\nDEV_ADMIN_PORT=26173\nDEV_MOBILE_PORT=26174\nDEV_SHOWCASE_PORT=26175\nDEV_POSTGRES_PORT=15432\nDEV_REDIS_PORT=16379\n");
-  return repoRoot;
-}

@@ -15,9 +15,13 @@ export function createRepoContext(options) {
   const projectPrefix = normalizeProjectPrefix(options.projectPrefix || profile.project_prefix || packageName);
   const goTmpDir = path.join(repoRoot, ".tmp", "go");
   const goBinDir = path.join(repoRoot, ".tmp", "bin");
+  const airBinary = path.join(goBinDir, executableName("air"));
+  const airVersionFile = path.join(goBinDir, "air.version");
 
   ensureDir(runtimeDir);
   ensureDir(path.join(runtimeDir, "logs"));
+  ensureDir(goTmpDir);
+  ensureDir(goBinDir);
 
   return {
     repoRoot,
@@ -29,6 +33,10 @@ export function createRepoContext(options) {
     profile,
     goCacheDir: path.join(goTmpDir, "cache"),
     goBinDir,
+    airBinary,
+    airVersionFile,
+    airConfigFile: path.join(repoRoot, ".air.toml"),
+    backendDevBinary: path.join(goBinDir, executableName("backend-dev")),
     runtimeDir,
     logsDir: path.join(runtimeDir, "logs"),
     statePath: path.join(runtimeDir, "state.json"),

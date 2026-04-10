@@ -7,6 +7,8 @@ export function printHelp() {
         "pnpm repo:infra:stop                停止基础设施",
         "pnpm repo:infra:status              查看基础设施状态",
         "pnpm repo:service:start backend     启动后端",
+        "pnpm repo:service:start:backend     启动后端（全冒号别名）",
+        "pnpm repo:service:status backend    查看单个服务状态",
         "pnpm repo:service:start admin       启动管理端",
         "pnpm repo:service:start mobile      启动移动端",
         "pnpm repo:service:stop all          停止全部应用服务",
@@ -27,7 +29,8 @@ export function printHelp() {
     {
       title: "应用服务",
       lines: [
-        "repo service start backend   启动后端",
+        "repo service start backend   启动后端（默认项目级 air 热更新）",
+        "repo service status backend  查看单个服务状态",
         "repo service start admin     启动管理端",
         "repo service start mobile    启动移动端",
         "repo service stop all        停止全部应用服务",
@@ -60,6 +63,7 @@ export function printHelp() {
   console.log("用法: repo <command> [args...]");
   console.log("规则: 固定命令链使用 ':' 连接，最后的动态参数保持空格传入");
   console.log("例如: repo service start backend => pnpm repo:service:start backend");
+  console.log("补充: 常用命令也提供 pnpm repo:service:start:backend 这类全冒号别名");
   console.log("");
   for (const section of sections) {
     console.log(section.title);

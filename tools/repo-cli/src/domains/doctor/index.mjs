@@ -1,6 +1,8 @@
 import { runCommand } from "../../shared/process.mjs";
+import { inspectProjectAir } from "../runtime/backend-dev.mjs";
+import { printDivider, printField, printSection } from "../../shared/output.mjs";
 
-export function doctorReport(_context) {
+export function doctorReport(context) {
   const items = [
     { name: "go", command: "go", args: ["version"] },
     { name: "node", command: "node", args: ["--version"] },
@@ -9,7 +11,7 @@ export function doctorReport(_context) {
     { name: "docker", command: "docker", args: ["--version"] },
     { name: "docker compose", command: "docker", args: ["compose", "version"] },
   ];
-  return items.map((item) => {
+  const report = items.map((item) => {
     const result = runCommand(item.command, item.args);
     const output = `${result.stdout}${result.stderr}`.trim();
     return {
@@ -18,14 +20,28 @@ export function doctorReport(_context) {
       ok: result.code === 0,
     };
   });
+  if (context) {
+    const air = inspectProjectAir(context);
+    report.push({
+      name: "air (project)",
+      output: air.summary,
+      ok: true,
+    });
+  }
+  return report;
 }
 
 export function runDoctor(context) {
+  printSection("环境检查");
+  const missing = [];
   for (const item of doctorReport(context)) {
     if (item.ok) {
-      console.log(`${item.name.padEnd(16, " ")} ${item.output}`);
+      printField(item.name, item.output);
     } else {
-      console.log(`${item.name.padEnd(16, " ")} 缺失或不可用`);
+      missing.push(item.name);
+      printField(item.name, "缺失或不可用");
     }
   }
+  printDivider();
+  printField("结果", missing.length === 0 ? "必需环境已齐全" : `存在缺失项：${missing.join(", ")}`);
 }

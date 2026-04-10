@@ -36,6 +36,7 @@ pnpm repo:deps all
 pnpm repo:setup
 pnpm repo:infra:start
 pnpm repo:service:start backend
+pnpm repo:service:start:backend
 pnpm repo:service:start admin
 pnpm repo:service:start mobile
 pnpm repo:build backend
@@ -69,6 +70,8 @@ pnpm repo:service:start admin
 ```
 
 这些 `pnpm repo:*` 命令会直接执行 `tools/repo-cli/src/*.mjs`，不依赖额外的 CLI 编译步骤。
+- 后端默认优先使用仓库内 `./.tmp/bin/air` 做热更新，首次启动会自动准备
+- `pnpm repo:service:start backend` 与 `pnpm repo:service:start:backend` 等价
 
 - Docker 项目前缀默认取仓库根 `package.json.name`，当前仓库默认值为 `go-admin`
 - `pnpm repo:infra:start`、`pnpm repo:reinit` 等命令都会读取同一个前缀

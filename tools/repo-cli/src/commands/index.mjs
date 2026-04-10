@@ -1,4 +1,4 @@
-import { normalizeServiceList, restartServices, startServices, stopServices } from "../domains/runtime/services.mjs";
+import { normalizeServiceList, printServicesStatus, restartServices, startServices, stopServices } from "../domains/runtime/services.mjs";
 import { printHelp } from "../domains/help/index.mjs";
 import { printInfraStatus, startInfra, stopInfra } from "../domains/infra/index.mjs";
 import { runBuild } from "../domains/build/index.mjs";
@@ -112,6 +112,11 @@ async function runServiceCommand(env) {
     case "start":
       await startServices(env.context, normalizeServiceList(env.context, env.args.slice(2)));
       return;
+    case "status": {
+      const positional = env.args.slice(2).filter((value) => !value.startsWith("--"));
+      await printServicesStatus(env.context, positional.length > 0 ? normalizeServiceList(env.context, positional) : null);
+      return;
+    }
     case "stop":
       await stopServices(env.context, normalizeServiceList(env.context, env.args.slice(2)));
       return;
@@ -127,7 +132,7 @@ async function runServiceCommand(env) {
       return;
     }
     default:
-      throw new Error("用法: repo service start|stop|restart|logs ...");
+      throw new Error("用法: repo service start|status|stop|restart|logs ...");
   }
 }
 

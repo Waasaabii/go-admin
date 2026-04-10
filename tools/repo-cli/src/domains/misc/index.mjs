@@ -3,31 +3,38 @@ import path from "node:path";
 import readline from "node:readline/promises";
 
 import { printStatusTable, reconcileState, tailServiceLog } from "../runtime/services.mjs";
+import { inspectProjectAir } from "../runtime/backend-dev.mjs";
 import { printInfraStatus, startInfra } from "../infra/index.mjs";
 import { commandExists, runCommandOrThrow } from "../../shared/process.mjs";
 import { composeBaseArgs, composeEnv, goEnv } from "../runtime/context.mjs";
+import { printDivider, printField, printFields, printHint, printSection, toRepoRelative } from "../../shared/output.mjs";
 
 export async function printEnv(context) {
-  const lines = [
+  const air = inspectProjectAir(context);
+  printSection("当前环境");
+  printFields([
     ["仓库根目录", context.repoRoot],
-    ["配置文件", context.configFile],
+    ["配置文件", toRepoRelative(context, context.configFile)],
     ["项目名前缀", context.projectPrefix],
-    ["后端端口", context.ports.DEV_BACKEND_PORT ?? 0],
-    ["管理端端口", context.ports.DEV_ADMIN_PORT ?? 0],
-    ["移动端端口", context.ports.DEV_MOBILE_PORT ?? 0],
-    ["Showcase 端口", context.ports.DEV_SHOWCASE_PORT ?? 0],
-    ["PostgreSQL 端口", context.ports.DEV_POSTGRES_PORT ?? 0],
-    ["Redis 端口", context.ports.DEV_REDIS_PORT ?? 0],
-    ["repo-cli 工作目录", context.runtimeDir],
-    ["状态文件", context.statePath],
-    ["日志目录", context.logsDir],
-    ["前缀配置文件", context.profilePath],
-    ["后端二进制", context.backendBinary],
-  ];
-
-  for (const [label, value] of lines) {
-    console.log(`${label.padEnd(18, " ")} ${value}`);
-  }
+    ["后端端口", String(context.ports.DEV_BACKEND_PORT ?? 0)],
+    ["管理端端口", String(context.ports.DEV_ADMIN_PORT ?? 0)],
+    ["移动端端口", String(context.ports.DEV_MOBILE_PORT ?? 0)],
+    ["Showcase 端口", String(context.ports.DEV_SHOWCASE_PORT ?? 0)],
+    ["PostgreSQL 端口", String(context.ports.DEV_POSTGRES_PORT ?? 0)],
+    ["Redis 端口", String(context.ports.DEV_REDIS_PORT ?? 0)],
+    ["repo-cli 工作目录", toRepoRelative(context, context.runtimeDir)],
+    ["状态文件", toRepoRelative(context, context.statePath)],
+    ["日志目录", toRepoRelative(context, context.logsDir)],
+    ["前缀配置文件", toRepoRelative(context, context.profilePath)],
+    ["后端二进制", toRepoRelative(context, context.backendBinary)],
+    ["air 配置", toRepoRelative(context, context.airConfigFile)],
+    ["air 二进制", toRepoRelative(context, context.airBinary)],
+    ["air 状态", air.summary],
+  ]);
+  printDivider();
+  printHint("推荐下一步:");
+  printHint("pnpm repo:infra:status");
+  printHint("pnpm repo:service:status backend");
 }
 
 export function printSetupStatus(context) {
@@ -39,17 +46,23 @@ export function printSetupStatus(context) {
 }
 
 export async function printStatus(context) {
+  printSection("应用服务状态");
   const state = await reconcileState(context);
   printStatusTable(context, state);
-  console.log("");
+  printDivider();
   await printInfraStatus(context);
 }
 
 export function printServiceLogs(context, serviceName, lines) {
+  printSection(`服务日志 (${serviceName})`);
+  printField("文件", toRepoRelative(context, path.join(context.logsDir, `${serviceName}.log`)));
+  printField("行数", String(lines));
+  printDivider();
   console.log(tailServiceLog(context, serviceName, lines));
 }
 
 export async function runOpenAPI(context) {
+  printSection("生成 OpenAPI");
   mkdirSync(context.goBinDir, { recursive: true });
   const swagBinary = path.join(context.goBinDir, process.platform === "win32" ? "swag.exe" : "swag");
   if (!existsSync(swagBinary)) {
@@ -67,14 +80,19 @@ export async function runOpenAPI(context) {
   runCommandOrThrow("node", ["./scripts/sync-openapi.mjs"], { cwd: context.repoRoot, env: process.env, stdio: "inherit" });
   runCommandOrThrow("pnpm", ["run", "openapi"], { cwd: context.repoRoot, env: process.env, stdio: "inherit" });
   runCommandOrThrow("pnpm", ["typecheck"], { cwd: context.repoRoot, env: process.env, stdio: "inherit" });
+  printDivider();
+  printField("结果", "OpenAPI 与前端类型已同步");
 }
 
 export function runMigrate(context) {
+  printSection("执行数据库迁移");
   runCommandOrThrow("go", ["run", ".", "migrate", "-c", toPosixPath(context.configFile)], {
     cwd: context.repoRoot,
     env: goEnv(context),
     stdio: "inherit",
   });
+  printDivider();
+  printField("结果", "迁移完成");
 }
 
 export async function runReinit(context, yes) {
@@ -90,7 +108,7 @@ export async function runReinit(context, yes) {
     }
   }
 
-  if (commandExists("docker")) {
+  if (commandExists("docker") && existsSync(context.dockerDevFile)) {
     try {
       runCommandOrThrow("docker", [...composeBaseArgs(context, true), "down", "--volumes", "--remove-orphans"], {
         cwd: context.repoRoot,
@@ -100,6 +118,8 @@ export async function runReinit(context, yes) {
     } catch (error) {
       console.error(`开发基础设施清理失败：${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+  if (commandExists("docker") && existsSync(context.dockerAppFile)) {
     try {
       runCommandOrThrow("docker", [...composeBaseArgs(context, false), "down", "--volumes", "--remove-orphans"], {
         cwd: context.repoRoot,
@@ -126,7 +146,8 @@ export async function runReinit(context, yes) {
   for (const target of targets) {
     rmSync(target, { recursive: true, force: true });
   }
-  console.log("环境重置完成");
+  printSection("环境重置");
+  printField("结果", "已清理本地产物、安装锁与 repo-cli 状态");
 }
 
 export async function runSetup(context, withOpenAPI, skipInfra) {

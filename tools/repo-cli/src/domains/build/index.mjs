@@ -1,7 +1,9 @@
 import { goEnv } from "../runtime/context.mjs";
 import { runCommandOrThrow } from "../../shared/process.mjs";
+import { printDivider, printField, printSection } from "../../shared/output.mjs";
 
 export function runBuild(context, target) {
+  printSection(`构建目标 (${target})`);
   switch (target) {
     case "backend":
       runCommandOrThrow("go", ["build", "-ldflags=-w -s", "-o", context.backendBinary, "."], {
@@ -9,6 +11,9 @@ export function runBuild(context, target) {
         env: goEnv(context, { CGO_ENABLED: "0" }),
         stdio: "inherit",
       });
+      printDivider();
+      printField("结果", "后端已构建");
+      printField("产物", context.backendBinary);
       return;
     case "admin":
       runCommandOrThrow("pnpm", ["--filter", "@go-admin/admin-web", "build"], {
@@ -16,6 +21,8 @@ export function runBuild(context, target) {
         env: process.env,
         stdio: "inherit",
       });
+      printDivider();
+      printField("结果", "管理端已构建");
       return;
     case "mobile":
       runCommandOrThrow("pnpm", ["--filter", "@go-admin/mobile-h5", "build"], {
@@ -23,6 +30,8 @@ export function runBuild(context, target) {
         env: process.env,
         stdio: "inherit",
       });
+      printDivider();
+      printField("结果", "移动端已构建");
       return;
     case "showcase":
       runCommandOrThrow("pnpm", ["--filter", "@go-admin/ui-showcase", "build"], {
@@ -30,9 +39,13 @@ export function runBuild(context, target) {
         env: process.env,
         stdio: "inherit",
       });
+      printDivider();
+      printField("结果", "Showcase 已构建");
       return;
     case "frontend":
       runCommandOrThrow("pnpm", ["build"], { cwd: context.repoRoot, env: process.env, stdio: "inherit" });
+      printDivider();
+      printField("结果", "前端工作区已构建");
       return;
     case "docker":
       runDockerBuild(context);
@@ -40,6 +53,8 @@ export function runBuild(context, target) {
     case "all":
       runBuild(context, "backend");
       runBuild(context, "frontend");
+      printDivider();
+      printField("结果", "全部构建完成");
       return;
     default:
       throw new Error(`未知构建目标：${target}`);
