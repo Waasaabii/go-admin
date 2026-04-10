@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -8,11 +8,12 @@ import {
   AsyncActionButton,
   AuthLayout,
   Button,
+  Card,
+  CardContent,
   FormActions,
   FormField,
   InlineNotice,
   Input,
-  WizardLayout,
 } from "@go-admin/ui-admin";
 import type { SetupApi } from "@go-admin/api";
 
@@ -114,24 +115,17 @@ export function SetupWizardPage({ initialStatus, setupApi, onComplete }: SetupWi
 
   return (
     <AuthLayout
-      aside={
-        <div className="grid max-w-xl gap-4 rounded-[2rem] border border-border/70 bg-card/80 p-6 shadow-[var(--shadow-card)]">
-          <p className="text-sm font-semibold text-foreground">{t("admin.setup.summary.title")}</p>
-          <div className="space-y-2 text-sm leading-7 text-muted-foreground">
-            <p>{t("admin.setup.summary.description", undefined, { environment: environmentLabel })}</p>
-            <p>{t("admin.setup.summary.note")}</p>
-          </div>
-        </div>
-      }
+      aside={<SetupAside defaults={defaults} environmentLabel={environmentLabel} />}
       description={t("admin.setup.description")}
       kicker="Setup Wizard"
       title={t("admin.setup.title")}
     >
-      <WizardLayout
-        currentStep={stepIndex}
-        description={t("admin.setup.step.description", undefined, { current: stepIndex + 1, total: STEPS.length, label: stepLabels[currentStep] })}
-        steps={STEPS.map((step) => ({ label: stepLabels[step] }))}
-        title={t("admin.setup.layout.title")}
+      <SetupSurface
+        currentStep={currentStep}
+        defaults={defaults}
+        environmentLabel={environmentLabel}
+        stepLabels={stepLabels}
+        stepStatusText={t("admin.setup.step.description", undefined, { current: stepIndex + 1, total: STEPS.length, label: stepLabels[currentStep] })}
       >
         {currentStep === "database" ? (
           <DatabaseStep defaultValues={dbValues} onComplete={(values) => {
@@ -149,8 +143,164 @@ export function SetupWizardPage({ initialStatus, setupApi, onComplete }: SetupWi
           />
         ) : null}
         {currentStep === "complete" ? <CompleteStep hint={completionHint} /> : null}
-      </WizardLayout>
+      </SetupSurface>
     </AuthLayout>
+  );
+}
+
+function SetupAside({
+  defaults,
+  environmentLabel,
+}: {
+  defaults: SetupStatus["defaults"];
+  environmentLabel: string;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-4 rounded-[2rem] border border-border/70 bg-card/85 p-6 shadow-[var(--shadow-card)] backdrop-blur">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">{t("admin.setup.aside.profile.kicker")}</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">{environmentLabel}</h2>
+          <p className="text-sm leading-7 text-muted-foreground">{t("admin.setup.aside.profile.description")}</p>
+        </div>
+        <div className="grid gap-3 rounded-[1.5rem] border border-border/60 bg-background/80 p-4">
+          <SetupFact label={t("admin.setup.fact.databaseAddress")} value={`${defaults.database.host}:${defaults.database.port}`} />
+          <SetupFact label={t("admin.setup.fact.databaseName")} value={defaults.database.dbname} />
+          <SetupFact label={t("admin.setup.fact.databaseUser")} value={defaults.database.user} />
+          <SetupFact label={t("admin.setup.fact.adminUsername")} value={defaults.admin.username || "admin"} />
+        </div>
+      </div>
+      <div className="grid gap-3 rounded-[2rem] border border-primary/12 bg-primary/6 p-6">
+        <p className="text-sm font-semibold text-foreground">{t("admin.setup.aside.process.title")}</p>
+        <div className="space-y-2 text-sm leading-7 text-muted-foreground">
+          <p>1. {t("admin.setup.aside.process.first")}</p>
+          <p>2. {t("admin.setup.aside.process.second")}</p>
+          <p>3. {t("admin.setup.aside.process.third")}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SetupSurface({
+  children,
+  currentStep,
+  defaults,
+  environmentLabel,
+  stepLabels,
+  stepStatusText,
+}: {
+  children: ReactNode;
+  currentStep: Step;
+  defaults: SetupStatus["defaults"];
+  environmentLabel: string;
+  stepLabels: SetupStepLabels;
+  stepStatusText: string;
+}) {
+  const { t } = useI18n();
+  const currentIndex = STEPS.indexOf(currentStep);
+
+  return (
+    <Card className="w-full max-w-3xl overflow-hidden border-border/70 bg-card/95 shadow-[var(--shadow-card)]">
+      <CardContent className="grid gap-0 p-0">
+        <div className="relative overflow-hidden border-b border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(47,84,235,0.14),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.12),transparent_30%)] px-6 py-6 md:px-8 md:py-7">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/45 to-transparent" />
+          <div className="grid gap-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">{t("admin.setup.surface.kicker")}</p>
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">{stepLabels[currentStep]}</h2>
+                  <p className="text-sm leading-6 text-muted-foreground">{stepStatusText}</p>
+                </div>
+              </div>
+              <div className="inline-flex items-center rounded-full border border-border/70 bg-background/85 px-3 py-1.5 text-xs font-medium text-foreground shadow-sm">
+                {t("admin.setup.surface.environment", undefined, { environment: environmentLabel })}
+              </div>
+            </div>
+            <SetupStepRail currentIndex={currentIndex} stepLabels={stepLabels} />
+            <div className="grid gap-3 rounded-[1.5rem] border border-border/60 bg-background/75 p-4 lg:hidden">
+              <SetupFact label={t("admin.setup.fact.databaseAddress")} value={`${defaults.database.host}:${defaults.database.port}`} />
+              <SetupFact label={t("admin.setup.fact.databaseName")} value={defaults.database.dbname} />
+              <SetupFact label={t("admin.setup.fact.adminUsername")} value={defaults.admin.username || "admin"} />
+            </div>
+          </div>
+        </div>
+        <div className="px-6 py-6 md:px-8 md:py-8">{children}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SetupStepRail({
+  currentIndex,
+  stepLabels,
+}: {
+  currentIndex: number;
+  stepLabels: SetupStepLabels;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div className="grid gap-4">
+      <div className="grid grid-cols-[repeat(var(--step-count),minmax(0,1fr))] gap-2" style={{ ["--step-count" as string]: String(STEPS.length) }}>
+        {STEPS.map((step, index) => (
+          <div className="grid gap-2" key={step}>
+            <div className={`h-1.5 rounded-full transition-colors ${index <= currentIndex ? "bg-primary" : "bg-secondary"}`} />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-3 md:grid-cols-3">
+        {STEPS.map((step, index) => {
+          const completed = index < currentIndex;
+          const active = index === currentIndex;
+
+          return (
+            <div
+              className={[
+                "grid gap-2 rounded-[1.25rem] border px-4 py-3 transition-colors",
+                active ? "border-primary/30 bg-primary/10" : completed ? "border-emerald-500/20 bg-emerald-500/10" : "border-border/70 bg-secondary/20",
+              ].join(" ")}
+              key={step}
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className={[
+                    "inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold",
+                    active
+                      ? "border-primary/30 bg-primary text-primary-foreground"
+                      : completed
+                        ? "border-emerald-500/30 bg-emerald-600 text-white"
+                        : "border-border bg-background text-muted-foreground",
+                  ].join(" ")}
+                >
+                  {completed ? "✓" : index + 1}
+                </span>
+                <p className="text-sm font-semibold text-foreground">{stepLabels[step]}</p>
+              </div>
+              <p className="text-xs leading-6 text-muted-foreground">
+                {step === "database"
+                  ? t("admin.setup.rail.database")
+                  : step === "admin"
+                    ? t("admin.setup.rail.admin")
+                    : t("admin.setup.rail.complete")}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SetupFact({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-border/50 pb-3 text-sm last:border-b-0 last:pb-0">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-right font-medium text-foreground">{value}</span>
+    </div>
   );
 }
 
@@ -295,11 +445,17 @@ function CompleteStep({ hint }: { hint: string }) {
   const { t } = useI18n();
 
   return (
-    <div className="grid gap-4 py-6 text-center">
-      <div className="text-5xl text-primary">✓</div>
-      <div className="space-y-2">
+    <div className="grid gap-6 py-4">
+      <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/12 text-3xl font-semibold text-emerald-700 dark:text-emerald-300">
+        ✓
+      </div>
+      <div className="space-y-3 text-center">
         <h2 className="text-2xl font-semibold text-foreground">{t("admin.setup.complete.title")}</h2>
         <p className="text-sm leading-7 text-muted-foreground">{t("admin.setup.complete.description")}</p>
+      </div>
+      <div className="grid gap-3 rounded-[1.5rem] border border-border/70 bg-secondary/20 p-4 text-sm leading-7 text-muted-foreground">
+        <p>{t("admin.setup.complete.note.restart")}</p>
+        <p>{t("admin.setup.complete.note.followup")}</p>
       </div>
       {hint ? <InlineNotice tone="warning">{hint}</InlineNotice> : null}
     </div>

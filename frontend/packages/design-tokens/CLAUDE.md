@@ -23,8 +23,9 @@
 | `--color-canvas` / `--color-panel` | 背景色 / 面板色 |
 | `--color-accent` / `--color-accent-soft` | 强调色（teal）/ 浅强调色 |
 | `--color-highlight` / `--color-highlight-soft` | 高亮色（orange）/ 浅高亮色 |
-| `--radius-sm/md/lg` | 圆角大小（14/22/32px） |
-| `--shadow-soft` / `--shadow-float` | 阴影效果 |
+| `--radius-sm/md/lg` | 基础圆角大小（14/22/32px） |
+| `--radius-control/surface/overlay` | 控件、面板、浮层圆角 |
+| `--shadow-soft` / `--shadow-card` / `--shadow-float` | 阴影效果 |
 | `--grid-gap` | 网格间距 |
 
 ## 使用方式
@@ -37,6 +38,8 @@
 ```
 
 宿主项目接管主题时，只引入 `base.css`，再按 `host-theme-template.css` 的 token 结构提供自己的主题文件。
+
+`base.css` 会提供结构 token 的默认兜底值，确保宿主主题漏掉半径、阴影、字体等非品牌 token 时，组件不会直接失效；宿主主题仍应显式覆盖这些 token，以保持视觉一致性。
 
 ## 开发命令
 

@@ -13,7 +13,7 @@
 
 ## 主题接入
 
-- `@go-admin/design-tokens/base.css`：基础 reset 与全局基础行为，不携带品牌视觉。
+- `@go-admin/design-tokens/base.css`：基础 reset、全局基础行为与结构 token 兜底值，不携带品牌色视觉。
 - `@go-admin/design-tokens/default-theme.css`：仓库当前默认主题，现有应用显式引入它。
 - `@go-admin/design-tokens/host-theme-template.css`：宿主项目主题模板，按同名 token 提供值即可接管组件库样式。
 - `@go-admin/design-tokens/theme.css`：兼容入口，等价于 `base.css + default-theme.css`。
@@ -26,6 +26,10 @@
 ```
 
 当前仓库内的 `apps/admin-web` 已按这个模式接入，主题定义位于 `apps/admin-web/src/admin-host-theme.css`。
+
+说明：
+- `base.css` 会为圆角、阴影、字体等结构 token 提供默认兜底，保证组件在宿主主题漏项时仍可渲染。
+- 宿主主题仍应按 `host-theme-template.css` 显式覆盖同名 token，避免出现“组件能显示但风格不一致”。
 
 ## 常用命令
 

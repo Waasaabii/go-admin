@@ -81,6 +81,14 @@ function TextareaTabCompletionDemo() {
   );
 }
 
+function PasswordToggleDemo() {
+  return <Input defaultValue="admin123" type="password" />;
+}
+
+function PasswordToggleDisabledDemo() {
+  return <Input defaultValue="admin123" passwordToggle={false} type="password" />;
+}
+
 function DatePickerFormatDemo() {
   const [value, setValue] = useState<string | undefined>("2026-04-09");
 
@@ -196,6 +204,39 @@ describe("ui-admin primitives", () => {
     });
 
     expect(textarea?.value).toBe("请在变更窗口内完成灰度、观测与回滚预案确认。");
+  });
+
+  it("Input 在 password 类型下默认支持明文切换", async () => {
+    await act(async () => {
+      root.render(<PasswordToggleDemo />);
+    });
+
+    const input = document.querySelector("input") as HTMLInputElement | null;
+    const toggle = document.querySelector("button[aria-label='显示密码']") as HTMLButtonElement | null;
+
+    expect(input?.type).toBe("password");
+    expect(toggle).toBeTruthy();
+    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+
+    await act(async () => {
+      toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(input?.type).toBe("text");
+    expect(toggle?.getAttribute("aria-label")).toBe("隐藏密码");
+    expect(toggle?.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("Input 可关闭 password 明文切换能力", async () => {
+    await act(async () => {
+      root.render(<PasswordToggleDisabledDemo />);
+    });
+
+    const input = document.querySelector("input") as HTMLInputElement | null;
+    const toggle = document.querySelector("button[aria-label='显示密码']");
+
+    expect(input?.type).toBe("password");
+    expect(toggle).toBeNull();
   });
 
   it("Form 根据 layout 输出对应布局类名", async () => {

@@ -46,6 +46,8 @@ function InputPage() {
         { defaultValue: '"default"', description: "输入状态。", name: "status", type: '"default" | "error"' },
         { defaultValue: "false", description: "是否显示清空按钮。", name: "clearable", type: "boolean" },
         { defaultValue: "false", description: "是否允许在按下 Tab 时用 placeholder 文案补全输入。", name: "completePlaceholderOnTab", type: "boolean" },
+        { defaultValue: `type === "password" 时默认开启`, description: "密码输入时是否显示明文切换按钮。", name: "passwordToggle", type: "boolean" },
+        { defaultValue: '"text"', description: "原生输入类型，支持 `password`。", name: "type", type: 'InputHTMLAttributes<HTMLInputElement>["type"]' },
         { description: "受控值。", name: "value", type: "string" },
         { description: "输入回调。", name: "onChange", type: "(event: ChangeEvent<HTMLInputElement>) => void" },
         { description: "清空回调。", name: "onClear", type: "() => void" },
@@ -105,6 +107,26 @@ function InputPage() {
           title: "尺寸与前后缀",
         },
         {
+          code: `<FormField label="管理后台密码">
+  <Input defaultValue="admin123" type="password" />
+</FormField>
+<FormField label="关闭明文切换">
+  <Input defaultValue="admin123" passwordToggle={false} type="password" />
+</FormField>`,
+          content: (
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField description="`type=password` 时默认显示明文/密文切换按钮。" label="密码输入">
+                <Input defaultValue="admin123" type="password" />
+              </FormField>
+              <FormField description="如业务不希望暴露切换能力，可显式关闭。" label="关闭切换">
+                <Input defaultValue="admin123" passwordToggle={false} type="password" />
+              </FormField>
+            </div>
+          ),
+          description: "统一密码可见性切换，避免业务页各自重复实现。",
+          title: "密码模式",
+        },
+        {
           code: `<Input completePlaceholderOnTab defaultValue="ops" placeholder="ops-worker-service" />
 <Input status="error" value="" placeholder="请输入服务名称" />`,
           content: (
@@ -152,9 +174,10 @@ function InputPage() {
           title: "表单承接",
         },
       ]}
-      description="Input 对齐后台单行录入场景，覆盖尺寸、前后缀、前后置内容、清空与错误态，并支持可选 Tab 补全。"
+      description="Input 对齐后台单行录入场景，覆盖尺寸、前后缀、前后置内容、清空、密码可见性切换与错误态，并支持可选 Tab 补全。"
       notes={[
         "复杂校验文案由业务层决定，Input 只承接结构和状态表达。",
+        "`type=password` 时默认提供明文切换；如需关闭可显式传入 `passwordToggle={false}`。",
         "Tab 补全默认关闭，只有明确传入开关时才会接管焦点键。",
         "长表单场景优先在 Form / FormField 中组合 Input，不在页面里直接散落输入框。",
       ]}

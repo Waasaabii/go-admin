@@ -3,7 +3,7 @@ import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
-import { Check, ChevronsUpDown, ChevronDown, Circle, Search, UploadCloud, X } from "lucide-react";
+import { Check, ChevronsUpDown, ChevronDown, Circle, Eye, EyeOff, Search, UploadCloud, X } from "lucide-react";
 import {
   type ChangeEvent,
   forwardRef,
@@ -43,6 +43,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   completePlaceholderOnTab?: boolean;
   error?: boolean;
   onClear?: () => void;
+  passwordToggle?: boolean;
   prefix?: ReactNode;
   prepend?: ReactNode;
   size?: Exclude<ControlSize, "icon">;
@@ -87,6 +88,13 @@ function resolvePlaceholderCompletion(currentValue: string, placeholder: string,
   return suggestion;
 }
 
+function resolvePasswordToggleLabel(passwordVisible: boolean) {
+  if (typeof document !== "undefined" && document.documentElement.lang.toLowerCase().startsWith("en")) {
+    return passwordVisible ? "Hide password" : "Show password";
+  }
+  return passwordVisible ? "隐藏密码" : "显示密码";
+}
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     append,
@@ -98,11 +106,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     onChange,
     onKeyDown,
     placeholder,
+    passwordToggle,
     prefix,
     prepend,
     size = "default",
     status,
     suffix,
+    type,
     value,
     ...props
   },
@@ -110,6 +120,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ) {
   const resolvedStatus = error ? "error" : (status ?? "default");
   const hasValue = value !== undefined && value !== null && String(value).length > 0;
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const passwordToggleEnabled = type === "password" && passwordToggle !== false;
+  const resolvedType = passwordToggleEnabled && passwordVisible ? "text" : (type ?? "text");
 
   return (
     <div
@@ -126,7 +139,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           "min-w-0 flex-1 bg-transparent px-3 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
           controlSizeClasses[size],
           prefix ? "pl-2" : "",
-          suffix || clearable || append ? "pr-2" : "",
+          suffix || clearable || append || passwordToggleEnabled ? "pr-2" : "",
         )}
         onChange={onChange}
         onKeyDown={(event) => {
@@ -165,6 +178,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         }}
         placeholder={placeholder}
         ref={(node) => assignInnerRef(ref, node)}
+        type={resolvedType}
         value={value}
         {...props}
       />
@@ -181,6 +195,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           type="button"
         >
           <X className="h-4 w-4" />
+        </button>
+      ) : null}
+      {passwordToggleEnabled ? (
+        <button
+          aria-label={resolvePasswordToggleLabel(passwordVisible)}
+          aria-pressed={passwordVisible}
+          className="inline-flex items-center px-2 text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={props.disabled}
+          onClick={() => setPasswordVisible((current) => !current)}
+          type="button"
+        >
+          {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       ) : null}
       {suffix ? <span className="inline-flex items-center px-3 text-muted-foreground">{suffix}</span> : null}
