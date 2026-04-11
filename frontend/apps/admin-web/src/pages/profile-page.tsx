@@ -5,6 +5,29 @@ import { Avatar, AdminPageStack, AdminTwoColumn, DetailGrid, PageHeader, Section
 import type { ImageAsset, InfoResponse, ProfileResponse } from "@go-admin/types";
 const AVATAR_MAX_SIZE = 25 * 1024 * 1024;
 
+function applyAvatarToInfo(info: InfoResponse | undefined, avatar: ImageAsset) {
+  if (!info) {
+    return info;
+  }
+  return {
+    ...info,
+    avatar,
+  };
+}
+
+function applyAvatarToProfile(profile: ProfileResponse | undefined, avatar: ImageAsset) {
+  if (!profile) {
+    return profile;
+  }
+  return {
+    ...profile,
+    user: {
+      ...profile.user,
+      avatar,
+    },
+  };
+}
+
 export function ProfilePage({
   api,
   info,
@@ -54,6 +77,8 @@ export function ProfilePage({
     try {
       const nextSource = await api.system.uploadAvatar(file);
       setAvatarOverride(nextSource);
+      queryClient.setQueryData<InfoResponse | undefined>(["admin", "info"], (current) => applyAvatarToInfo(current, nextSource));
+      queryClient.setQueryData<ProfileResponse | undefined>(["admin", "profile"], (current) => applyAvatarToProfile(current, nextSource));
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin", "info"] }),
         queryClient.invalidateQueries({ queryKey: ["admin", "profile"] }),

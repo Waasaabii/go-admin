@@ -15,4 +15,9 @@ describe("ui-mobile image helpers", () => {
     expect(resolveImageVariantSize(40, 2)).toBe(128);
     expect(resolveImageVariantSize(140, 2)).toBe(512);
   });
+
+  it("源文件不是 webp 时即使传入缩略图尺寸也直接回退原图", () => {
+    expect(buildImageVariantSource("/static/uploadfile/avatar/demo.gif", 128)).toBe("/static/uploadfile/avatar/demo.gif");
+    expect(buildImageVariantSource("/static/uploadfile/avatar/demo.png", 128)).toBe("/static/uploadfile/avatar/demo.png");
+  });
 });

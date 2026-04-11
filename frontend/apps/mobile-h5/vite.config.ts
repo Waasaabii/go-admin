@@ -50,6 +50,10 @@ export default defineConfig(({ command }) => ({
     host: "0.0.0.0",
     port: DEV_MOBILE_PORT,
     proxy: {
+      "/static": {
+        target: process.env.VITE_PROXY_TARGET || `http://127.0.0.1:${DEV_BACKEND_PORT}`,
+        changeOrigin: true,
+      },
       "/api": {
         target: process.env.VITE_PROXY_TARGET || `http://127.0.0.1:${DEV_BACKEND_PORT}`,
         changeOrigin: true,

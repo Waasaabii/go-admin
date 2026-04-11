@@ -34,17 +34,13 @@ afterEach(() => {
 
 describe("ProfilePage", () => {
   it("上传头像后会调用上传接口并刷新查询", async () => {
+    const nextAvatar = {
+      path: "/static/uploadfile/avatar/avatar-next.gif",
+      size: 320,
+    };
     const api = {
       system: {
-        uploadAvatar: vi.fn().mockResolvedValue({
-          path: "/static/uploadfile/avatar/avatar-next.webp",
-          size: 512,
-          variants: [
-            { path: "/static/uploadfile/avatar/avatar-next@64.webp", size: 64 },
-            { path: "/static/uploadfile/avatar/avatar-next@128.webp", size: 128 },
-            { path: "/static/uploadfile/avatar/avatar-next@256.webp", size: 256 },
-          ],
-        }),
+        uploadAvatar: vi.fn().mockResolvedValue(nextAvatar),
       },
     };
     const queryClient = new QueryClient({
@@ -54,6 +50,49 @@ describe("ProfilePage", () => {
       },
     });
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+    queryClient.setQueryData(["admin", "info"], {
+      avatar: {
+        path: "/static/uploadfile/avatar/avatar-old.webp",
+        size: 512,
+        variants: [
+          { path: "/static/uploadfile/avatar/avatar-old@64.webp", size: 64 },
+          { path: "/static/uploadfile/avatar/avatar-old@128.webp", size: 128 },
+          { path: "/static/uploadfile/avatar/avatar-old@256.webp", size: 256 },
+        ],
+      },
+      buttons: [],
+      code: 200,
+      deptId: 1,
+      introduction: "",
+      name: "管理员",
+      permissions: [],
+      roles: ["系统管理员"],
+      userId: 1,
+      userName: "admin",
+    });
+    queryClient.setQueryData(["admin", "profile"], {
+      posts: [],
+      roles: [],
+      user: {
+        avatar: {
+          path: "/static/uploadfile/avatar/avatar-old.webp",
+          size: 512,
+          variants: [
+            { path: "/static/uploadfile/avatar/avatar-old@64.webp", size: 64 },
+            { path: "/static/uploadfile/avatar/avatar-old@128.webp", size: 128 },
+            { path: "/static/uploadfile/avatar/avatar-old@256.webp", size: 256 },
+          ],
+        },
+        deptId: 1,
+        email: "",
+        nickName: "管理员",
+        phone: "",
+        remark: "",
+        roleId: 1,
+        userId: 1,
+        username: "admin",
+      },
+    });
 
     await act(async () => {
       root.render(
@@ -122,6 +161,14 @@ describe("ProfilePage", () => {
     await flushPromises(8);
 
     expect(api.system.uploadAvatar).toHaveBeenCalledWith(file);
+    expect(queryClient.getQueryData(["admin", "info"])).toMatchObject({
+      avatar: nextAvatar,
+    });
+    expect(queryClient.getQueryData(["admin", "profile"])).toMatchObject({
+      user: {
+        avatar: nextAvatar,
+      },
+    });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["admin", "info"] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["admin", "profile"] });
   });

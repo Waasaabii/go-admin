@@ -1,6 +1,7 @@
 package images
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"image"
@@ -28,6 +29,11 @@ const (
 
 var AvatarVariantSizes = []int{64, 128, 256, 512}
 var variantSuffixPattern = regexp.MustCompile(`@\d+$`)
+var transcodableAvatarFormats = map[string]bool{
+	"jpeg": true,
+	"png":  true,
+	"webp": true,
+}
 
 type Variant struct {
 	Path string `json:"path"`
@@ -125,15 +131,31 @@ func SaveAvatarFromReader(reader io.Reader, key string) (*Asset, error) {
 		return nil, errors.New("头像资源标识不能为空")
 	}
 
-	decoded, _, err := image.Decode(reader)
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, errors.New("头像文件为空")
+	}
+
+	format, err := detectImageFormat(data)
 	if err != nil {
 		return nil, errors.New("不支持的图片格式")
+	}
+	if !supportsAvatarTranscoding(format) {
+		return saveOriginalAvatar(data, key, avatarFileExtension(format))
+	}
+
+	decoded, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return saveOriginalAvatar(data, key, avatarFileExtension(format))
 	}
 
 	cropped := cropSquare(decoded)
 	sourceSize := cropped.Bounds().Dx()
 	if sourceSize <= 0 {
-		return nil, errors.New("头像图片无有效内容")
+		return saveOriginalAvatar(data, key, avatarFileExtension(format))
 	}
 
 	sizes := availableVariantSizes(sourceSize)
@@ -146,6 +168,7 @@ func SaveAvatarFromReader(reader io.Reader, key string) (*Asset, error) {
 		return nil, err
 	}
 
+	writtenPaths := make([]string, 0, len(sizes))
 	for _, size := range sizes {
 		targetPath := asset.Path
 		if size < asset.Size {
@@ -153,12 +176,63 @@ func SaveAvatarFromReader(reader io.Reader, key string) (*Asset, error) {
 			asset.Variants = append(asset.Variants, Variant{Path: targetPath, Size: size})
 		}
 
-		if err := encodeAvatarVariant(cropped, size, strings.TrimPrefix(targetPath, "/")); err != nil {
-			return nil, err
+		physicalPath := strings.TrimPrefix(targetPath, "/")
+		if err := encodeAvatarVariant(cropped, size, physicalPath); err != nil {
+			cleanupAvatarArtifacts(writtenPaths)
+			return saveOriginalAvatar(data, key, avatarFileExtension(format))
 		}
+		writtenPaths = append(writtenPaths, physicalPath)
 	}
 
 	return asset, nil
+}
+
+func detectImageFormat(data []byte) (string, error) {
+	_, format, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	return strings.ToLower(strings.TrimSpace(format)), nil
+}
+
+func supportsAvatarTranscoding(format string) bool {
+	return transcodableAvatarFormats[format]
+}
+
+func avatarFileExtension(format string) string {
+	switch strings.ToLower(strings.TrimSpace(format)) {
+	case "jpeg":
+		return "jpg"
+	default:
+		return strings.ToLower(strings.TrimSpace(format))
+	}
+}
+
+func saveOriginalAvatar(data []byte, key string, ext string) (*Asset, error) {
+	asset := &Asset{
+		Path: NormalizePath(filepath.ToSlash(filepath.Join("static", "uploadfile", "avatar", key+"."+ext))),
+	}
+
+	if err := os.MkdirAll(filepath.Dir(strings.TrimPrefix(asset.Path, "/")), 0o755); err != nil {
+		return nil, err
+	}
+	if err := os.WriteFile(strings.TrimPrefix(asset.Path, "/"), data, 0o644); err != nil {
+		return nil, err
+	}
+	if size, err := readImageSize(strings.TrimPrefix(asset.Path, "/")); err == nil {
+		asset.Size = size
+	}
+
+	return asset, nil
+}
+
+func cleanupAvatarArtifacts(paths []string) {
+	for _, path := range paths {
+		if strings.TrimSpace(path) == "" {
+			continue
+		}
+		_ = os.Remove(path)
+	}
 }
 
 func availableVariantSizes(sourceSize int) []int {

@@ -80,6 +80,10 @@ export default defineConfig(({ command }) => ({
         target: backendTarget,
         changeOrigin: true,
       },
+      "/static": {
+        target: backendTarget,
+        changeOrigin: true,
+      },
       "/admin-api": {
         target: backendTarget,
         changeOrigin: true,
