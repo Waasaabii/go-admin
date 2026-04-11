@@ -3,7 +3,7 @@ import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AppScrollbar, AppVirtualList, Backtop, buildImageVariantSource, DatePicker, DateRangePicker, Form, ImageCaptchaField, Input, Textarea, type DateRangePickerValue } from "./index";
+import { AppScrollbar, AppVirtualList, Backtop, Badge, buildImageVariantSource, DatePicker, DateRangePicker, Form, ImageCaptchaField, Input, Textarea, type DateRangePickerValue } from "./index";
 
 let host: HTMLDivElement;
 let root: Root;
@@ -251,6 +251,17 @@ describe("ui-admin primitives", () => {
 
     expect(input?.type).toBe("password");
     expect(toggle).toBeNull();
+  });
+
+  it("Badge 默认不换行且不在弹性布局中收缩", async () => {
+    await act(async () => {
+      root.render(<Badge tone="danger">停用</Badge>);
+    });
+
+    const badge = document.querySelector("span");
+    expect(badge).toBeTruthy();
+    expect(badge?.className).toContain("whitespace-nowrap");
+    expect(badge?.className).toContain("shrink-0");
   });
 
   it("ImageCaptchaField 在短时间重复点击时只发起一条刷新请求，并在冷却后允许再次刷新", async () => {

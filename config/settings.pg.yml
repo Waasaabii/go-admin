@@ -24,7 +24,7 @@ settings:
         dbname: go_admin_dev
         frontpath: ../go-admin-ui/src
     jwt:
-        secret: c8d324dc81525e4ac60d60d31c3d2aa016814902a0011006e085980fa13cf90c
+        secret: e85b4d8beedacc0571661318a3a18891286770aa62776ac2928b6455d8500883
         timeout: 3600
     logger:
         enableddb: false

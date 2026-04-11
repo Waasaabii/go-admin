@@ -396,7 +396,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border font-medium",
+        "inline-flex shrink-0 items-center whitespace-nowrap rounded-full border font-medium",
         size === "small" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs",
         tones[resolvedType][resolvedEffect],
         className,
