@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type HTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PropsWithChildren, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ComponentProps, type HTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type PropsWithChildren, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useTheme, type ThemeMode } from "@go-admin/design-tokens";
@@ -41,7 +41,9 @@ import {
 import type { AppMenuNode, ImageAsset } from "@go-admin/types";
 
 import {
+  AdvancedFilterPanel,
   AppScrollbar,
+  Backtop,
   Image,
   Badge,
   Breadcrumb,
@@ -61,12 +63,17 @@ import {
   Drawer,
   EmptyLogState,
   EmptyState,
+  FormField,
+  FilterBar,
   FormActions,
   Input,
+  DateRangePicker,
+  type DateRangePickerValue,
   Popover,
   PopoverContent,
   PopoverTrigger,
   ReadonlyCodeBlock,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -140,7 +147,7 @@ function BrandIdentityFrame({
     <div
       className={cn(
         "relative flex shrink-0 items-center justify-center overflow-hidden border border-border/70 bg-gradient-to-br from-background via-background to-secondary/70 shadow-sm",
-        compact ? "h-10 w-10 rounded-[1rem]" : "h-14 w-14 rounded-[1.25rem]",
+        compact ? "ui-admin-rounded-control h-10 w-10" : "ui-admin-rounded-panel h-14 w-14",
       )}
     >
       {logo ? (
@@ -206,32 +213,37 @@ export function AppFrameShell({
   rootClassName?: string;
 }>) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const contentViewportId = `app-frame-content-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const closeSidebar = () => setMobileOpen(false);
   const resolvedMobileSidebar =
     typeof mobileSidebar === "function" ? mobileSidebar({ closeSidebar }) : (mobileSidebar ?? desktopSidebar);
 
   return (
-    <div className={cn("h-[100dvh] overflow-hidden bg-background text-foreground", backgroundClassName)}>
-      <div className={cn("flex h-full min-h-0", rootClassName)}>
-        <div className={cn("hidden shrink-0", desktopSidebarClassName)}>{desktopSidebar}</div>
-        <Drawer className={mobileDrawerClassName} onOpenChange={setMobileOpen} open={mobileOpen}>
-          {resolvedMobileSidebar}
-        </Drawer>
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col relative">
-          {mobileBar ? mobileBar({ closeSidebar, openSidebar: () => setMobileOpen(true) }) : null}
-          <AppScrollbar
-            className="min-h-0 flex-1"
-            rootSlot={<main className="min-w-0 flex flex-col relative" />}
-            viewportClassName="h-full"
-          >
-            {header}
-            <div className={cn("flex-1", contentClassName)}>
-              <div className={cn("mx-auto min-h-full w-full", contentInnerClassName)}>{children}</div>
-            </div>
-          </AppScrollbar>
+    <TooltipProvider delayDuration={120}>
+      <div className={cn("h-[100dvh] overflow-hidden bg-background text-foreground", backgroundClassName)}>
+        <div className={cn("flex h-full min-h-0", rootClassName)}>
+          <div className={cn("hidden shrink-0", desktopSidebarClassName)}>{desktopSidebar}</div>
+          <Drawer className={mobileDrawerClassName} onOpenChange={setMobileOpen} open={mobileOpen}>
+            {resolvedMobileSidebar}
+          </Drawer>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col relative">
+            {mobileBar ? mobileBar({ closeSidebar, openSidebar: () => setMobileOpen(true) }) : null}
+            <AppScrollbar
+              className="min-h-0 flex-1"
+              rootSlot={<main className="min-w-0 flex flex-col relative" />}
+              viewportClassName="go-admin-shell-content-scroll-root h-full"
+              viewportProps={{ id: contentViewportId }}
+            >
+              {header}
+              <div className={cn("flex-1", contentClassName)}>
+                <div className={cn("mx-auto min-h-full w-full", contentInnerClassName)}>{children}</div>
+              </div>
+            </AppScrollbar>
+            <Backtop draggable maxDragOffset={300} target={`#${contentViewportId}`} visibilityHeight={160} />
+          </div>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
 
@@ -394,7 +406,7 @@ export function GlobalSearch({
                       <div className="grid gap-2">
                         {groupItems.map((item) => (
                           <button
-                            className="grid gap-1 rounded-2xl border border-border/70 bg-card px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
+                            className="ui-admin-panel-surface ui-admin-panel-surface--flat ui-admin-rounded-control grid gap-1 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
                             key={item.id}
                             onClick={() => handleSelect(item)}
                             type="button"
@@ -538,6 +550,222 @@ export function Toolbar({ children }: PropsWithChildren) {
   return <div className="flex flex-wrap items-center gap-3">{children}</div>;
 }
 
+type AdvancedFilterWorkbenchButtonVariant = ComponentProps<typeof Button>["variant"];
+type AdvancedFilterWorkbenchButtonSize = ComponentProps<typeof Button>["size"];
+
+export type AdvancedFilterWorkbenchAction = {
+  className?: string;
+  disabled?: boolean;
+  icon?: ReactNode;
+  key: string;
+  label: ReactNode;
+  onClick?: () => void;
+  size?: AdvancedFilterWorkbenchButtonSize;
+  type?: "button" | "submit";
+  variant?: AdvancedFilterWorkbenchButtonVariant;
+};
+
+type AdvancedFilterWorkbenchFieldBase = {
+  className?: string;
+  controlClassName?: string;
+  key: string;
+  label?: ReactNode;
+};
+
+export type AdvancedFilterWorkbenchField =
+  | (AdvancedFilterWorkbenchFieldBase & {
+      clearable?: boolean;
+      kind: "input";
+      onChange?: (value: string) => void;
+      placeholder?: string;
+      prefix?: ReactNode;
+      value?: string;
+    })
+  | (AdvancedFilterWorkbenchFieldBase & {
+      clearable?: boolean;
+      kind: "select";
+      onChange?: (value: string) => void;
+      options: Array<{ label: string; value: string | number }>;
+      placeholder?: string;
+      value?: string;
+    })
+  | (AdvancedFilterWorkbenchFieldBase & {
+      endPlaceholder?: string;
+      kind: "dateRange";
+      onChange?: (value?: DateRangePickerValue) => void;
+      startPlaceholder?: string;
+      value?: DateRangePickerValue;
+    });
+
+export type AdvancedFilterWorkbenchSummary = {
+  count?: number | string;
+  countLabel?: ReactNode;
+  hint?: ReactNode;
+};
+
+const ADVANCED_FILTER_WORKBENCH_FOOTER_CLASSNAME =
+  "flex flex-col gap-3 border-t pt-3 md:col-span-2 xl:col-span-3 sm:flex-row sm:items-center sm:justify-between [border-color:var(--ui-admin-border-subtle)]";
+
+const ADVANCED_FILTER_SUMMARY_BADGE_CLASSNAME =
+  "inline-flex items-center gap-1 rounded-control border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary";
+
+function renderAdvancedFilterWorkbenchField(field: AdvancedFilterWorkbenchField) {
+  const control =
+    field.kind === "input" ? (
+      <Input
+        className={field.controlClassName}
+        clearable={field.clearable}
+        onChange={(event) => field.onChange?.(event.target.value)}
+        placeholder={field.placeholder}
+        prefix={field.prefix}
+        value={field.value ?? ""}
+      />
+    ) : field.kind === "select" ? (
+      <Select
+        clearable={field.clearable}
+        onValueChange={(value) => field.onChange?.(value)}
+        options={field.options}
+        placeholder={field.placeholder}
+        value={field.value}
+      />
+    ) : (
+      <DateRangePicker
+        className={field.controlClassName}
+        endPlaceholder={field.endPlaceholder}
+        onChange={(value) => field.onChange?.(value)}
+        startPlaceholder={field.startPlaceholder}
+        value={field.value}
+      />
+    );
+
+  if (field.label) {
+    return (
+      <FormField className={field.className} key={field.key} label={field.label}>
+        {control}
+      </FormField>
+    );
+  }
+
+  return (
+    <div className={field.className} key={field.key}>
+      {control}
+    </div>
+  );
+}
+
+function renderAdvancedFilterWorkbenchActions(actions: AdvancedFilterWorkbenchAction[]) {
+  return actions.map((action) => (
+    <Button
+      className={action.className}
+      disabled={action.disabled}
+      key={action.key}
+      onClick={action.onClick}
+      size={action.size}
+      type={action.type ?? "button"}
+      variant={action.variant}
+    >
+      {action.icon}
+      {action.label}
+    </Button>
+  ));
+}
+
+export function AdvancedFilterWorkbench({
+  advancedFields = [],
+  appliedAdvancedCount = 0,
+  className,
+  defaultOpen = false,
+  footerActions = [],
+  isOpen,
+  onOpenChange,
+  panelClassName,
+  primaryFields,
+  summary,
+  toggleLabel = "高级筛选",
+  topActions = [],
+}: {
+  advancedFields?: AdvancedFilterWorkbenchField[];
+  appliedAdvancedCount?: number;
+  className?: string;
+  defaultOpen?: boolean;
+  footerActions?: AdvancedFilterWorkbenchAction[];
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  panelClassName?: string;
+  primaryFields: AdvancedFilterWorkbenchField[];
+  summary?: AdvancedFilterWorkbenchSummary;
+  toggleLabel?: ReactNode;
+  topActions?: AdvancedFilterWorkbenchAction[];
+}) {
+  const [innerOpen, setInnerOpen] = useState(defaultOpen);
+  const panelId = `advanced-filter-workbench-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const open = isOpen ?? innerOpen;
+  const hasAdvancedSection = advancedFields.length > 0 || Boolean(summary) || footerActions.length > 0;
+  const hasFooter = Boolean(summary) || footerActions.length > 0;
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (isOpen === undefined) {
+      setInnerOpen(nextOpen);
+    }
+    onOpenChange?.(nextOpen);
+  }
+
+  return (
+    <div
+      className={cn(
+        "ui-admin-panel-surface ui-admin-panel-surface--elevated ui-admin-panel-surface--feature p-3 md:p-4",
+        className,
+      )}
+    >
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+        <FilterBar className="justify-start">
+          {primaryFields.map(renderAdvancedFilterWorkbenchField)}
+          {hasAdvancedSection ? (
+            <Button
+              aria-controls={panelId}
+              aria-expanded={open}
+              onClick={() => handleOpenChange(!open)}
+              type="button"
+              variant={open || appliedAdvancedCount > 0 ? "secondary" : "outline"}
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              {toggleLabel}
+              {appliedAdvancedCount > 0 ? (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold leading-none text-primary-foreground">
+                  {appliedAdvancedCount}
+                </span>
+              ) : null}
+              <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")} />
+            </Button>
+          ) : null}
+        </FilterBar>
+        {topActions.length ? <RowActions className="justify-end xl:self-start">{renderAdvancedFilterWorkbenchActions(topActions)}</RowActions> : null}
+      </div>
+      {hasAdvancedSection ? (
+        <div id={panelId}>
+          <AdvancedFilterPanel isOpen={open} className={cn("md:grid-cols-2 xl:grid-cols-3", panelClassName)}>
+            {advancedFields.map(renderAdvancedFilterWorkbenchField)}
+            {hasFooter ? (
+              <div className={ADVANCED_FILTER_WORKBENCH_FOOTER_CLASSNAME}>
+                <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+                  {summary?.count !== undefined ? (
+                    <span className={ADVANCED_FILTER_SUMMARY_BADGE_CLASSNAME}>
+                      <span className="font-bold tabular-nums">{summary.count}</span>
+                      <span>{summary.countLabel ?? "条结果"}</span>
+                    </span>
+                  ) : null}
+                  {summary?.hint ? <span className="text-xs text-muted-foreground">{summary.hint}</span> : null}
+                </div>
+                {footerActions.length ? <RowActions className="justify-end">{renderAdvancedFilterWorkbenchActions(footerActions)}</RowActions> : null}
+              </div>
+            ) : null}
+          </AdvancedFilterPanel>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function DataTableSection({
   children,
   description,
@@ -654,7 +882,7 @@ export function BrandBlock({
   title?: ReactNode;
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-border/80 bg-gradient-to-br from-background via-background to-secondary/35 p-4 shadow-[var(--shadow-card)]">
+    <div className="ui-admin-panel-surface ui-admin-panel-surface--feature ui-admin-rounded-feature bg-gradient-to-br from-background via-background to-secondary/35 p-4">
       <div className="flex items-start gap-3.5">
         <BrandIdentityFrame logo={logo} title={String(title)} />
         <div className={cn("min-w-0", kicker || description ? "space-y-2" : "flex min-h-14 items-center")}>
@@ -687,7 +915,7 @@ export function IdentityCard({
   return (
     <Card className="overflow-hidden border-border/80 bg-secondary/50">
       <CardContent className="flex items-center gap-4 p-4">
-        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-background text-sm font-semibold text-foreground shadow-sm">
+        <div className="ui-admin-rounded-panel flex h-12 w-12 items-center justify-center overflow-hidden bg-background text-sm font-semibold text-foreground shadow-sm">
           {avatar ? <Image alt={name} className="h-full w-full object-cover" src={avatar} /> : name.slice(0, 1)}
         </div>
         <div className="min-w-0 flex-1">
@@ -1060,7 +1288,7 @@ function SidebarAccountRow({
           <TooltipTrigger asChild>
             <div
               aria-label={`${name}，${roleLabel}`}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-secondary/65 text-xs font-semibold text-foreground transition-colors hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="ui-admin-rounded-control flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden bg-secondary/65 text-xs font-semibold text-foreground transition-colors hover:bg-secondary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               onClick={openProfile}
               onKeyDown={handleProfileKeyDown}
               role="link"
@@ -1078,7 +1306,7 @@ function SidebarAccountRow({
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button className="h-8 w-8 rounded-xl" onClick={handleLogoutClick} size="icon" type="button" variant="ghost">
+            <Button className="ui-admin-rounded-control h-8 w-8" onClick={handleLogoutClick} size="icon" type="button" variant="ghost">
               <LogOut className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
@@ -1090,13 +1318,13 @@ function SidebarAccountRow({
 
   return (
     <div
-      className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-border/70 bg-secondary/35 px-2.5 py-2 transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      className="ui-admin-rounded-control flex cursor-pointer items-center gap-2.5 border border-border/70 bg-secondary/35 px-2.5 py-2 transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       onClick={openProfile}
       onKeyDown={handleProfileKeyDown}
       role="link"
       tabIndex={0}
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background text-xs font-semibold text-foreground shadow-sm">
+      <div className="ui-admin-rounded-control flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden bg-background text-xs font-semibold text-foreground shadow-sm">
         {avatar ? <Image alt={name} className="h-full w-full object-cover" src={avatar} /> : name.slice(0, 1)}
       </div>
       <div className="min-w-0 flex-1">
@@ -1500,7 +1728,7 @@ export function LogViewer({
   title?: ReactNode;
 }) {
   return (
-    <div className={cn("grid gap-4 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]", className)}>
+    <div className={cn("ui-admin-panel-surface ui-admin-rounded-panel grid gap-4 p-4", className)}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <h3 className="text-base font-semibold text-foreground">{title}</h3>
@@ -1525,14 +1753,14 @@ export function ProgressSteps({
     pending: "border-border bg-secondary/40",
     running: "border-primary/20 bg-primary/10",
     skipped: "border-border bg-secondary/20 opacity-70",
-    success: "border-emerald-500/20 bg-emerald-500/10",
+    success: "border-[hsl(var(--ui-admin-success)/0.2)] bg-[hsl(var(--ui-admin-success)/0.1)]",
   };
   const badgeClass: Record<string, string> = {
     failed: "bg-destructive text-destructive-foreground",
     pending: "bg-secondary text-secondary-foreground",
     running: "bg-primary text-primary-foreground",
     skipped: "bg-secondary text-secondary-foreground",
-    success: "bg-emerald-600 text-white",
+    success: "bg-[hsl(var(--ui-admin-success))] text-[hsl(var(--ui-admin-success-foreground))]",
   };
   const stateLabel: Record<string, string> = {
     failed: "失败",
@@ -1920,7 +2148,7 @@ export function Anchor({
         {items.map((item) => (
           <a
             className={cn(
-              "grid gap-1 rounded-xl border border-transparent px-3 py-2 transition-colors",
+              "ui-admin-rounded-control grid gap-1 border border-transparent px-3 py-2 transition-colors",
               resolvedActiveHref === item.href ? "border-primary/20 bg-primary/8 text-foreground" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
             )}
             href={item.href}
@@ -1994,7 +2222,7 @@ export function DocsDemoCard({
           </div>
         </div>
         <div className="grid gap-5 px-6 py-5">
-          <div className="rounded-[1.5rem] border border-dashed border-border bg-secondary/25 p-5">{children}</div>
+          <div className="ui-admin-rounded-feature border border-dashed border-[color:var(--ui-admin-border-strong)] bg-[var(--ui-admin-surface-panel-muted)] p-5">{children}</div>
           {code ? (
             <>
               <div className="flex justify-end">

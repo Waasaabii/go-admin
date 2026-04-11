@@ -477,12 +477,23 @@ function usePickerLocale() {
 
 function getInputShellClass(size: ControlSize, status: ControlStatus, hasClear: boolean) {
   return cn(
-    "relative flex w-full items-center rounded-[4px] border bg-background text-foreground shadow-sm transition-colors",
+    "ui-admin-field-surface relative flex w-full items-center text-foreground transition-colors",
     controlSizeClasses[size],
     status === "error"
       ? "border-destructive/60 focus-within:border-destructive focus-within:ring-1 focus-within:ring-destructive/15"
       : "border-input hover:border-muted-foreground/60 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/15",
     hasClear ? "pr-16" : "pr-10",
+  );
+}
+
+function getRangeInputShellClass(size: ControlSize, status: ControlStatus, hasClear: boolean) {
+  return cn(
+    "ui-admin-field-surface relative grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] items-center gap-1 text-foreground transition-colors",
+    controlSizeClasses[size],
+    status === "error"
+      ? "border-destructive/60 focus-within:border-destructive focus-within:ring-1 focus-within:ring-destructive/15"
+      : "border-input hover:border-muted-foreground/60 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/15",
+    hasClear ? "pr-9" : "pr-1",
   );
 }
 
@@ -503,10 +514,10 @@ function PopoverActionButton({
   return (
     <button
       className={cn(
-        "inline-flex h-8 items-center justify-center rounded-[4px] border px-4 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        "ui-admin-field-surface inline-flex h-8 items-center justify-center px-4 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50",
         primary
           ? "border-primary bg-primary text-primary-foreground hover:border-primary/90 hover:bg-primary/92"
-          : "border-border bg-background text-foreground hover:border-primary hover:text-primary",
+          : "bg-[var(--ui-admin-surface-field)] text-foreground hover:border-primary hover:text-primary",
       )}
       type="button"
       {...props}
@@ -950,7 +961,7 @@ export const DatePicker = forwardRef<DatePickerRef, DatePickerProps>(function Da
             />
             <button
               aria-label={text.openCalendar}
-              className="absolute right-2 inline-flex h-7 w-7 items-center justify-center rounded-[4px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="absolute right-2 inline-flex h-7 w-7 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               onClick={(event) => {
                 event.stopPropagation();
                 openPopover();
@@ -1229,7 +1240,7 @@ export const DateRangePicker = forwardRef<DatePickerRef, DateRangePickerProps>(f
       >
         <PopoverAnchor asChild>
           <div
-            className={getInputShellClass(size, status, clearable && Boolean(normalizedValue[0] || normalizedValue[1]))}
+            className={getRangeInputShellClass(size, status, clearable && Boolean(normalizedValue[0] || normalizedValue[1]))}
             onClick={() => openPopover()}
           >
             <input
@@ -1248,7 +1259,7 @@ export const DateRangePicker = forwardRef<DatePickerRef, DateRangePickerProps>(f
               ref={startInputRef}
               value={open ? draftText[0] : formatForInput(normalizedValue[0], format)}
             />
-            <span className="shrink-0 text-sm text-muted-foreground">{rangeSeparator}</span>
+            <span className="px-1 text-sm text-muted-foreground">{rangeSeparator}</span>
             <input
               className={getInputClass(size, editable && !readonly)}
               disabled={disabled}
@@ -1267,7 +1278,7 @@ export const DateRangePicker = forwardRef<DatePickerRef, DateRangePickerProps>(f
             />
             <button
               aria-label={text.openCalendar}
-              className="absolute right-2 inline-flex h-7 w-7 items-center justify-center rounded-[4px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="mr-1 inline-flex h-7 w-7 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               onClick={(event) => {
                 event.stopPropagation();
                 openPopover();

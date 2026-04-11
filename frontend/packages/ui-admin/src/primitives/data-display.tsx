@@ -217,6 +217,76 @@ function buildWatermarkDataUri({
   return `url("data:image/svg+xml;charset=UTF-8,${encoded}")`;
 }
 
+type SemanticTone = "info" | "success" | "warning";
+
+const DEFAULT_WATERMARK_COLOR_FALLBACK = "hsl(215 16% 47% / 0.18)";
+
+const semanticToneRecipes: Record<
+  SemanticTone,
+  {
+    accent: string;
+    dot: string;
+    dotSoft: string;
+    fill: string;
+    foreground: string;
+    light: string;
+    plain: string;
+    solid: string;
+    stripe: string;
+  }
+> = {
+  info: {
+    accent: "text-[hsl(var(--ui-admin-info))]",
+    dot: "bg-[hsl(var(--ui-admin-info))]",
+    dotSoft: "bg-[hsl(var(--ui-admin-info)/0.72)]",
+    fill: "bg-[hsl(var(--ui-admin-info))] text-[hsl(var(--ui-admin-info))]",
+    foreground: "text-[hsl(var(--ui-admin-info-foreground))]",
+    light: "border-[hsl(var(--ui-admin-info)/0.2)] bg-[hsl(var(--ui-admin-info)/0.1)] text-[hsl(var(--ui-admin-info))]",
+    plain: "border-[hsl(var(--ui-admin-info)/0.35)] bg-transparent text-[hsl(var(--ui-admin-info))]",
+    solid: "border-[hsl(var(--ui-admin-info))] bg-[hsl(var(--ui-admin-info))] text-[hsl(var(--ui-admin-info-foreground))]",
+    stripe:
+      "bg-[linear-gradient(135deg,hsl(var(--ui-admin-info-foreground)/0.16)_25%,transparent_25%,transparent_50%,hsl(var(--ui-admin-info-foreground)/0.16)_50%,hsl(var(--ui-admin-info-foreground)/0.16)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]",
+  },
+  success: {
+    accent: "text-[hsl(var(--ui-admin-success))]",
+    dot: "bg-[hsl(var(--ui-admin-success))]",
+    dotSoft: "bg-[hsl(var(--ui-admin-success)/0.72)]",
+    fill: "bg-[hsl(var(--ui-admin-success))] text-[hsl(var(--ui-admin-success))]",
+    foreground: "text-[hsl(var(--ui-admin-success-foreground))]",
+    light: "border-[hsl(var(--ui-admin-success)/0.2)] bg-[hsl(var(--ui-admin-success)/0.1)] text-[hsl(var(--ui-admin-success))]",
+    plain: "border-[hsl(var(--ui-admin-success)/0.35)] bg-transparent text-[hsl(var(--ui-admin-success))]",
+    solid: "border-[hsl(var(--ui-admin-success))] bg-[hsl(var(--ui-admin-success))] text-[hsl(var(--ui-admin-success-foreground))]",
+    stripe:
+      "bg-[linear-gradient(135deg,hsl(var(--ui-admin-success-foreground)/0.16)_25%,transparent_25%,transparent_50%,hsl(var(--ui-admin-success-foreground)/0.16)_50%,hsl(var(--ui-admin-success-foreground)/0.16)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]",
+  },
+  warning: {
+    accent: "text-[hsl(var(--ui-admin-warning))]",
+    dot: "bg-[hsl(var(--ui-admin-warning))]",
+    dotSoft: "bg-[hsl(var(--ui-admin-warning)/0.72)]",
+    fill: "bg-[hsl(var(--ui-admin-warning))] text-[hsl(var(--ui-admin-warning))]",
+    foreground: "text-[hsl(var(--ui-admin-warning-foreground))]",
+    light: "border-[hsl(var(--ui-admin-warning)/0.2)] bg-[hsl(var(--ui-admin-warning)/0.1)] text-[hsl(var(--ui-admin-warning))]",
+    plain: "border-[hsl(var(--ui-admin-warning)/0.35)] bg-transparent text-[hsl(var(--ui-admin-warning))]",
+    solid: "border-[hsl(var(--ui-admin-warning))] bg-[hsl(var(--ui-admin-warning))] text-[hsl(var(--ui-admin-warning-foreground))]",
+    stripe:
+      "bg-[linear-gradient(135deg,hsl(var(--ui-admin-warning-foreground)/0.16)_25%,transparent_25%,transparent_50%,hsl(var(--ui-admin-warning-foreground)/0.16)_50%,hsl(var(--ui-admin-warning-foreground)/0.16)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]",
+  },
+};
+
+function resolveScopedHslColor(variableName: string, fallback: string, alpha: number, target?: HTMLElement | null) {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  const resolvedTarget = target ?? document.documentElement;
+  const token = window.getComputedStyle(resolvedTarget).getPropertyValue(variableName).trim();
+  if (!token) {
+    return fallback;
+  }
+
+  return `hsl(${token} / ${alpha})`;
+}
+
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   active?: boolean;
   elevated?: boolean;
@@ -227,10 +297,10 @@ export function Card({ className, active, children, elevated = false, ...props }
     <div
       data-active={active ? "true" : undefined}
       className={cn(
-        "group relative overflow-hidden rounded-[1.25rem] border border-border/80 bg-card text-card-foreground transition-colors duration-200",
-        elevated ? "shadow-[var(--shadow-card)]" : "shadow-sm",
+        "ui-admin-panel-surface ui-admin-rounded-feature group relative overflow-hidden text-card-foreground transition-colors duration-200",
+        elevated ? "shadow-[var(--ui-admin-shadow-panel)]" : "shadow-sm",
         !active && "hover:bg-secondary/20",
-        active && "border-primary/50 shadow-[var(--shadow-card)]",
+        active && "border-primary/50 shadow-[var(--ui-admin-shadow-panel)]",
         className,
       )}
       {...props}
@@ -242,8 +312,8 @@ export function Card({ className, active, children, elevated = false, ...props }
               className="text-primary/60"
               fill="none"
               height="100%"
-              rx="12"
-              ry="12"
+              rx="var(--ui-admin-radius-feature)"
+              ry="var(--ui-admin-radius-feature)"
               stroke="currentColor"
               strokeDasharray="60 300"
               strokeDashoffset="0"
@@ -308,11 +378,7 @@ export function Badge({
       plain: "border-border/80 bg-transparent text-secondary-foreground",
       solid: "border-border bg-secondary text-secondary-foreground",
     },
-    info: {
-      light: "border-slate-400/18 bg-slate-500/10 text-slate-700 dark:text-slate-200",
-      plain: "border-slate-400/35 bg-transparent text-slate-700 dark:text-slate-200",
-      solid: "border-slate-500 bg-slate-600 text-white dark:bg-slate-500",
-    },
+    info: semanticToneRecipes.info,
     muted: {
       light: "border-border bg-secondary text-secondary-foreground",
       plain: "border-border/80 bg-transparent text-secondary-foreground",
@@ -323,16 +389,8 @@ export function Badge({
       plain: "border-primary/35 bg-transparent text-primary",
       solid: "border-primary bg-primary text-primary-foreground",
     },
-    success: {
-      light: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-      plain: "border-emerald-500/35 bg-transparent text-emerald-700 dark:text-emerald-300",
-      solid: "border-emerald-600 bg-emerald-600 text-white dark:bg-emerald-500",
-    },
-    warning: {
-      light: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-      plain: "border-amber-500/35 bg-transparent text-amber-700 dark:text-amber-300",
-      solid: "border-amber-500 bg-amber-500 text-amber-950",
-    },
+    success: semanticToneRecipes.success,
+    warning: semanticToneRecipes.warning,
   };
 
   return (
@@ -359,7 +417,12 @@ export function Skeleton({
 }) {
   return (
     <div
-      className={cn("bg-secondary", animated && "animate-pulse", variant === "circle" ? "rounded-full" : variant === "text" ? "h-4 rounded-md" : "rounded-xl", className)}
+      className={cn(
+        "bg-secondary",
+        animated && "animate-pulse",
+        variant === "circle" ? "rounded-full" : variant === "text" ? "ui-admin-rounded-control h-4" : "ui-admin-rounded-panel",
+        className,
+      )}
       {...props}
     />
   );
@@ -380,7 +443,8 @@ export function Loading({
     <div
       className={cn(
         "flex items-center gap-2 text-muted-foreground",
-        block && "justify-center rounded-2xl border border-dashed border-border/70 bg-secondary/25 px-5 py-6",
+        block &&
+          "ui-admin-rounded-feature justify-center border border-dashed [border-color:var(--ui-admin-border-subtle)] bg-[var(--ui-admin-surface-panel-muted)] px-5 py-6",
         size === "large" ? "text-base" : size === "small" ? "text-xs" : "text-sm",
         className,
       )}
@@ -425,9 +489,25 @@ export function Progress({
   const toneClass: Record<string, string> = {
     default: "bg-primary text-primary",
     exception: "bg-destructive text-destructive",
-    info: "bg-slate-600 text-slate-600 dark:bg-slate-500 dark:text-slate-300",
-    success: "bg-emerald-600 text-emerald-600 dark:bg-emerald-500 dark:text-emerald-400",
-    warning: "bg-amber-500 text-amber-500 dark:text-amber-400",
+    info: semanticToneRecipes.info.fill,
+    success: semanticToneRecipes.success.fill,
+    warning: semanticToneRecipes.warning.fill,
+  };
+  const toneForegroundClass: Record<string, string> = {
+    default: "text-primary-foreground",
+    exception: "text-destructive-foreground",
+    info: semanticToneRecipes.info.foreground,
+    success: semanticToneRecipes.success.foreground,
+    warning: semanticToneRecipes.warning.foreground,
+  };
+  const toneStripeClass: Record<string, string> = {
+    default:
+      "bg-[linear-gradient(135deg,hsl(var(--primary-foreground)/0.16)_25%,transparent_25%,transparent_50%,hsl(var(--primary-foreground)/0.16)_50%,hsl(var(--primary-foreground)/0.16)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]",
+    exception:
+      "bg-[linear-gradient(135deg,hsl(var(--destructive-foreground)/0.16)_25%,transparent_25%,transparent_50%,hsl(var(--destructive-foreground)/0.16)_50%,hsl(var(--destructive-foreground)/0.16)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]",
+    info: semanticToneRecipes.info.stripe,
+    success: semanticToneRecipes.success.stripe,
+    warning: semanticToneRecipes.warning.stripe,
   };
   const lineHeight = strokeWidth ?? (textInside ? 18 : size === "large" ? 10 : size === "small" ? 6 : 8);
   const circleSize = strokeWidth ? Math.max(72, strokeWidth * 6) : 132;
@@ -502,13 +582,13 @@ export function Progress({
             className={cn(
               "h-full rounded-full transition-[width] duration-300 ease-out",
               toneClass[resolvedStatus],
-              striped && "bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.16)_50%,rgba(255,255,255,0.16)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]",
+              striped && toneStripeClass[resolvedStatus],
               indeterminate && "w-1/2 animate-pulse",
             )}
             style={{ width: indeterminate ? "45%" : `${normalized}%` }}
           />
           {textInside && showText ? (
-            <span className="absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-white">
+            <span className={cn("absolute inset-y-0 right-3 flex items-center text-xs font-semibold", toneForegroundClass[resolvedStatus])}>
               {progressText}
             </span>
           ) : null}
@@ -550,11 +630,11 @@ export function Avatar({
   const resolvedSize = typeof size === "number" ? size : size === "large" ? 56 : size === "small" ? 32 : 40;
   const dimensionClass = typeof size === "number" ? "text-sm" : size === "large" ? "text-base" : size === "small" ? "text-xs" : "text-sm";
   const statusClass: Record<NonNullable<typeof status>, string> = {
-    away: "bg-amber-400",
+    away: semanticToneRecipes.warning.dotSoft,
     busy: "bg-destructive",
     offline: "bg-muted-foreground/50",
-    online: "bg-emerald-500",
-    warning: "bg-amber-500",
+    online: semanticToneRecipes.success.dot,
+    warning: semanticToneRecipes.warning.dot,
   };
   const initials = getAvatarInitials(name);
   const resolvedFallback = fallback ?? (initials || <UserRound className="h-4 w-4" />);
@@ -565,7 +645,7 @@ export function Avatar({
         className={cn(
           "inline-flex items-center justify-center overflow-hidden border bg-secondary/40 font-semibold text-foreground",
           bordered ? "border-primary/25 shadow-sm" : "border-border/70",
-          shape === "square" ? "rounded-2xl" : "rounded-full",
+          shape === "square" ? "ui-admin-rounded-panel" : "rounded-full",
           dimensionClass,
         )}
         style={{ height: resolvedSize, width: resolvedSize, ...style }}
@@ -693,10 +773,10 @@ export function Icon({
   const toneClass: Record<NonNullable<typeof tone>, string> = {
     danger: "text-destructive",
     default: "text-foreground",
-    info: "text-slate-600 dark:text-slate-200",
+    info: semanticToneRecipes.info.accent,
     primary: "text-primary",
-    success: "text-emerald-600 dark:text-emerald-400",
-    warning: "text-amber-600 dark:text-amber-300",
+    success: semanticToneRecipes.success.accent,
+    warning: semanticToneRecipes.warning.accent,
   };
 
   return (
@@ -704,7 +784,8 @@ export function Icon({
       aria-label={label}
       className={cn(
         "inline-flex items-center justify-center",
-        bordered && "rounded-xl border border-border/70 bg-secondary/30 p-2",
+        bordered &&
+          "ui-admin-field-surface--muted p-2",
         toneClass[tone],
         className,
       )}
@@ -748,7 +829,7 @@ export function IconGrid({
       {items.map((item) => (
         <button
           className={cn(
-            "grid gap-3 rounded-2xl border border-border/70 bg-card px-4 py-4 text-left transition-colors hover:border-primary/25 hover:bg-primary/5",
+            "ui-admin-panel-surface ui-admin-panel-surface--flat ui-admin-rounded-panel grid gap-3 px-4 py-4 text-left transition-colors hover:border-primary/25 hover:bg-primary/5",
             selectedKey === item.key && "border-primary/35 bg-primary/5",
           )}
           key={item.key}
@@ -756,7 +837,7 @@ export function IconGrid({
           type="button"
         >
           <div className="flex items-start justify-between gap-3">
-            <div className="inline-flex rounded-xl border border-border/70 bg-secondary/30 p-2 text-primary">{item.icon}</div>
+            <div className="ui-admin-field-surface--muted inline-flex p-2 text-primary">{item.icon}</div>
             {item.meta ? <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{item.meta}</div> : null}
           </div>
           <div className="space-y-1">
@@ -772,7 +853,7 @@ export function IconGrid({
 export function Watermark({
   children,
   className,
-  color = "rgba(100, 116, 139, 0.18)",
+  color,
   content = "GO ADMIN UI",
   fontSize = 15,
   gapX = 96,
@@ -792,8 +873,20 @@ export function Watermark({
   rotate?: number;
   width?: number;
 }) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [resolvedColor, setResolvedColor] = useState(color ?? DEFAULT_WATERMARK_COLOR_FALLBACK);
+
+  useEffect(() => {
+    if (color) {
+      setResolvedColor(color);
+      return;
+    }
+
+    setResolvedColor(resolveScopedHslColor("--muted-foreground", DEFAULT_WATERMARK_COLOR_FALLBACK, 0.18, rootRef.current));
+  }, [color]);
+
   const overlayStyle: CSSProperties = {
-    backgroundImage: buildWatermarkDataUri({ color, content, fontSize, gapX, gapY, height, rotate, width }),
+    backgroundImage: buildWatermarkDataUri({ color: resolvedColor, content, fontSize, gapX, gapY, height, rotate, width }),
     backgroundRepeat: "repeat",
     inset: 0,
     pointerEvents: "none",
@@ -801,7 +894,7 @@ export function Watermark({
   };
 
   return (
-    <div className={cn("relative isolate overflow-hidden", className)}>
+    <div className={cn("relative isolate overflow-hidden", className)} ref={rootRef}>
       <div className="relative z-10">{children}</div>
       <div aria-hidden="true" style={overlayStyle} />
     </div>
@@ -849,9 +942,7 @@ export function Backtop({
     if (!container) {
       return null;
     }
-
-    const overflowY = window.getComputedStyle(container).overflowY;
-    return /(auto|scroll|overlay)/.test(overflowY) ? container : null;
+    return container;
   }
 
   useEffect(() => {
@@ -1128,7 +1219,7 @@ export function Anchor({
       <div className="grid gap-1" key={item.href}>
         <a
           className={cn(
-            "grid gap-0.5 rounded-xl px-3 py-2 text-sm transition-colors",
+            "ui-admin-rounded-control grid gap-0.5 px-3 py-2 text-sm transition-colors",
             depth > 0 && "ml-4",
             currentActiveHref === item.href ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-secondary/45 hover:text-foreground",
           )}
@@ -1144,7 +1235,13 @@ export function Anchor({
   }
 
   return (
-    <nav className={cn("grid gap-3 rounded-3xl border border-border/70 bg-card p-4", affix && "sticky top-4", className)}>
+    <nav
+      className={cn(
+        "ui-admin-panel-surface ui-admin-rounded-feature grid gap-3 p-4",
+        affix && "sticky top-4",
+        className,
+      )}
+    >
       <div className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">{title}</div>
       <div className="grid gap-1">{renderItems(items)}</div>
     </nav>
@@ -1172,8 +1269,8 @@ export function EmptyState({
   };
 
   return (
-    <div className={cn("flex flex-col items-start gap-3 rounded-3xl border border-dashed px-6 py-8", sceneClass[scene], className)}>
-      <div className="rounded-2xl bg-background p-3 text-muted-foreground shadow-sm">
+    <div className={cn("ui-admin-rounded-feature flex flex-col items-start gap-3 border border-dashed px-6 py-8", sceneClass[scene], className)}>
+      <div className="ui-admin-rounded-panel bg-background p-3 text-muted-foreground shadow-sm">
         <TriangleAlert className="h-5 w-5" />
       </div>
       <div className="space-y-1">
@@ -1348,14 +1445,14 @@ export function Pagination({
 
   const wrapperDensityClass =
     size === "large"
-      ? "min-h-10 gap-2.5 rounded-2xl px-3 py-2"
+      ? "min-h-10 gap-2.5 ui-admin-rounded-panel px-3 py-2"
       : size === "small"
-        ? "min-h-7 gap-1.5 rounded-xl px-2 py-1"
-        : "min-h-9 gap-2 rounded-xl px-2.5 py-1.5";
+        ? "min-h-7 gap-1.5 ui-admin-rounded-control px-2 py-1"
+        : "min-h-9 gap-2 ui-admin-rounded-control px-2.5 py-1.5";
   const metaTextClass = size === "large" ? "text-sm" : "text-xs";
   const embeddedControlSize: Exclude<ControlSize, "icon"> = size === "large" ? "default" : "small";
   const navButtonClass = cn(
-    "inline-flex items-center justify-center gap-1.5 rounded-xl border font-medium transition-all focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-50",
+    "ui-admin-rounded-control inline-flex items-center justify-center gap-1.5 border font-medium transition-all focus-visible:outline-none focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-50",
     size === "large" ? "h-8 px-2.5 text-xs" : size === "small" ? "h-6 px-1.5 text-[11px]" : "h-7 px-2 text-xs",
     background ? "border-transparent bg-background/85 text-foreground hover:bg-background" : "border-border bg-background text-foreground hover:border-primary/35 hover:text-primary",
   );
@@ -1476,7 +1573,7 @@ export function FormActions({ children, className }: { children: ReactNode; clas
 
 export function DetailItem({ label, value }: { label: ReactNode; value: ReactNode }) {
   return (
-    <div className="grid gap-1 rounded-2xl border border-border/70 bg-secondary/30 p-4">
+    <div className="ui-admin-rounded-panel grid gap-1 border border-[color:var(--ui-admin-border-subtle)] bg-[var(--ui-admin-surface-panel-muted)] p-4">
       <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="m-0 text-sm font-medium text-foreground">{value}</dd>
     </div>
@@ -1552,8 +1649,8 @@ export function ReadonlyCodeBlock({
   const content = typeof children === "string" ? children.trim() : children;
 
   return (
-    <div className={cn("grid gap-3 rounded-3xl border border-border bg-slate-950 px-5 py-4 text-slate-100", className)}>
-      {title ? <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{title}</div> : null}
+    <div className={cn("ui-admin-emphasis-surface grid gap-3 px-5 py-4", className)}>
+      {title ? <div className="text-xs font-semibold uppercase tracking-[0.24em] opacity-70">{title}</div> : null}
       <AppScrollbar className="max-h-80">
         <pre className="whitespace-pre-wrap break-all pr-1 text-xs leading-6">{content || emptyLabel}</pre>
       </AppScrollbar>
@@ -1589,21 +1686,21 @@ export function InlineNotice({
       solid: "border-destructive bg-destructive text-destructive-foreground",
     },
     info: {
-      light: "border-primary/20 bg-primary/10 text-primary",
-      solid: "border-primary bg-primary text-primary-foreground",
+      light: semanticToneRecipes.info.light,
+      solid: semanticToneRecipes.info.solid,
     },
     success: {
-      light: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-      solid: "border-emerald-600 bg-emerald-600 text-white dark:bg-emerald-500",
+      light: semanticToneRecipes.success.light,
+      solid: semanticToneRecipes.success.solid,
     },
     warning: {
-      light: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-      solid: "border-amber-500 bg-amber-500 text-amber-950",
+      light: semanticToneRecipes.warning.light,
+      solid: semanticToneRecipes.warning.solid,
     },
   };
 
   return (
-    <div className={cn("flex flex-wrap items-start justify-between gap-3 rounded-2xl border px-4 py-3", toneClass[resolvedType][effect], className)}>
+    <div className={cn("ui-admin-rounded-panel flex flex-wrap items-start justify-between gap-3 border px-4 py-3", toneClass[resolvedType][effect], className)}>
       <div className="min-w-0 space-y-1">
         {title ? <p className="text-sm font-semibold">{title}</p> : null}
         <div className="text-sm leading-6">{children}</div>
@@ -1625,7 +1722,7 @@ export function FormSection({
   title: ReactNode;
 }) {
   return (
-    <div className={cn("grid gap-4 rounded-3xl border border-border/70 bg-secondary/20 p-5", className)}>
+    <div className={cn("ui-admin-rounded-feature grid gap-4 border border-[color:var(--ui-admin-border-subtle)] bg-[var(--ui-admin-surface-panel-muted)] p-5", className)}>
       <div className="space-y-1">
         <h3 className="text-base font-semibold text-foreground">{title}</h3>
         {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}

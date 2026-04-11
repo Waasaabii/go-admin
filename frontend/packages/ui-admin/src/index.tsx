@@ -13,6 +13,7 @@ export {
   PageHeader,
   FilterPanel,
   Toolbar,
+  AdvancedFilterWorkbench,
   DataTableSection,
   EmptyBlock,
   FormDialog,
@@ -47,3 +48,4 @@ export {
   DocsDemoCard,
   DocsApiTable,
 } from "./layout";
+export type { AdvancedFilterWorkbenchAction, AdvancedFilterWorkbenchField, AdvancedFilterWorkbenchSummary } from "./layout";

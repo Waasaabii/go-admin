@@ -22,7 +22,7 @@ import { Button } from "./button";
 import { Popover, PopoverContent, PopoverTrigger } from "./overlays";
 import { AppScrollbar } from "./scroll-area";
 import { cn } from "../lib/utils";
-import { controlSizeClasses, getControlStateClass, type ControlSize, type ControlStatus, type SelectOption } from "./shared";
+import { controlSizeClasses, type ControlSize, type ControlStatus, type SelectOption } from "./shared";
 
 export type { CalendarDateRange as DateRange };
 export {
@@ -95,6 +95,16 @@ function resolvePasswordToggleLabel(passwordVisible: boolean) {
   return passwordVisible ? "隐藏密码" : "显示密码";
 }
 
+const fieldSurfaceClass = "ui-admin-field-surface";
+const panelSurfaceClass = "ui-admin-panel-surface";
+const panelFeatureSurfaceClass = "ui-admin-panel-surface ui-admin-panel-surface--feature";
+
+function getFieldShellClass(status: ControlStatus) {
+  return status === "error"
+    ? "border-destructive/60 focus-within:border-destructive focus-within:ring-destructive/20 focus-visible:border-destructive focus-visible:ring-destructive/20"
+    : "focus-within:border-primary/60 focus-within:ring-ring/20 focus-visible:border-primary/60 focus-visible:ring-ring/20";
+}
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     append,
@@ -127,13 +137,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <div
       className={cn(
-        "flex w-full overflow-hidden rounded-xl border bg-background transition-all focus-within:ring-4",
+        "flex w-full overflow-hidden transition-all focus-within:ring-4",
+        fieldSurfaceClass,
         controlSizeClasses[size],
-        getControlStateClass(resolvedStatus),
+        getFieldShellClass(resolvedStatus),
         className,
       )}
     >
-      {prepend ? <span className="inline-flex items-center border-r border-border/70 bg-secondary/55 px-3 text-sm text-muted-foreground">{prepend}</span> : null}
+      {prepend ? <span className="inline-flex items-center border-r border-[color:var(--ui-admin-border-subtle)] bg-[var(--ui-admin-surface-panel-muted)] px-3 text-sm text-muted-foreground">{prepend}</span> : null}
       {prefix ? <span className="inline-flex items-center pl-3 text-muted-foreground">{prefix}</span> : null}
       <input
         className={cn(
@@ -210,7 +221,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         </button>
       ) : null}
       {suffix ? <span className="inline-flex items-center px-3 text-muted-foreground">{suffix}</span> : null}
-      {append ? <span className="inline-flex items-center border-l border-border/70 bg-secondary/55 px-3 text-sm text-muted-foreground">{append}</span> : null}
+      {append ? <span className="inline-flex items-center border-l border-[color:var(--ui-admin-border-subtle)] bg-[var(--ui-admin-surface-panel-muted)] px-3 text-sm text-muted-foreground">{append}</span> : null}
     </div>
   );
 });
@@ -234,8 +245,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   return (
     <div
       className={cn(
-        "grid gap-2 rounded-xl border bg-background px-3 py-3 transition-all focus-within:ring-4",
-        getControlStateClass(resolvedStatus),
+        "grid gap-2 px-3 py-3 transition-all focus-within:ring-4",
+        fieldSurfaceClass,
+        getFieldShellClass(resolvedStatus),
         className,
       )}
     >
@@ -461,9 +473,10 @@ export function Select({
       >
         <SelectPrimitive.Trigger
           className={cn(
-            "flex w-full items-center justify-between rounded-xl border bg-background text-left text-foreground transition-all ring-offset-background focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex w-full items-center justify-between text-left text-foreground transition-all ring-offset-background focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50",
+            fieldSurfaceClass,
             controlSizeClasses[size],
-            getControlStateClass(status),
+            getFieldShellClass(status),
             showClear ? "pr-16" : "pr-10",
             size === "large" || size === "lg" ? "px-4" : "px-3",
           )}
@@ -474,11 +487,11 @@ export function Select({
           </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
         <SelectPrimitive.Portal>
-          <SelectPrimitive.Content className="z-50 overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-[var(--shadow-soft)]">
+          <SelectPrimitive.Content className="ui-admin-overlay-surface z-50 overflow-hidden text-popover-foreground">
             <SelectPrimitive.Viewport className="p-1">
               {options.map((option) => (
                 <SelectPrimitive.Item
-                  className="relative flex cursor-default select-none items-center rounded-xl py-2 pl-8 pr-3 text-sm outline-none hover:bg-secondary focus:bg-secondary"
+                  className="ui-admin-rounded-control relative flex cursor-default select-none items-center py-2 pl-8 pr-3 text-sm outline-none hover:bg-secondary focus:bg-secondary"
                   key={String(option.value)}
                   value={option.value === "" ? EMPTY_SELECT_VALUE : String(option.value)}
                 >
@@ -496,7 +509,7 @@ export function Select({
       </SelectPrimitive.Root>
       {showClear ? (
         <button
-          className="absolute right-9 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="ui-admin-rounded-control absolute right-9 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           onClick={() => {
             if (onClear) {
               onClear();
@@ -555,9 +568,10 @@ export function Combobox({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "flex w-full items-center justify-between rounded-xl border bg-background text-left text-foreground transition-all ring-offset-background focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50",
+              "flex w-full items-center justify-between text-left text-foreground transition-all ring-offset-background focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50",
+              fieldSurfaceClass,
               controlSizeClasses[size],
-              getControlStateClass(status),
+              getFieldShellClass(status),
               clearable && selected ? "pr-16" : "pr-10",
               size === "large" || size === "lg" ? "px-4" : "px-3",
             )}
@@ -577,7 +591,7 @@ export function Combobox({
                   {filteredOptions.map((option) => (
                     <button
                       className={cn(
-                        "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm hover:bg-secondary",
+                        "ui-admin-rounded-control flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-secondary",
                         String(option.value) === value && "bg-secondary text-foreground",
                       )}
                       key={String(option.value)}
@@ -602,7 +616,7 @@ export function Combobox({
       </Popover>
       {clearable && selected && !disabled ? (
         <button
-          className="absolute right-9 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          className="ui-admin-rounded-control absolute right-9 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           onClick={() => {
             if (onClear) {
               onClear();
@@ -655,9 +669,11 @@ export function Calendar({
   selected,
   showOutsideDays = true,
 }: CalendarProps) {
+  const calendarSurfaceClass = cn(panelSurfaceClass, "inline-flex p-3");
+
   if (mode === "multiple") {
     return (
-      <div className={cn("inline-flex rounded-[1.5rem] border border-border bg-card p-3 shadow-sm", className)}>
+      <div className={cn(calendarSurfaceClass, className)}>
         <DayPicker
           disabled={disabled}
           mode="multiple"
@@ -672,7 +688,7 @@ export function Calendar({
 
   if (mode === "range") {
     return (
-      <div className={cn("inline-flex rounded-[1.5rem] border border-border bg-card p-3 shadow-sm", className)}>
+      <div className={cn(calendarSurfaceClass, className)}>
         <DayPicker
           disabled={disabled}
           mode="range"
@@ -686,7 +702,7 @@ export function Calendar({
   }
 
   return (
-    <div className={cn("inline-flex rounded-[1.5rem] border border-border bg-card p-3 shadow-sm", className)}>
+    <div className={cn(calendarSurfaceClass, className)}>
       <DayPicker
         disabled={disabled}
         mode="single"
@@ -825,7 +841,9 @@ export function Upload({
       />
       <button
         className={cn(
-          "grid w-full gap-2 rounded-[1.5rem] border border-dashed border-border/80 bg-secondary/20 text-left transition-colors hover:border-primary/35 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50",
+          "grid w-full gap-2 border-dashed text-left transition-colors hover:border-primary/35 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50",
+          panelFeatureSurfaceClass,
+          "bg-[var(--ui-admin-surface-panel-muted)] shadow-none",
           drag ? "px-5 py-8" : "px-4 py-4",
         )}
         disabled={disabled}
@@ -846,7 +864,7 @@ export function Upload({
         type="button"
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
+          <div className="ui-admin-field-surface--muted flex h-11 w-11 shrink-0 items-center justify-center text-primary">
             <UploadCloud className="h-5 w-5" />
           </div>
           <div className="min-w-0 space-y-1">
@@ -859,7 +877,7 @@ export function Upload({
           </div>
         </div>
         <div>
-          <span className="inline-flex h-8 items-center rounded-xl border border-border bg-background px-3 text-xs font-medium text-foreground shadow-sm">
+          <span className="ui-admin-field-surface inline-flex h-8 items-center px-3 text-xs font-medium text-foreground">
             {triggerLabel}
           </span>
         </div>
@@ -869,7 +887,7 @@ export function Upload({
         listType === "card" ? (
           <div className="grid gap-3 sm:grid-cols-2">
             {resolvedFileList.map((item) => (
-              <div className="grid gap-2 rounded-2xl border border-border/70 bg-card p-4" key={item.id}>
+              <div className={cn(panelFeatureSurfaceClass, "grid gap-2 p-4 shadow-none")} key={item.id}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-foreground">{item.name}</div>
@@ -884,9 +902,9 @@ export function Upload({
             ))}
           </div>
         ) : (
-          <div className="grid gap-2 rounded-2xl border border-border/70 bg-card p-3">
+          <div className={cn(panelSurfaceClass, "grid gap-2 p-3 shadow-none")}>
             {resolvedFileList.map((item) => (
-              <div className="flex items-center justify-between gap-3 rounded-xl bg-secondary/25 px-3 py-2" key={item.id}>
+              <div className="ui-admin-rounded-control flex items-center justify-between gap-3 bg-[var(--ui-admin-surface-panel-muted)] px-3 py-2" key={item.id}>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium text-foreground">{item.name}</div>
                   <div className="text-xs text-muted-foreground">

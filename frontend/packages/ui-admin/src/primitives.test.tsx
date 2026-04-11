@@ -236,9 +236,9 @@ describe("ui-admin primitives", () => {
     const shell = input?.parentElement as HTMLDivElement | null;
 
     expect(shell).toBeTruthy();
-    expect(shell?.className).toContain("h-10");
+    expect(shell?.className).toContain("h-[var(--ui-admin-control-height-md)]");
     expect(shell?.className).toContain("text-sm");
-    expect(input?.className).not.toContain("h-10");
+    expect(input?.className).not.toContain("h-[var(--ui-admin-control-height-md)]");
   });
 
   it("Input 可关闭 password 明文切换能力", async () => {
@@ -777,6 +777,18 @@ describe("ui-admin primitives", () => {
     const updatedMonthToggles = Array.from(document.querySelectorAll("button")).filter((item) => item.getAttribute("aria-label") === "切换月份面板");
     expect(updatedMonthToggles[0]?.textContent).toBe("四月");
     expect(updatedMonthToggles[1]?.textContent).toBe("八月");
+  });
+
+  it("DateRangePicker 输入壳层使用稳定的四列网格布局，避免开始结束日期被动作按钮挤压", async () => {
+    await act(async () => {
+      root.render(<DateRangePicker endPlaceholder="结束日期" startPlaceholder="开始日期" />);
+    });
+
+    const inputs = Array.from(document.querySelectorAll("input")) as HTMLInputElement[];
+    expect(inputs).toHaveLength(2);
+
+    const shell = inputs[0]?.parentElement;
+    expect(shell?.className).toContain("grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto]");
   });
 
   it("Image 资源对象会按目标尺寸选择最合适的变体路径", () => {

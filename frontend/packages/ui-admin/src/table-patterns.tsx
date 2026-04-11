@@ -16,6 +16,8 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
+  FilterBar,
+  AdvancedFilterPanel
 } from "./primitives";
 import { DetailPane, ListPane, MasterDetailLayout } from "./layout";
 import { cn } from "./lib/utils";
@@ -412,6 +414,15 @@ const groupMetricRows: GroupMetricRow[] = [
   },
 ];
 
+const STICKY_CELL_SHADOW_STYLE: Record<"left" | "right", React.CSSProperties> = {
+  left: {
+    boxShadow: "10px 0 18px -16px var(--ui-admin-border-strong)",
+  },
+  right: {
+    boxShadow: "-10px 0 18px -16px var(--ui-admin-border-strong)",
+  },
+};
+
 function formatAmount(value: number) {
   return new Intl.NumberFormat("zh-CN", {
     currency: "CNY",
@@ -489,11 +500,10 @@ function StickyCell({
     <div
       className={cn(
         "sticky bg-card transition-colors group-hover:bg-secondary/70",
-        side === "left"
-          ? "left-0 z-20 shadow-[10px_0_18px_-16px_hsl(var(--foreground)/0.45)]"
-          : "right-0 z-20 shadow-[-10px_0_18px_-16px_hsl(var(--foreground)/0.45)]",
+        side === "left" ? "left-0 z-20" : "right-0 z-20",
         className,
       )}
+      style={STICKY_CELL_SHADOW_STYLE[side]}
     >
       {children}
     </div>
@@ -511,9 +521,9 @@ function PatternTabs({
 }) {
   return (
     <Tabs onValueChange={onValueChange} value={value}>
-      <TabsList className="h-auto flex-wrap justify-start rounded-2xl bg-secondary/50 p-1">
+      <TabsList className="ui-admin-filter-panel h-auto flex-wrap justify-start p-1">
         {items.map((item) => (
-          <TabsTrigger className="rounded-xl px-3 py-2 text-xs md:text-sm" key={item.value} value={item.value}>
+          <TabsTrigger className="px-3 py-2 text-xs md:text-sm" key={item.value} value={item.value}>
             {item.label}
           </TabsTrigger>
         ))}
@@ -534,7 +544,7 @@ function SectionIntro({
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
       <div className="flex items-start gap-3">
-        <div className="rounded-2xl border border-primary/18 bg-primary/8 p-3 text-primary">{icon}</div>
+        <div className="ui-admin-rounded-panel border border-primary/18 bg-primary/8 p-3 text-primary">{icon}</div>
         <div className="space-y-1">
           <h3 className="text-lg font-semibold text-foreground">{title}</h3>
           <p className="max-w-3xl text-sm leading-7 text-muted-foreground">{description}</p>
@@ -607,9 +617,9 @@ function VirtualizedSurface<Item>({
   return (
     <AppScrollbar className={cn("w-full", maxHeightClassName)} viewportClassName="relative" viewportRef={setViewportElement}>
       <div className={cn("relative", minWidthClassName)}>
-        <div className="sticky top-0 z-30 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/82">{header}</div>
+        <div className="sticky top-0 z-30 bg-[var(--ui-admin-surface-panel-elevated)] supports-[backdrop-filter]:backdrop-blur-md">{header}</div>
         {items.length === 0 ? (
-          <div className="rounded-b-[1.25rem] border border-t-0 border-dashed border-border/80 px-6 py-8 text-sm text-muted-foreground">
+          <div className="ui-admin-panel-surface ui-admin-rounded-panel rounded-t-none border-t-0 border-dashed px-6 py-8 text-sm text-muted-foreground">
             {empty ?? "暂无数据"}
           </div>
         ) : (
@@ -639,18 +649,26 @@ function VirtualizedSurface<Item>({
 function SurfaceHeader({
   className,
   columns,
+  style,
 }: {
-  className: string;
+  className?: string;
   columns: Array<{
     content: React.ReactNode;
     side?: "left" | "right";
   }>;
+  style?: React.CSSProperties;
 }) {
   return (
-    <div className={cn("grid rounded-t-[1.25rem] border border-border/80 bg-card", className)}>
+    <div
+      className={cn(
+        "ui-admin-panel-surface ui-admin-panel-surface--flat ui-admin-rounded-panel grid rounded-b-none border-b-0",
+        className,
+      )}
+      style={style}
+    >
       {columns.map((column, index) => {
         const cell = (
-          <div className="border-b border-border/80 px-4 py-3 text-sm font-medium text-muted-foreground">{column.content}</div>
+          <div className="border-b px-4 py-3 text-sm font-medium text-muted-foreground [border-color:var(--ui-admin-border-subtle)]">{column.content}</div>
         );
 
         if (!column.side) {
@@ -658,7 +676,11 @@ function SurfaceHeader({
         }
 
         return (
-          <StickyCell className={index === 0 ? "rounded-tl-[1.25rem]" : index === columns.length - 1 ? "rounded-tr-[1.25rem]" : ""} key={index} side={column.side}>
+          <StickyCell
+            className={index === 0 ? "ui-admin-rounded-panel rounded-tr-none rounded-br-none rounded-bl-none" : index === columns.length - 1 ? "ui-admin-rounded-panel rounded-tl-none rounded-br-none rounded-bl-none" : ""}
+            key={index}
+            side={column.side}
+          >
             {cell}
           </StickyCell>
         );
@@ -766,6 +788,7 @@ export function WorkbenchWideTablePattern() {
   const [query, setQuery] = useState("");
   const [view, setView] = useState<WorkbenchViewKey>("default");
   const [virtualized, setVirtualized] = useState(true);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   const visibleRows = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -801,22 +824,42 @@ export function WorkbenchWideTablePattern() {
             onValueChange={(next) => setView(next as WorkbenchViewKey)}
             value={view}
           />
-          <div className="flex flex-wrap justify-start gap-2 xl:justify-end">
-            <Input
-              className="min-w-[220px]"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="搜索订单、负责人、来源"
-              prefix={<Search className="h-4 w-4" />}
-              value={query}
-            />
-            <Button outlined size="small" type="button" variant="default">
-              <Filter className="h-4 w-4" />
-              更多筛选
-            </Button>
-            <Button outlined size="small" type="button" variant="default">
-              <Settings2 className="h-4 w-4" />
-              列设置
-            </Button>
+          <div className="flex flex-col gap-2 xl:flex-1 xl:max-w-[500px]">
+            <FilterBar className="justify-start xl:justify-end">
+              <Input
+                className="min-w-[220px]"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="搜索订单、负责人、来源"
+                prefix={<Search className="h-4 w-4" />}
+                value={query}
+              />
+              <Button outlined size="small" type="button" variant={isAdvancedOpen ? "secondary" : "default"} onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}>
+                <Filter className="h-4 w-4" />
+                高级筛选
+              </Button>
+              <Button outlined size="small" type="button" variant="default">
+                <Settings2 className="h-4 w-4" />
+                列设置
+              </Button>
+            </FilterBar>
+            <AdvancedFilterPanel isOpen={isAdvancedOpen}>
+              <div className="space-y-1.5">
+                <div className="text-xs font-medium text-muted-foreground">渠道</div>
+                <Input className="w-full" placeholder="例如：小红书、抖音" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="text-xs font-medium text-muted-foreground">联系方式</div>
+                <Input className="w-full" placeholder="输入手机号" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="text-xs font-medium text-muted-foreground">跟进动作</div>
+                <Input className="w-full" placeholder="例如：催合同回传" />
+              </div>
+              <div className="md:col-span-2 xl:col-span-3 flex justify-end gap-2 border-t pt-3 [border-color:var(--ui-admin-border-subtle)]">
+                <Button outlined size="small" variant="default" onClick={() => setIsAdvancedOpen(false)}>清空</Button>
+                <Button size="small" variant="primary" onClick={() => setIsAdvancedOpen(false)}>确认</Button>
+              </div>
+            </AdvancedFilterPanel>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -828,7 +871,7 @@ export function WorkbenchWideTablePattern() {
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <div className="rounded-[1.5rem] border border-border/70 bg-secondary/25 p-4">
+        <div className="ui-admin-panel-surface ui-admin-panel-surface--flat ui-admin-panel-surface--muted ui-admin-rounded-feature p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <p className="text-sm font-medium text-foreground">当前共 {visibleRows.length} 条记录</p>
@@ -852,7 +895,8 @@ export function WorkbenchWideTablePattern() {
           estimatedRowHeight={76}
           header={
             <SurfaceHeader
-              className={`min-w-[1180px] grid-cols-[280px_${columns.map(() => "minmax(120px,1fr)").join("_")}_156px]`}
+              className="min-w-[1180px]"
+              style={{ gridTemplateColumns: `280px ${columns.map(() => "minmax(120px,1fr)").join(" ")} 156px` }}
               columns={[
                 {
                   content: (
@@ -873,7 +917,10 @@ export function WorkbenchWideTablePattern() {
           minWidthClassName={`min-w-[1180px] ${!virtualized ? "pb-2" : ""}`}
           overscan={virtualized ? 5 : visibleRows.length}
           renderRow={(row) => (
-            <div className={`group grid h-full border-x border-b border-border/80 bg-card hover:bg-secondary/50 grid-cols-[280px_${columns.map(() => "minmax(120px,1fr)").join("_")}_156px]`}>
+            <div
+              className="group grid h-full border-x border-b border-border/80 bg-card hover:bg-secondary/50"
+              style={{ gridTemplateColumns: `280px ${columns.map(() => "minmax(120px,1fr)").join(" ")} 156px` }}
+            >
               <StickyCell className="px-4 py-3" side="left">
                 <div className="grid min-w-[248px] gap-1">
                   <div className="flex flex-wrap items-center gap-2">

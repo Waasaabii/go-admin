@@ -4,12 +4,17 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  AdvancedFilterWorkbench,
+  AppFrameShell,
   ConfirmDialog,
   DetailSplitTablePattern,
   FormDialog,
   GroupedMetricTablePattern,
   LogViewer,
   ThemeToggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   TreeSelectorPanel,
   WideTablePatternGallery,
   WorkbenchWideTablePattern,
@@ -203,6 +208,51 @@ describe("ui-admin components", () => {
     });
 
     expect(setTheme).toHaveBeenCalledWith("dark");
+  });
+
+  it("AppFrameShell 为壳层内 Tooltip 提供统一上下文", async () => {
+    await act(async () => {
+      root.render(
+        <AppFrameShell desktopSidebar={<div>sidebar</div>}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button type="button">帮助</button>
+            </TooltipTrigger>
+            <TooltipContent>说明</TooltipContent>
+          </Tooltip>
+        </AppFrameShell>,
+      );
+    });
+
+    expect(document.body.textContent).toContain("帮助");
+  });
+
+  it("AdvancedFilterWorkbench 支持展开高级筛选并显示数量徽标", async () => {
+    await act(async () => {
+      root.render(
+        <AdvancedFilterWorkbench
+          advancedFields={[{ key: "case_number", kind: "input", label: "案件号", placeholder: "按案件号筛选" }]}
+          appliedAdvancedCount={3}
+          footerActions={[{ key: "apply", label: "确认筛选" }]}
+          primaryFields={[{ key: "keyword", kind: "input", placeholder: "搜索关键词" }]}
+          summary={{ count: 12, hint: "所有筛选项修改后，点击确认筛选才会更新列表。" }}
+          topActions={[{ key: "reset", label: "重置", variant: "ghost" }]}
+        />,
+      );
+    });
+
+    const trigger = findButton("高级筛选");
+    expect(trigger).toBeTruthy();
+    expect(trigger?.getAttribute("aria-expanded")).toBe("false");
+    expect(document.body.textContent).toContain("3");
+
+    await act(async () => {
+      trigger?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(trigger?.getAttribute("aria-expanded")).toBe("true");
+    expect(document.body.textContent).toContain("案件号");
+    expect(document.body.textContent).toContain("确认筛选");
   });
 
   it("宽表方案组件集渲染三种方案标题", async () => {

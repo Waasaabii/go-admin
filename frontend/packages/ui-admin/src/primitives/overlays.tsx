@@ -25,7 +25,7 @@ export const DialogOverlay = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay className={cn("fixed inset-0 z-50 bg-slate-950/35 backdrop-blur-sm", className)} ref={ref} {...props} />
+  <DialogPrimitive.Overlay className={cn("ui-admin-overlay-backdrop fixed inset-0 z-50", className)} ref={ref} {...props} />
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
@@ -43,7 +43,7 @@ export const DialogContent = forwardRef<
       <DialogOverlay />
       <DialogPrimitive.Content
         aria-describedby={descriptionId}
-        className={cn("fixed left-[50%] top-[50%] z-50 grid w-[min(94vw,48rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-[1.5rem] border border-border bg-card p-6 shadow-[var(--shadow-soft)] duration-200", className)}
+        className={cn("ui-admin-overlay-surface fixed left-[50%] top-[50%] z-50 grid w-[min(94vw,48rem)] translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200", className)}
         ref={ref}
         {...restProps}
       >
@@ -82,7 +82,7 @@ export function Drawer({
         <DialogOverlay />
         <DialogPrimitive.Content
           aria-describedby={description ? descriptionId : undefined}
-          className={cn("fixed inset-y-0 right-0 z-50 w-[min(88vw,22rem)] border-l border-border bg-card p-5 shadow-[var(--shadow-soft)]", className)}
+          className={cn("ui-admin-overlay-surface fixed inset-y-0 right-0 z-50 w-[min(88vw,22rem)] rounded-none border-y-0 border-r-0 p-5", className)}
         >
           <DialogTitle className="sr-only">{title}</DialogTitle>
           {description ? <DialogDescription className="sr-only" id={descriptionId}>{description}</DialogDescription> : null}
@@ -123,7 +123,7 @@ export const PopoverContent = forwardRef<
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
       align={align}
-      className={cn("z-50 w-72 rounded-2xl border border-border bg-popover p-3 text-popover-foreground shadow-[var(--shadow-soft)] outline-none", className)}
+      className={cn("ui-admin-overlay-surface z-50 w-72 p-3 text-popover-foreground outline-none", className)}
       collisionPadding={collisionPadding}
       ref={ref}
       sideOffset={sideOffset}
@@ -142,7 +142,10 @@ export const TooltipContent = forwardRef<
 >(({ className, sideOffset = 6, ...props }, ref) => (
   <TooltipPrimitive.Portal>
     <TooltipPrimitive.Content
-      className={cn("z-50 overflow-hidden rounded-xl bg-foreground px-3 py-1.5 text-xs text-background shadow-[var(--shadow-soft)]", className)}
+      className={cn(
+        "ui-admin-tooltip-surface z-50 overflow-hidden px-3 py-1.5 text-xs",
+        className,
+      )}
       ref={ref}
       sideOffset={sideOffset}
       {...props}
@@ -162,7 +165,7 @@ export const DropdownMenuContent = forwardRef<
 >(({ className, portalled = true, sideOffset = 8, ...props }, ref) => {
   const content = (
     <DropdownMenuPrimitive.Content
-      className={cn("z-50 min-w-[12rem] overflow-hidden rounded-2xl border border-border bg-popover p-1 text-popover-foreground shadow-[var(--shadow-soft)]", className)}
+      className={cn("ui-admin-overlay-surface z-50 min-w-[12rem] overflow-hidden p-1 text-popover-foreground", className)}
       ref={ref}
       sideOffset={sideOffset}
       {...props}
@@ -182,7 +185,7 @@ export const DropdownMenuItem = forwardRef<
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
-    className={cn("relative flex cursor-default select-none items-center rounded-xl px-3 py-2 text-sm outline-none transition-colors hover:bg-secondary focus:bg-secondary data-[disabled]:pointer-events-none data-[disabled]:opacity-50", className)}
+    className={cn("ui-admin-rounded-control relative flex cursor-default select-none items-center px-3 py-2 text-sm outline-none transition-colors hover:bg-secondary focus:bg-secondary data-[disabled]:pointer-events-none data-[disabled]:opacity-50", className)}
     ref={ref}
     {...props}
   />
@@ -195,7 +198,10 @@ export const TabsList = forwardRef<
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.List
-    className={cn("inline-flex h-11 items-center justify-center rounded-2xl bg-secondary p-1 text-muted-foreground", className)}
+    className={cn(
+      "ui-admin-filter-panel ui-admin-rounded-panel inline-flex h-[var(--ui-admin-control-height-lg)] items-center justify-center p-1 text-muted-foreground",
+      className,
+    )}
     ref={ref}
     {...props}
   />
@@ -207,7 +213,10 @@ export const TabsTrigger = forwardRef<
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Trigger
-    className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm", className)}
+    className={cn(
+      "ui-admin-rounded-control inline-flex items-center justify-center whitespace-nowrap px-3 py-2 text-sm font-medium transition-all data-[state=active]:bg-[var(--ui-admin-surface-panel)] data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+      className,
+    )}
     ref={ref}
     {...props}
   />
@@ -307,7 +316,7 @@ export function GlobalSearch({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 p-4">
-          <label className="flex items-center gap-3 rounded-2xl border border-input bg-background px-4 py-3 focus-within:border-primary/60 focus-within:ring-4 focus-within:ring-ring/20">
+          <label className="ui-admin-field-surface flex items-center gap-3 px-4 py-3 focus-within:border-primary/60 focus-within:ring-4 focus-within:ring-ring/20">
             <Search className="h-4 w-4 text-muted-foreground" />
             <input
               className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
@@ -315,7 +324,7 @@ export function GlobalSearch({
               placeholder={placeholder}
               value={resolvedQuery}
             />
-            <span className="hidden items-center gap-1 rounded-lg border border-border bg-secondary/40 px-2 py-1 text-[11px] text-muted-foreground sm:inline-flex">
+            <span className="ui-admin-field-surface--muted hidden items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground sm:inline-flex">
               <CornerDownLeft className="h-3 w-3" />
               回车执行
             </span>
@@ -325,7 +334,7 @@ export function GlobalSearch({
               {filteredItems.length ? (
                 filteredItems.map((item) => (
                   <button
-                    className="grid gap-1 rounded-2xl border border-border/70 bg-card px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
+                    className="ui-admin-panel-surface ui-admin-panel-surface--flat ui-admin-rounded-control grid gap-1 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
                     key={item.id}
                     onClick={() => {
                       onSelect?.(item);
@@ -339,7 +348,7 @@ export function GlobalSearch({
                   </button>
                 ))
               ) : (
-                <div className="rounded-2xl border border-dashed border-border/70 bg-secondary/25 px-4 py-8 text-center text-sm text-muted-foreground">{emptyLabel}</div>
+                <div className="ui-admin-panel-surface ui-admin-panel-surface--feature ui-admin-panel-surface--flat ui-admin-panel-surface--muted ui-admin-rounded-overlay border-dashed px-4 py-8 text-center text-sm text-muted-foreground">{emptyLabel}</div>
               )}
             </div>
           </AppScrollbar>
@@ -456,7 +465,7 @@ export function ToastViewport() {
       richColors
       toastOptions={{
         classNames: {
-          toast: "rounded-2xl border border-border shadow-[var(--shadow-soft)]",
+          toast: "ui-admin-overlay-surface",
         },
       }}
     />

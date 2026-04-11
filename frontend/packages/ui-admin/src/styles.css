@@ -60,7 +60,7 @@
   width: 52px;
   height: 52px;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   background: var(--color-surface-soft);
   font-weight: 700;
 }
@@ -107,7 +107,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   color: var(--color-muted);
   transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
@@ -210,11 +210,9 @@
 .ui-date-picker-popover {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
-  border-radius: 4px;
+  border-radius: var(--ui-admin-radius-overlay);
   background: hsl(var(--popover));
-  box-shadow:
-    0 2px 12px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(255, 255, 255, 0.02);
+  box-shadow: var(--ui-admin-shadow-overlay);
 }
 
 .ui-date-picker-layout {
@@ -240,7 +238,7 @@
   min-height: 28px;
   align-items: center;
   padding: 0 8px;
-  border-radius: 4px;
+  border-radius: var(--ui-admin-radius-control);
   color: hsl(var(--muted-foreground));
   font-size: 13px;
   text-align: left;
@@ -263,6 +261,28 @@
   --ui-admin-sidebar-item-open-bg: hsl(var(--secondary) / 0.5);
   --ui-admin-sidebar-item-active-color: hsl(var(--primary));
   --ui-admin-sidebar-item-hover-color: hsl(var(--foreground));
+  --ui-admin-surface-panel: hsl(var(--card));
+  --ui-admin-surface-panel-muted: hsl(var(--secondary) / 0.25);
+  --ui-admin-surface-panel-elevated: hsl(var(--card) / 0.95);
+  --ui-admin-surface-panel-translucent: hsl(var(--background) / 0.72);
+  --ui-admin-surface-field: hsl(var(--background));
+  --ui-admin-surface-field-muted: hsl(var(--secondary) / 0.55);
+  --ui-admin-surface-overlay: hsl(var(--popover));
+  --ui-admin-surface-emphasis: hsl(var(--foreground));
+  --ui-admin-surface-emphasis-foreground: hsl(var(--background));
+  --ui-admin-border-subtle: hsl(var(--border) / 0.7);
+  --ui-admin-border-strong: hsl(var(--border));
+  --ui-admin-border-contrast: hsl(var(--foreground) / 0.14);
+  --ui-admin-overlay-backdrop: hsl(var(--foreground) / 0.35);
+  --ui-admin-radius-panel: var(--radius-md);
+  --ui-admin-radius-overlay: var(--radius-overlay);
+  --ui-admin-radius-feature: var(--radius-lg);
+  --ui-admin-radius-control: var(--radius-control);
+  --ui-admin-shadow-panel: var(--shadow-card);
+  --ui-admin-shadow-overlay: var(--shadow-soft);
+  --ui-admin-control-height-sm: 2rem;
+  --ui-admin-control-height-md: 2.5rem;
+  --ui-admin-control-height-lg: 2.75rem;
 }
 
 .ui-admin-sidebar-item {
@@ -346,7 +366,7 @@
   height: 24px;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: var(--ui-admin-radius-control);
   color: hsl(var(--muted-foreground));
   transition: color 0.18s ease, background-color 0.18s ease;
 }
@@ -370,7 +390,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 8px;
-  border-radius: 4px;
+  border-radius: var(--ui-admin-radius-control);
   font-size: 13px;
   font-weight: 500;
   color: hsl(var(--foreground));
@@ -398,7 +418,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--ui-admin-radius-control);
   color: hsl(var(--foreground));
   font-size: 13px;
   transition:
@@ -489,6 +509,91 @@
     color 0.18s ease,
     background-color 0.18s ease,
     border-color 0.18s ease;
+}
+
+.ui-admin-filter-panel {
+  border: 1px solid var(--ui-admin-border-subtle);
+  border-radius: var(--ui-admin-radius-panel);
+  background: var(--ui-admin-surface-panel-muted);
+}
+
+.ui-admin-rounded-control {
+  border-radius: var(--ui-admin-radius-control);
+}
+
+.ui-admin-rounded-panel {
+  border-radius: var(--ui-admin-radius-panel);
+}
+
+.ui-admin-rounded-feature {
+  border-radius: var(--ui-admin-radius-feature);
+}
+
+.ui-admin-rounded-overlay {
+  border-radius: var(--ui-admin-radius-overlay);
+}
+
+.ui-admin-field-surface {
+  border: 1px solid var(--ui-admin-border-strong);
+  border-radius: var(--ui-admin-radius-control);
+  background: var(--ui-admin-surface-field);
+}
+
+.ui-admin-field-surface--muted {
+  border: 1px solid var(--ui-admin-border-subtle);
+  border-radius: var(--ui-admin-radius-control);
+  background: var(--ui-admin-surface-panel-muted);
+}
+
+.ui-admin-panel-surface {
+  border: 1px solid var(--ui-admin-border-subtle);
+  border-radius: var(--ui-admin-radius-panel);
+  background: var(--ui-admin-surface-panel);
+  box-shadow: var(--ui-admin-shadow-panel);
+}
+
+.ui-admin-panel-surface--elevated {
+  background: var(--ui-admin-surface-panel-elevated);
+  backdrop-filter: blur(18px);
+}
+
+.ui-admin-panel-surface--feature {
+  border-radius: var(--ui-admin-radius-feature);
+}
+
+.ui-admin-panel-surface--flat {
+  box-shadow: none;
+}
+
+.ui-admin-panel-surface--muted {
+  background: var(--ui-admin-surface-panel-muted);
+}
+
+.ui-admin-overlay-surface {
+  border: 1px solid var(--ui-admin-border-strong);
+  border-radius: var(--ui-admin-radius-overlay);
+  background: var(--ui-admin-surface-overlay);
+  box-shadow: var(--ui-admin-shadow-overlay);
+}
+
+.ui-admin-overlay-backdrop {
+  background: var(--ui-admin-overlay-backdrop);
+  backdrop-filter: blur(4px);
+}
+
+.ui-admin-tooltip-surface {
+  border-radius: var(--ui-admin-radius-control);
+  background: var(--ui-admin-surface-emphasis);
+  color: var(--ui-admin-surface-emphasis-foreground);
+  box-shadow: var(--ui-admin-shadow-overlay);
+}
+
+.ui-admin-emphasis-surface {
+  border: 1px solid var(--ui-admin-border-contrast);
+  border-radius: var(--ui-admin-radius-feature);
+  background: var(--ui-admin-surface-emphasis);
+  color: var(--ui-admin-surface-emphasis-foreground);
+  box-shadow: var(--ui-admin-shadow-panel);
 }
 
 .ui-date-picker-panel__body .rdp-day_button:hover:not(:disabled) {

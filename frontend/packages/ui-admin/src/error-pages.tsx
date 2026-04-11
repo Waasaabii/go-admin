@@ -1,5 +1,5 @@
 import { Compass, RefreshCcw, Search } from "lucide-react";
-import type { HTMLAttributes, ReactNode } from "react";
+import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 
 import notFoundIllustration from "../../svgs/oops-404-error-with-a-broken-robot-animate.svg";
 import serverErrorIllustration from "../../svgs/500-internal-server-error-animate.svg";
@@ -50,6 +50,44 @@ const default500Footer = (
   </div>
 );
 
+const errorPageBackgroundStyle: CSSProperties = {
+  backgroundImage:
+    "linear-gradient(160deg, var(--color-canvas) 0%, color-mix(in srgb, var(--color-panel-strong) 88%, var(--color-surface-soft)) 42%, color-mix(in srgb, var(--color-accent-soft) 78%, var(--color-panel-strong)) 100%)",
+};
+
+const errorPagePrimaryGlowStyle: CSSProperties = {
+  background: "color-mix(in srgb, var(--color-accent) 16%, transparent)",
+};
+
+const errorPageWarningGlowStyle: CSSProperties = {
+  background: "color-mix(in srgb, hsl(var(--ui-admin-warning)) 18%, transparent)",
+};
+
+const errorPageCodeStyle: CSSProperties = {
+  borderColor: "color-mix(in srgb, var(--color-accent) 18%, transparent)",
+  background: "var(--color-accent-soft)",
+  color: "var(--color-accent)",
+};
+
+const errorPageFooterStyle: CSSProperties = {
+  borderColor: "var(--ui-admin-border-subtle)",
+  background: "var(--ui-admin-surface-panel-translucent)",
+};
+
+const errorPageIllustrationSurfaceStyle: CSSProperties = {
+  borderColor: "var(--ui-admin-border-contrast)",
+  background: "color-mix(in srgb, var(--ui-admin-surface-panel-elevated) 72%, transparent)",
+  boxShadow: "inset 0 1px 0 var(--color-overlay-soft), var(--ui-admin-shadow-panel)",
+};
+
+const errorPageIllustrationRailStyle: CSSProperties = {
+  backgroundImage: "linear-gradient(90deg, transparent, var(--color-overlay-strong), transparent)",
+};
+
+const errorPageIllustrationStyle: CSSProperties = {
+  filter: "drop-shadow(var(--ui-admin-shadow-panel))",
+};
+
 // 仅在调用方未传值时回退默认内容；显式传入 null 应视为覆盖默认值。
 function withDefault<T>(value: T | undefined, fallback: T) {
   return value !== undefined ? value : fallback;
@@ -67,21 +105,25 @@ function ErrorPage({
   illustrationClassName,
   illustrationSrc,
   secondaryAction,
+  style,
   title,
   ...props
 }: ErrorPageProps) {
   return (
     <section
       className={cn(
-        "relative overflow-hidden bg-[linear-gradient(160deg,hsl(var(--background))_0%,color-mix(in_srgb,hsl(var(--card))_88%,white)_42%,color-mix(in_srgb,hsl(var(--primary))_10%,hsl(var(--card)))_100%)] text-foreground dark:bg-[linear-gradient(160deg,color-mix(in_srgb,hsl(var(--background))_92%,#020617)_0%,color-mix(in_srgb,hsl(var(--card))_72%,#020617)_46%,color-mix(in_srgb,hsl(var(--primary))_24%,#020617)_100%)]",
-        compact ? "min-h-0 rounded-[2rem] border border-border/70 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.55)]" : "h-full min-h-full rounded-none border-0 shadow-none",
+        "relative overflow-hidden text-foreground",
+        compact
+          ? "ui-admin-panel-surface ui-admin-panel-surface--elevated ui-admin-panel-surface--feature min-h-0"
+          : "h-full min-h-full rounded-none border-0 shadow-none",
         className,
       )}
+      style={{ ...errorPageBackgroundStyle, ...style }}
       {...props}
     >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-[-12%] top-[-18%] h-64 w-64 rounded-full bg-primary/12 blur-3xl dark:bg-primary/18" />
-        <div className="absolute bottom-[-14%] right-[-10%] h-72 w-72 rounded-full bg-amber-500/12 blur-3xl dark:bg-amber-400/14" />
+        <div className="absolute left-[-12%] top-[-18%] h-64 w-64 rounded-full blur-3xl" style={errorPagePrimaryGlowStyle} />
+        <div className="absolute bottom-[-14%] right-[-10%] h-72 w-72 rounded-full blur-3xl" style={errorPageWarningGlowStyle} />
         <div className="absolute inset-x-8 top-8 h-px bg-gradient-to-r from-transparent via-border/80 to-transparent" />
       </div>
 
@@ -97,7 +139,10 @@ function ErrorPage({
           <div className="flex flex-wrap items-center gap-3">
             {badge}
             {code ? (
-              <span className="inline-flex items-center rounded-full border border-primary/18 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+              <span
+                className="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em]"
+                style={errorPageCodeStyle}
+              >
                 {code}
               </span>
             ) : null}
@@ -116,7 +161,10 @@ function ErrorPage({
           ) : null}
 
           {footer ? (
-            <div className="grid gap-3 rounded-[1.5rem] border border-border/70 bg-background/70 px-4 py-4 backdrop-blur dark:bg-background/35">
+            <div
+              className="ui-admin-rounded-panel grid gap-3 border px-4 py-4 backdrop-blur"
+              style={errorPageFooterStyle}
+            >
               {footer}
             </div>
           ) : null}
@@ -128,17 +176,21 @@ function ErrorPage({
             compact ? "min-h-[20rem]" : "min-h-[16rem] sm:min-h-[20rem] lg:min-h-[22rem] xl:min-h-[30rem]",
           )}
         >
-          <div className="absolute inset-0 rounded-[2rem] border border-white/35 bg-white/55 shadow-inner dark:border-white/10 dark:bg-white/5" />
-          <div className="absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-white/75 to-transparent dark:via-white/20" />
+          <div
+            className="ui-admin-rounded-feature absolute inset-0 border"
+            style={errorPageIllustrationSurfaceStyle}
+          />
+          <div className="absolute inset-x-6 top-6 h-px" style={errorPageIllustrationRailStyle} />
           <img
             alt={illustrationAlt}
             className={cn(
-              "relative z-10 max-h-[20rem] w-full max-w-[34rem] object-contain drop-shadow-[0_20px_60px_rgba(15,23,42,0.16)] dark:brightness-110 dark:contrast-110 dark:drop-shadow-[0_28px_80px_rgba(2,6,23,0.72)]",
+              "relative z-10 max-h-[20rem] w-full max-w-[34rem] object-contain dark:brightness-110 dark:contrast-110",
               compact ? "md:max-h-[22rem]" : "md:max-h-[24rem] xl:max-h-[30rem]",
               illustrationClassName,
             )}
             draggable={false}
             src={illustrationSrc}
+            style={errorPageIllustrationStyle}
           />
         </div>
       </div>

@@ -1,9 +1,9 @@
 export const controlSizeClasses = {
-  default: "h-10 text-sm",
-  large: "h-11 text-base",
-  lg: "h-11 text-base",
-  small: "h-8 text-xs",
-  sm: "h-8 text-xs",
+  default: "h-[var(--ui-admin-control-height-md)] text-sm",
+  large: "h-[var(--ui-admin-control-height-lg)] text-base",
+  lg: "h-[var(--ui-admin-control-height-lg)] text-base",
+  small: "h-[var(--ui-admin-control-height-sm)] text-xs",
+  sm: "h-[var(--ui-admin-control-height-sm)] text-xs",
 } as const;
 
 export type ControlSize = keyof typeof controlSizeClasses;

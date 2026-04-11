@@ -4,3 +4,4 @@ export * from "./primitives/form-controls";
 export * from "./primitives/overlays";
 export * from "./primitives/scroll-area";
 export * from "./primitives/virtual-list";
+export * from "./primitives/filters";

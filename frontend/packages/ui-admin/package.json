@@ -6,7 +6,8 @@
   "main": "src/index.tsx",
   "exports": {
     ".": "./src/index.tsx",
-    "./styles.css": "./src/styles.css"
+    "./styles.css": "./src/styles.css",
+    "./theme.css": "./src/theme.css"
   },
   "dependencies": {
     "@go-admin/auth": "workspace:*",
