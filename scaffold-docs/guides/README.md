@@ -42,6 +42,6 @@
 
 ## 5. 什么时候看专题文档
 
-- 需要明确安装、更新、迁移的真实规则时，查看 [../setup-update-migration-architecture.md](../setup-update-migration-architecture.md)
-- 需要实现或调整运维模块时，查看 [../ops-service-v1-spec.md](../ops-service-v1-spec.md)
+- 需要明确安装、更新、迁移的真实规则时，查看 [../specs/setup-update-migration-architecture.md](../specs/setup-update-migration-architecture.md)
+- 需要实现或调整运维模块时，查看 [../specs/ops-service-v1-spec.md](../specs/ops-service-v1-spec.md)
 - 需要做后台视觉与布局统一时，查看 [../admin/admin-ui-spec.md](../admin/admin-ui-spec.md)

@@ -46,11 +46,11 @@ pnpm repo:reinit
 | `frontend/apps/admin-web/src/lib/app-branding.ts` | 后台默认品牌文案 |
 | `frontend/packages/design-tokens/` | 品牌色与主题 Token |
 | `config/settings*.yml` | 默认应用名、端口、数据库连接等 |
-| `README.md` 与 `docs/` | 对外说明文案 |
+| `README.md`、`scaffold-docs/` 与 `docs/` | 对外说明文案、脚手架文档与需求文档 |
 
 ## 4. 什么时候需要同步改文档
 
-以下情况建议同步更新 `docs/scaffold/`：
+以下情况建议同步更新 `scaffold-docs/`：
 
 - 仓库默认启动方式变化
 - Setup Wizard 步骤变化

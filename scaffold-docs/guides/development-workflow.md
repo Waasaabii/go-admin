@@ -46,8 +46,8 @@ pnpm repo:env
 
 如果是后台页面，建议同时对照：
 
-- `docs/admin/admin-ui-spec.md`
-- `docs/admin/admin-table-layout-research.md`
+- `scaffold-docs/admin/admin-ui-spec.md`
+- `scaffold-docs/admin/admin-table-layout-research.md`
 
 ## 4. 改配置或初始化逻辑时
 
@@ -58,7 +58,7 @@ pnpm repo:env
 - `frontend/apps/admin-web/src/pages/setup-wizard-page.tsx`
 - `cmd/migrate/migration/`
 
-该类改动的专题约束以 [../setup-update-migration-architecture.md](../setup-update-migration-architecture.md) 为准。
+该类改动的专题约束以 [../specs/setup-update-migration-architecture.md](../specs/setup-update-migration-architecture.md) 为准。
 
 ## 5. 校验与构建
 
