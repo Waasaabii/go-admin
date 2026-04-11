@@ -254,6 +254,43 @@ func (e SysUser) InsetAvatar(c *gin.Context) {
 	e.OK(asset, "修改成功")
 }
 
+// UpdateProfile
+// @Summary 修改个人资料
+// @Description 获取JSON
+// @Tags 个人中心
+// @Accept  application/json
+// @Product application/json
+// @Param data body dto.UpdateProfileReq true "body"
+// @Success 200 {object} response.Response "{"code": 200, "data": 1}"
+// @Router /api/v1/user/profile [put]
+// @Security Bearer
+func (e SysUser) UpdateProfile(c *gin.Context) {
+	s := service.SysUser{}
+	req := dto.UpdateProfileReq{}
+	err := e.MakeContext(c).
+		MakeOrm().
+		Bind(&req, binding.JSON).
+		MakeService(&s.Service).
+		Errors
+	if err != nil {
+		e.Logger.Error(err)
+		e.Error(500, err, userFacingApiErrorMessage(500))
+		return
+	}
+
+	req.UserId = user.GetUserId(c)
+	req.SetUpdateBy(user.GetUserId(c))
+
+	p := actions.GetPermissionFromContext(c)
+	err = s.UpdateProfile(&req, p)
+	if err != nil {
+		e.Logger.Error(err)
+		e.Error(500, err, userFacingApiErrorMessage(500))
+		return
+	}
+	e.OK(req.GetId(), "更新成功")
+}
+
 // UpdateStatus 修改用户状态
 // @Summary 修改用户状态
 // @Description 获取JSON

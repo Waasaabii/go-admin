@@ -135,6 +135,39 @@ func (e *SysUser) UpdateAvatar(c *dto.UpdateSysUserAvatarReq, p *actions.DataPer
 	return nil
 }
 
+// UpdateProfile 更新当前登录用户的个人资料
+func (e *SysUser) UpdateProfile(c *dto.UpdateProfileReq, p *actions.DataPermission) error {
+	var err error
+	var model models.SysUser
+	db := e.Orm.Scopes(
+		actions.Permission(model.TableName(), p),
+	).First(&model, c.GetId())
+	if err = db.Error; err != nil {
+		e.Log.Errorf("Service UpdateProfile error: %s", err)
+		return err
+	}
+	if db.RowsAffected == 0 {
+		return errors.New("无权更新该数据")
+	}
+
+	update := map[string]interface{}{
+		"nick_name": c.NickName,
+		"phone":     c.Phone,
+		"email":     c.Email,
+		"remark":    c.Remark,
+		"update_by": c.UpdateBy,
+	}
+	db = e.Orm.Model(&model).Where("user_id = ?", model.UserId).Updates(update)
+	if err = db.Error; err != nil {
+		e.Log.Errorf("Service UpdateProfile error: %s", err)
+		return err
+	}
+	if db.RowsAffected == 0 {
+		return errors.New("update profile error")
+	}
+	return nil
+}
+
 // UpdateStatus 更新用户状态
 func (e *SysUser) UpdateStatus(c *dto.UpdateSysUserStatusReq, p *actions.DataPermission) error {
 	var err error

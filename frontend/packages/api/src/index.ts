@@ -42,6 +42,7 @@ import type {
   SysPostRecord,
   SysRoleRecord,
   SysUserRecord,
+  UpdateProfilePayload,
 } from "@go-admin/types";
 
 export class ApiError extends Error {
@@ -307,6 +308,9 @@ export function createApiClient(options: ClientOptions) {
       },
       async getProfile() {
         return unwrapEnvelope<ProfileResponse>(() => instance.get<ApiEnvelope<ProfileResponse>>(`${apiPrefix}/user/profile`), options);
+      },
+      async updateProfile(payload: UpdateProfilePayload) {
+        return unwrapEnvelope<number>(() => instance.put<ApiEnvelope<number>>(`${apiPrefix}/user/profile`, payload), options);
       },
       async uploadAvatar(file: File) {
         const formData = new FormData();

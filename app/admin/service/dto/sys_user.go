@@ -71,6 +71,30 @@ func (s *UpdateSysUserAvatarReq) Generate(model *models.SysUser) {
 	model.Avatar = s.Avatar
 }
 
+type UpdateProfileReq struct {
+	UserId   int    `json:"userId" comment:"用户ID"`
+	NickName string `json:"nickName" comment:"昵称" vd:"len($)>0"`
+	Phone    string `json:"phone" comment:"手机号"`
+	Email    string `json:"email" comment:"邮箱"`
+	Remark   string `json:"remark" comment:"备注"`
+	common.ControlBy
+}
+
+func (s *UpdateProfileReq) GetId() interface{} {
+	return s.UserId
+}
+
+func (s *UpdateProfileReq) Generate(model *models.SysUser) {
+	if s.UserId != 0 {
+		model.UserId = s.UserId
+	}
+	model.NickName = s.NickName
+	model.Phone = s.Phone
+	model.Email = s.Email
+	model.Remark = s.Remark
+	model.UpdateBy = s.UpdateBy
+}
+
 type UpdateSysUserStatusReq struct {
 	UserId int    `json:"userId" comment:"用户ID" vd:"$>0"` // 用户ID
 	Status string `json:"status" comment:"状态" vd:"len($)>0"`

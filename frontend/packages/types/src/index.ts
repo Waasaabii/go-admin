@@ -68,6 +68,13 @@ export interface ProfileResponse {
   posts: PostSummary[];
 }
 
+export interface UpdateProfilePayload {
+  nickName: string;
+  phone: string;
+  email: string;
+  remark: string;
+}
+
 export interface InfoResponse {
   roles: string[];
   permissions: string[];

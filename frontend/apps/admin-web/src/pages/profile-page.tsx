@@ -1,9 +1,24 @@
-import { useRef, useState, type ChangeEvent } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toUserFacingErrorMessage } from "@go-admin/api";
-import { Avatar, AdminPageStack, AdminTwoColumn, DetailGrid, PageHeader, SectionCard, toast } from "@go-admin/ui-admin";
-import type { ImageAsset, InfoResponse, ProfileResponse } from "@go-admin/types";
+import { Avatar, AdminPageStack, AdminTwoColumn, AsyncActionButton, Button, DetailGrid, FormField, Input, PageHeader, SectionCard, Textarea, toast } from "@go-admin/ui-admin";
+import type { ImageAsset, InfoResponse, ProfileResponse, UpdateProfilePayload } from "@go-admin/types";
+
 const AVATAR_MAX_SIZE = 25 * 1024 * 1024;
+const profileSchema = z.object({
+  nickName: z.string().trim().min(1, "请输入显示名").max(128, "显示名不能超过 128 个字符"),
+  phone: z.string().max(20, "手机号不能超过 20 个字符"),
+  email: z
+    .string()
+    .max(128, "邮箱不能超过 128 个字符")
+    .refine((value) => value.trim() === "" || z.string().email().safeParse(value).success, "邮箱格式不正确"),
+  remark: z.string().max(255, "备注不能超过 255 个字符"),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
 function applyAvatarToInfo(info: InfoResponse | undefined, avatar: ImageAsset) {
   if (!info) {
@@ -28,6 +43,41 @@ function applyAvatarToProfile(profile: ProfileResponse | undefined, avatar: Imag
   };
 }
 
+function applyProfileToInfo(info: InfoResponse | undefined, values: UpdateProfilePayload) {
+  if (!info) {
+    return info;
+  }
+  return {
+    ...info,
+    name: values.nickName,
+  };
+}
+
+function applyProfileToProfile(profile: ProfileResponse | undefined, values: UpdateProfilePayload) {
+  if (!profile) {
+    return profile;
+  }
+  return {
+    ...profile,
+    user: {
+      ...profile.user,
+      nickName: values.nickName,
+      phone: values.phone,
+      email: values.email,
+      remark: values.remark,
+    },
+  };
+}
+
+function createProfileFormValues(profile: ProfileResponse): ProfileFormValues {
+  return {
+    nickName: profile.user.nickName || "",
+    phone: profile.user.phone || "",
+    email: profile.user.email || "",
+    remark: profile.user.remark || "",
+  };
+}
+
 export function ProfilePage({
   api,
   info,
@@ -36,6 +86,7 @@ export function ProfilePage({
   api: {
     system: {
       uploadAvatar: (file: File) => Promise<ImageAsset>;
+      updateProfile: (payload: UpdateProfilePayload) => Promise<number>;
     };
   };
   info: InfoResponse;
@@ -45,8 +96,43 @@ export function ProfilePage({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [avatarOverride, setAvatarOverride] = useState<ImageAsset | null>(null);
   const [uploading, setUploading] = useState(false);
+  const form = useForm<ProfileFormValues>({
+    defaultValues: createProfileFormValues(profile),
+    resolver: zodResolver(profileSchema),
+  });
+  const saveProfileMutation = useMutation({
+    mutationFn: async (values: UpdateProfilePayload) => api.system.updateProfile(values),
+    onSuccess: async (_, values) => {
+      const nextInfo = applyProfileToInfo(queryClient.getQueryData<InfoResponse>(["admin", "info"]), values);
+      const nextProfile = applyProfileToProfile(queryClient.getQueryData<ProfileResponse>(["admin", "profile"]), values);
+
+      queryClient.setQueryData<InfoResponse | undefined>(["admin", "info"], nextInfo);
+      queryClient.setQueryData<ProfileResponse | undefined>(["admin", "profile"], nextProfile);
+
+      form.reset({
+        nickName: values.nickName,
+        phone: values.phone,
+        email: values.email,
+        remark: values.remark,
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin", "info"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin", "profile"] }),
+      ]);
+      toast.success("个人资料已保存");
+    },
+    onError: (error) => {
+      toast.error(toUserFacingErrorMessage(error, "个人资料保存失败"));
+    },
+  });
   const avatarSource = avatarOverride || profile.user.avatar || info.avatar;
-  const displayName = info.name || profile.user.nickName || info.userName;
+  const displayName = form.watch("nickName") || info.name || profile.user.nickName || info.userName;
+  const roleText = profile.roles.map((role) => role.roleName).join(" / ") || info.roles.join(" / ") || "未配置";
+  const postText = profile.posts.map((post) => post.postName).join(" / ") || "未配置";
+
+  useEffect(() => {
+    form.reset(createProfileFormValues(profile));
+  }, [form, profile]);
 
   function openPicker() {
     if (uploading) {
@@ -91,9 +177,18 @@ export function ProfilePage({
     }
   }
 
+  async function handleProfileSubmit(values: ProfileFormValues) {
+    await saveProfileMutation.mutateAsync({
+      nickName: values.nickName.trim(),
+      phone: values.phone.trim(),
+      email: values.email.trim(),
+      remark: values.remark,
+    });
+  }
+
   return (
     <AdminPageStack>
-      <PageHeader description="查看和管理个人账号信息。" kicker="个人账号" title="个人中心" />
+      <PageHeader description="在这里更新昵称、手机号、邮箱和备注，账号归属与权限信息仍由管理员维护。" kicker="个人账号" title="个人中心" />
 
       <AdminTwoColumn>
         <SectionCard description="上传后会同步刷新侧栏与个人中心展示。" title="头像设置">
@@ -127,7 +222,7 @@ export function ProfilePage({
             <div className="grid gap-3">
               <div className="grid gap-1">
                 <div className="text-base font-semibold text-foreground">{displayName}</div>
-                <div className="text-sm text-muted-foreground">建议使用正方形 JPG / PNG / WebP 图片，大小不超过 25 MB。</div>
+                <div className="text-sm text-muted-foreground">建议使用正方形 JPG / PNG / WebP / GIF 图片，大小不超过 25 MB。</div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <input accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={handleFileChange} ref={inputRef} type="file" />
@@ -137,25 +232,47 @@ export function ProfilePage({
           </div>
         </SectionCard>
 
-        <SectionCard description="基本账号与角色信息" title="账号信息">
-          <DetailGrid
-            items={[
-              { label: "用户名", value: info.userName },
-              { label: "显示名", value: info.name },
-              { label: "部门 ID", value: info.deptId },
-              { label: "角色", value: info.roles.join(" / ") },
-            ]}
-          />
+        <SectionCard description="昵称会同步到侧栏和个人中心展示，手机号、邮箱和备注支持自助维护。" title="基本资料">
+          <form className="grid gap-4" onSubmit={form.handleSubmit(handleProfileSubmit)}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField error={form.formState.errors.nickName?.message} label="显示名" required>
+                <Input {...form.register("nickName")} placeholder="请输入显示名" />
+              </FormField>
+              <FormField error={form.formState.errors.phone?.message} label="手机号">
+                <Input {...form.register("phone")} placeholder="请输入手机号" />
+              </FormField>
+              <FormField error={form.formState.errors.email?.message} label="邮箱">
+                <Input {...form.register("email")} placeholder="请输入邮箱" type="email" />
+              </FormField>
+              <div className="hidden md:block" />
+            </div>
+            <FormField error={form.formState.errors.remark?.message} label="备注">
+              <Textarea {...form.register("remark")} placeholder="可填写个人备注" rows={4} />
+            </FormField>
+            <div className="flex flex-wrap items-center gap-3">
+              <AsyncActionButton loading={saveProfileMutation.isPending} type="submit">
+                保存资料
+              </AsyncActionButton>
+              <Button
+                disabled={saveProfileMutation.isPending || !form.formState.isDirty}
+                onClick={() => form.reset(createProfileFormValues(profile))}
+                type="button"
+                variant="outline"
+              >
+                恢复当前资料
+              </Button>
+            </div>
+          </form>
         </SectionCard>
       </AdminTwoColumn>
 
-      <SectionCard description="联系方式与岗位配置" title="联系与岗位">
+      <SectionCard description="这些字段由系统组织架构和权限配置决定，个人中心仅展示当前结果。" title="账号与组织信息">
         <DetailGrid
           items={[
-            { label: "手机号", value: profile.user.phone || "未设置" },
-            { label: "邮箱", value: profile.user.email || "未设置" },
-            { label: "岗位", value: profile.posts.map((post) => post.postName).join(" / ") || "未配置" },
-            { label: "备注", value: profile.user.remark || "暂无备注" },
+            { label: "用户名", value: info.userName },
+            { label: "角色", value: roleText },
+            { label: "部门 ID", value: String(profile.user.deptId || info.deptId || "未配置") },
+            { label: "岗位", value: postText },
           ]}
         />
       </SectionCard>
